@@ -1,17 +1,1 @@
-[
-[
-"\\bVM's\\b",
-"",
-"VMs"
-],
-[
-"\\bVM/CT's\\b",
-"",
-"VM/CTs"
-],
-[
-"\\bCT's\\b",
-"",
-"CTs"
-]
-]
+[["\\bVM's\\b", "", "VMs"], ["\\bVM/CT's\\b", "", "VM/CTs"], ["\\bCT's\\b", "", "CTs"], ["(without pairing|only after pairing|after pairing) tonen\\.", "", "$1."]]

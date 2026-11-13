@@ -43,7 +43,8 @@
   }
   function walk(n) {
     if (n.nodeType === 3) textNode(n);
-    else if (n.nodeType === 1 && !SKIP.test(n.nodeName)) { element(n); for (const c of Array.from(n.childNodes || [])) walk(c); }
+    else if (n.nodeType === 1 && SKIP.test(n.nodeName)) element(n);
+    else if (n.nodeType === 1) { element(n); for (const c of Array.from(n.childNodes || [])) walk(c); }
   }
   function start() {
     if (lang !== 'en' || typeof MutationObserver === 'undefined' || !document.body) return;
