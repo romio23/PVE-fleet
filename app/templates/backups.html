@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Back-ups · PVE Fleet{% endblock %}
+{% block crumbs %}<a href="/">Overzicht</a><span>/</span><span class="here">Back-ups</span>{% endblock %}
+{% block body %}
+<div class="layout">
+  {% include "_sidenav.html" %}
+  <main class="content" id="app">
+    <div class="pagehead"><div><h1>Back-ups</h1><p class="muted" style="margin:6px 0 0" id="sub">Back-upjobs, de laatste back-up van elke VM/CT en wat er nog niet geback-upt wordt.</p></div>
+      <div class="end"><button type="button" class="btn ghost" id="reload">Vernieuwen</button></div></div>
+    <div class="kpis" id="kpis"></div>
+    <div class="filters">
+      <div class="seg" role="group" aria-label="Toon" id="f-show">
+        <button type="button" data-f="all" aria-pressed="true">Alle VM/CT</button>
+        <button type="button" data-f="problems" aria-pressed="false">Alleen aandachtspunten</button>
+      </div>
+    </div>
+    <div id="groups" style="display:flex;flex-direction:column;gap:16px"><div class="card pad muted">Laden… (de inhoud van de back-upopslag ophalen kan even duren)</div></div>
+  </main>
+</div>
+<script src="{{ url_for('static', filename='js/backups.js') }}?v={{ version }}"></script>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "_auth_base.html" %}
+{% block title %}Inloggen · PVE Fleet{% endblock %}
+{% block card %}
+<h1>Inloggen</h1>
+{% if error %}<div class="errbox" role="alert">{{ error }}</div>{% endif %}
+<form method="post" action="/login" style="display:flex;flex-direction:column;gap:14px">
+  <input type="hidden" name="next" value="{{ next }}">
+  <label class="field">Gebruikersnaam<input class="input" name="username" autocomplete="username" autocapitalize="none" required autofocus></label>
+  <label class="field">Wachtwoord<input class="input" type="password" name="password" autocomplete="current-password" required></label>
+  <label class="check"><input type="checkbox" name="remember" checked>Ingelogd blijven (30 dagen)</label>
+  <button class="btn lg primary" type="submit" style="justify-content:center">Inloggen</button>
+</form>
+<p class="small muted" style="margin:0">Wachtwoord vergeten? Verwijder <span class="mono">data/settings.json</span> en start het dashboard opnieuw; je stelt dan alles opnieuw in. Gekoppelde schermen moet je daarna opnieuw koppelen.</p>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Rolling update · PVE Fleet{% endblock %}
+{% block crumbs %}<a href="/">Overzicht</a><span>/</span><a href="/updates">Updates</a><span>/</span><span class="here">Rolling update</span>{% endblock %}
+{% block body %}
+<div class="layout">
+  {% include "_sidenav.html" %}
+  <main class="content" id="app" data-server="{{ server }}">
+    <div class="pagehead"><div><h1 id="title">Rolling update</h1><p class="muted" style="margin:6px 0 0" id="sub">Node voor node bijwerken, zonder dat je VM's &amp; containers uit hoeven.</p></div>
+      <div class="end" id="headacts"></div></div>
+    <div id="checks"></div>
+    <div id="nodes"><div class="card pad muted">Laden…</div></div>
+  </main>
+</div>
+<script src="{{ url_for('static', filename='js/rolling.js') }}?v={{ version }}"></script>
+{% endblock %}

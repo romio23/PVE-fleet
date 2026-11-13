@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Nodes · PVE Fleet{% endblock %}
+{% block crumbs %}<a href="/">Overzicht</a><span>/</span><span class="here">Nodes</span>{% endblock %}
+{% block body %}
+<div class="layout">
+  {% include "_sidenav.html" %}
+  <main class="content" id="app">
+    <div class="pagehead"><div><h1>Nodes</h1><p class="muted" style="margin:6px 0 0" id="sub">Alle nodes van je clusters en losse servers.</p></div></div>
+    <div class="filters" role="search">
+      <label class="sr" for="q">Zoeken</label>
+      <input class="input" type="search" id="q" placeholder="Zoek op naam of IP-adres…" autocomplete="off">
+      <div class="seg" role="group" aria-label="Filter" id="f-state">
+        <button type="button" data-f="all" aria-pressed="true">Alle</button>
+        <button type="button" data-f="offline" aria-pressed="false">Offline</button>
+        <button type="button" data-f="updates" aria-pressed="false">Met updates</button>
+      </div>
+      <label class="sr" for="grp">Cluster of server</label>
+      <select class="input" id="grp"><option value="">Alle clusters en losse nodes</option></select>
+    </div>
+    <section class="card" style="overflow:hidden">
+      <div class="tablewrap"><table class="tbl" style="min-width:1000px">
+        <thead><tr>
+          <th class="sortable" data-sort="name">Node</th><th class="sortable" data-sort="group">Cluster / server</th><th>Status</th><th class="sortable" data-sort="ip">IP-adres</th>
+          <th class="sortable" data-sort="cpu">CPU</th><th class="sortable" data-sort="ram">RAM</th><th class="sortable" data-sort="vms">VM/CT</th>
+          <th class="sortable" data-sort="uptime">Uptime</th><th class="sortable" data-sort="updates">Updates</th><th class="r"><span class="sr">Details</span></th>
+        </tr></thead>
+        <tbody id="rows"><tr><td colspan="9" class="muted">Laden…</td></tr></tbody>
+      </table></div>
+    </section>
+  </main>
+</div>
+<script>window.PF_NAV_MANUAL = true;</script>
+<script src="{{ url_for('static', filename='js/listutil.js') }}?v={{ version }}"></script>
+<script src="{{ url_for('static', filename='js/nodes.js') }}?v={{ version }}"></script>
+{% endblock %}

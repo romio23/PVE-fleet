@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Updates · PVE Fleet{% endblock %}
+{% block crumbs %}<a href="/">Overzicht</a><span>/</span><span class="here">Updates</span>{% endblock %}
+{% block body %}
+<div class="layout">
+  {% include "_sidenav.html" %}
+  <main class="content" id="app">
+    <div class="pagehead"><div><h1>Updates</h1><p class="muted" style="margin:6px 0 0" id="sub">Openstaande pakketupdates per node, en of een node opnieuw moet opstarten.</p></div></div>
+    <div class="kpis" id="kpis" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))"></div>
+    <div class="banner info" id="howto">
+      <div class="txt"><div class="ttl">Zo werkt bijwerken</div>
+        <div class="desc">Proxmox laat pakketten alleen installeren door <span class="mono">root</span>. Met <strong>Bijwerken</strong> opent een console van de node; log in als root en klik op <em>Upgrade-commando invoeren</em>. Daarna kijkt PVE Fleet opnieuw. Is er een nieuwe kernel, dan zie je <strong>Herstart nodig</strong>.
+        In een cluster helpt <strong>Rolling update</strong> je node voor node, zonder dat je VM's &amp; containers uit hoeven.</div></div>
+      <button type="button" class="btn ghost" id="howto-x">Begrepen</button>
+    </div>
+    <div id="groups" style="display:flex;flex-direction:column;gap:16px"><div class="card pad muted">Laden…</div></div>
+    <div id="ctupd"></div>
+  </main>
+</div>
+<script src="{{ url_for('static', filename='js/updates.js') }}?v={{ version }}"></script>
+<script src="{{ url_for('static', filename='js/ctupdates.js') }}?v={{ version }}"></script>
+{% endblock %}

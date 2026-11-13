@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ vmid }} · PVE Fleet{% endblock %}
+{% block crumbs %}<a href="/">Overzicht</a><span>/</span><span id="crumb-group">{{ server }}</span><span>/</span><a href="/node/{{ server|urlencode }}/{{ node|urlencode }}">{{ node }}</a><span>/</span><span class="here" id="crumb-guest">{{ vmid }}</span>{% endblock %}
+{% block body %}
+<main class="page" id="app" data-server="{{ server }}" data-node="{{ node }}" data-kind="{{ kind }}" data-vmid="{{ vmid }}">
+  <div class="loading">Gegevens ophalen…</div>
+</main>
+<script src="{{ url_for('static', filename='vendor/marked.min.js') }}?v={{ version }}"></script>
+<script src="{{ url_for('static', filename='vendor/purify.min.js') }}?v={{ version }}"></script>
+<script src="{{ url_for('static', filename='js/guest.js') }}?v={{ version }}"></script>
+{% endblock %}

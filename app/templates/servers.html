@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Servers · PVE Fleet{% endblock %}
+{% block crumbs %}<a href="/">Overzicht</a><span>/</span><span class="here">Servers &amp; verbinding</span>{% endblock %}
+{% block body %}
+<div class="layout">
+  {% include "_sidenav.html" %}
+  <main class="content">
+    <div class="pagehead">
+      <div><h1>Servers &amp; verbinding</h1>
+        <p class="muted" style="margin:6px 0 0">Voeg je clusters en losse nodes hier toe. Het dashboard slaat ze op in <span class="mono" id="cfgpath">{{ config_path }}</span> en gebruikt ze meteen.</p></div>
+      <button type="button" class="btn lg primary" id="add">+ Server toevoegen</button>
+    </div>
+    <div id="cfgerr"></div>
+    <div id="demo"></div>
+    <section class="card" style="overflow:hidden">
+      <div class="card-head"><h2>Servers</h2></div>
+      <div class="tablewrap"><table class="tbl" style="min-width:820px">
+        <thead><tr><th>Naam</th><th>Soort</th><th>Adressen</th><th>Status</th><th>Melding</th><th class="r"><span class="sr">Acties</span></th></tr></thead>
+        <tbody id="rows"><tr><td colspan="6" class="muted">Laden…</td></tr></tbody>
+      </table></div>
+    </section>
+    <section class="card pad">
+      <h2 class="small-title">Een API-token maken in Proxmox</h2>
+      <p style="margin:0 0 8px;color:var(--text2)">Eén keer per cluster en één keer per losse node, in de shell van een node:</p>
+      <pre class="log" style="max-height:none">pveum user add dashboard@pve --comment "PVE Fleet"
+pveum role add FleetOperator --privs "VM.PowerMgmt VM.Snapshot VM.Snapshot.Rollback VM.Backup VM.Migrate Datastore.AllocateSpace Sys.PowerMgmt VM.Console Sys.Console VM.GuestAgent.Audit"
+pveum acl modify / --users dashboard@pve --roles PVEAuditor,FleetOperator
+pveum user token add dashboard@pve fleet --privsep 0
+
+# Token al gemaakt in de webinterface (Privilege Separation aan)? Dan ook:
+pveum acl modify / --tokens 'dashboard@pve!fleet' --roles PVEAuditor,FleetOperator</pre>
+      <p style="margin:12px 0 0;color:var(--text2);line-height:1.6">Het commando <span class="mono">pveum user token add</span> toont het <strong>geheim</strong> (value) één keer. Vul hier in: token-ID <span class="mono">dashboard@pve!fleet</span> en dat geheim.
+        Alleen kijken, zonder acties? Laat dan de regel met <span class="mono">FleetOperator</span> weg en gebruik <span class="mono">--roles PVEAuditor</span>.</p>
+      <p class="small muted" style="margin:10px 0 0">Via de webinterface kan het ook: Datacenter › Permissions › Users, API Tokens (vink <em>Privilege Separation</em> uit) en Add › User Permission. Twijfel je of alles goed staat? Klik bij je server op <strong>Bewerken › Verbinding testen</strong>: daar zie je per onderdeel of het token de juiste rechten heeft.</p>
+    </section>
+  </main>
+</div>
+<script src="{{ url_for('static', filename='js/servers.js') }}?v={{ version }}"></script>
+{% endblock %}

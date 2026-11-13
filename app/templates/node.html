@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ node }} · PVE Fleet{% endblock %}
+{% block crumbs %}<a href="/">Overzicht</a><span>/</span><span id="crumb-group">{{ server }}</span><span>/</span><span class="here">{{ node }}</span>{% endblock %}
+{% block body %}
+<main class="page" id="app" data-server="{{ server }}" data-node="{{ node }}" data-cluster="{{ 1 if is_cluster else 0 }}">
+  <div class="loading">Gegevens ophalen…</div>
+</main>
+<script src="{{ url_for('static', filename='js/node.js') }}?v={{ version }}"></script>
+{% endblock %}

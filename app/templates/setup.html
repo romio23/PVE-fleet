@@ -1,0 +1,18 @@
+{% extends "_auth_base.html" %}
+{% block title %}Instellen · PVE Fleet{% endblock %}
+{% block card %}
+<h1>Welkom — eerst instellen</h1>
+<p class="muted" style="margin:0;line-height:1.5">Maak een beheerdersaccount voor het dashboard en kies een pincode voor acties op de kiosk (iPad of scherm aan de Pi).</p>
+{% if error %}<div class="errbox" role="alert">{{ error }}</div>{% endif %}
+<form method="post" action="/setup" style="display:flex;flex-direction:column;gap:14px">
+  <label class="field">Gebruikersnaam<input class="input" name="username" value="{{ form.get('username', 'admin') }}" autocomplete="username" autocapitalize="none" required></label>
+  <label class="field">Wachtwoord <span class="hint">minstens 8 tekens</span><input class="input" type="password" name="password" autocomplete="new-password" minlength="8" required></label>
+  <label class="field">Herhaal wachtwoord<input class="input" type="password" name="password2" autocomplete="new-password" minlength="8" required></label>
+  <div class="formgrid">
+    <label class="field">Kiosk-pincode <span class="hint">4 tot 6 cijfers</span><input class="input mono" type="password" name="pin" inputmode="numeric" pattern="[0-9]{4,6}" maxlength="6" autocomplete="off" required></label>
+    <label class="field">Herhaal pincode<input class="input mono" type="password" name="pin2" inputmode="numeric" pattern="[0-9]{4,6}" maxlength="6" autocomplete="off" required></label>
+  </div>
+  <button class="btn lg primary" type="submit" style="justify-content:center">Opslaan en starten</button>
+</form>
+<p class="small muted" style="margin:0">De pincode kun je later wijzigen of uitzetten onder Instellingen › Kiosk &amp; schermen.</p>
+{% endblock %}

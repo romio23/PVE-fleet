@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Instellingen · PVE Fleet{% endblock %}
+{% block crumbs %}<a href="/">Overzicht</a><span>/</span><span class="here">Instellingen</span>{% endblock %}
+{% block body %}
+<div class="layout">
+  {% include "_sidenav.html" %}
+  <main class="content" id="app">
+    <div class="pagehead"><div><h1>Instellingen</h1>
+      <p class="muted" style="margin:6px 0 0">Kiosk, pincode, gekoppelde schermen, je account en het logboek van acties.</p></div></div>
+    <div class="loading" id="loading">Laden…</div>
+    <div id="sections" class="hidden" style="display:flex;flex-direction:column;gap:20px">
+
+      <section class="card" aria-labelledby="pin-title" style="overflow:hidden">
+        <div style="display:flex;align-items:flex-start;gap:16px;padding:18px 20px">
+          <div style="flex:1;min-width:0">
+            <h2 id="pin-title" style="font-size:17px;font-weight:600">Pincode voor acties op de kiosk</h2>
+            <p class="muted" style="margin:6px 0 0;line-height:1.5">Vraag om een pincode voordat de kiosk een node herstart, afsluit of iets anders wijzigt. Kijken kan altijd zonder pincode. In het dashboard zelf ben je al ingelogd en is geen pincode nodig.</p>
+          </div>
+          <button type="button" role="switch" aria-checked="false" aria-labelledby="pin-title" id="pin-switch"
+            style="flex:none;width:60px;height:34px;border-radius:999px;border:0;padding:3px;cursor:pointer;display:flex;background:#3A4248">
+            <span style="width:28px;height:28px;border-radius:50%;background:#fff" aria-hidden="true"></span></button>
+        </div>
+        <div id="pin-on" style="border-top:1px solid var(--line);padding:6px 20px 18px">
+          <div class="kv">
+            <div class="row" style="align-items:center">
+              <span class="k" style="flex-basis:220px">Pincode<br><span class="small muted" id="pin-changed"></span></span>
+              <span class="v" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span style="letter-spacing:4px;font-size:18px">••••</span>
+                <button type="button" class="btn" id="pin-change" style="font-family:var(--sans)">Wijzigen</button></span>
+            </div>
+            <div class="row" style="align-items:center">
+              <label class="k" for="unlock" style="flex-basis:220px">Ontgrendeld houden na invoer</label>
+              <span class="v" style="font-family:var(--sans)"><select class="input" id="unlock" style="max-width:260px">
+                <option value="0">Elke actie opnieuw vragen</option><option value="30">30 seconden</option>
+                <option value="120">2 minuten</option><option value="300">5 minuten</option></select></span>
+            </div>
+            <div class="row" style="align-items:center">
+              <label class="k" for="lockout" style="flex-basis:220px">Na 5 foute pogingen</label>
+              <span class="v" style="font-family:var(--sans)"><select class="input" id="lockout" style="max-width:260px">
+                <option value="60">1 minuut blokkeren</option><option value="300">5 minuten blokkeren</option>
+                <option value="-1">Blokkeren tot vrijgave hier</option></select>
+                <span class="small muted" style="display:block;margin-top:6px">Je krijgt er ook een melding van in het dashboard.</span></span>
+            </div>
+          </div>
+          <fieldset style="border:0;margin:0;padding:14px 0 0">
+            <legend style="font-weight:500;padding:14px 0 0">Pincode vragen bij</legend>
+            <div class="formgrid" style="margin-top:10px" id="pin-actions"></div>
+          </fieldset>
+          <div id="locks" class="hidden" style="margin-top:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            <span class="c-warn" id="locks-txt"></span><button type="button" class="btn" id="unblock">Blokkades opheffen</button>
+          </div>
+        </div>
+        <div id="pin-off" class="hidden" role="note" style="display:flex;gap:12px;align-items:flex-start;border-top:1px solid var(--warn-line);background:var(--warn-bg);padding:14px 20px;color:#E9D3AE;line-height:1.5">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E8A13A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:1px"><path d="M12 3l10 18H2z"></path><path d="M12 10v5M12 18h.01"></path></svg>
+          <span>Zonder pincode kan iedereen die het scherm aanraakt nodes herstarten of afsluiten. Overweeg <strong>Alleen bekijken</strong> hieronder als het scherm op een plek hangt waar anderen bij kunnen.</span>
+        </div>
+      </section>
+
+      <section class="card pad">
+        <h2 style="font-size:17px;font-weight:600;margin-bottom:6px">Kioskweergave</h2>
+        <div class="kv">
+          <div class="row" style="align-items:center"><label class="k" for="readonly" style="flex:1 1 260px;color:var(--text)">Alleen bekijken<br><span class="small muted">Verbergt alle actieknoppen op de kiosk</span></label><input type="checkbox" class="cb" id="readonly" style="width:22px;height:22px;accent-color:var(--warn)"></div>
+          <div class="row" style="align-items:center"><label class="k" for="allow_ack" style="flex:1 1 260px;color:var(--text)">Meldingen bevestigen vanaf de kiosk<br><span class="small muted">Markeert een melding als gezien</span></label><input type="checkbox" class="cb" id="allow_ack" style="width:22px;height:22px;accent-color:var(--warn)"></div>
+          <div class="row" style="align-items:center"><label class="k" for="localhost_auto" style="flex:1 1 260px;color:var(--text)">Kiosk op deze computer zonder koppelen<br><span class="small muted">Voor een scherm aan de Pi zelf (adres <span class="mono">localhost</span>). Andere apparaten moeten altijd gekoppeld worden.</span></label><input type="checkbox" class="cb" id="localhost_auto" style="width:22px;height:22px;accent-color:var(--warn)"></div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:12px">
+          <span id="saved" class="c-ok small hidden" style="align-self:center">Opgeslagen</span>
+          <button type="button" class="btn lg primary" id="save-kiosk">Wijzigingen opslaan</button>
+        </div>
+      </section>
+
+      <section class="card" style="overflow:hidden">
+        <div class="card-head"><h2>Gekoppelde schermen</h2><div class="end"><button type="button" class="btn" id="pair">+ Scherm koppelen</button></div></div>
+        <div id="devices"></div>
+      </section>
+
+      <section class="card pad">
+        <h2 style="font-size:17px;font-weight:600;margin-bottom:12px">Account</h2>
+        <p class="muted" style="margin:0 0 12px">Ingelogd als <strong id="username" style="color:var(--text)"></strong>.</p>
+        <form id="pwform" class="formgrid" autocomplete="off">
+          <label class="field">Huidig wachtwoord<input class="input" type="password" name="current" autocomplete="current-password" required></label>
+          <label class="field">Nieuw wachtwoord<input class="input" type="password" name="new" autocomplete="new-password" minlength="8" required></label>
+          <label class="field">Herhaal nieuw wachtwoord<input class="input" type="password" name="new2" autocomplete="new-password" minlength="8" required></label>
+          <div style="display:flex;align-items:flex-end"><button class="btn lg" type="submit">Wachtwoord wijzigen</button></div>
+        </form>
+        <div id="pwmsg" style="margin-top:12px"></div>
+      </section>
+
+      <section class="card" style="overflow:hidden">
+        <div class="card-head"><h2>Logboek van acties</h2><span class="muted small">laatste 60, nieuwste eerst</span></div>
+        <div class="tablewrap"><table class="tbl" style="min-width:700px">
+          <thead><tr><th>Tijd</th><th>Door</th><th>Actie</th><th>Resultaat</th></tr></thead>
+          <tbody id="log"><tr><td colspan="4" class="muted">Laden…</td></tr></tbody></table></div>
+      </section>
+    </div>
+  </main>
+</div>
+<script src="{{ url_for('static', filename='vendor/qrcode.js') }}?v={{ version }}"></script>
+<script src="{{ url_for('static', filename='js/settings.js') }}?v={{ version }}"></script>
+{% endblock %}

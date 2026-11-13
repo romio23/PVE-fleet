@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Overzicht · PVE Fleet{% endblock %}
+{% block crumbs %}<span class="here">Overzicht</span>{% endblock %}
+{% block body %}
+<div class="layout">
+  {% include "_sidenav.html" %}
+  <main class="content" id="app">
+    <div class="loading">Gegevens ophalen…</div>
+  </main>
+</div>
+<script>window.PF_NAV_MANUAL = true;</script>
+<script src="{{ url_for('static', filename='js/overview.js') }}?v={{ version }}"></script>
+{% endblock %}

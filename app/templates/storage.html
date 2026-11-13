@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Opslag · PVE Fleet{% endblock %}
+{% block crumbs %}<a href="/">Overzicht</a><span>/</span><span class="here">Opslag</span>{% endblock %}
+{% block body %}
+<div class="layout">
+  {% include "_sidenav.html" %}
+  <main class="content" id="app">
+    <div class="pagehead"><div><h1>Opslag</h1><p class="muted" style="margin:6px 0 0" id="sub">Alle opslag van je servers, de volste bovenaan. Gedeelde opslag (zoals NFS) staat één keer per cluster.</p></div></div>
+    <div class="filters" role="search">
+      <label class="sr" for="q">Zoeken</label>
+      <input class="input" type="search" id="q" placeholder="Zoek op naam, node of type…" autocomplete="off">
+      <div class="seg" role="group" aria-label="Filter" id="f-state">
+        <button type="button" data-f="all" aria-pressed="true">Alle</button>
+        <button type="button" data-f="full" aria-pressed="false">Boven 80%</button>
+        <button type="button" data-f="backup" aria-pressed="false">Back-upopslag</button>
+      </div>
+    </div>
+    <section class="card" style="overflow:hidden">
+      <div class="tablewrap"><table class="tbl" style="min-width:860px">
+        <thead><tr>
+          <th class="sortable" data-sort="name">Opslag</th><th class="sortable" data-sort="where">Waar</th><th class="sortable" data-sort="type">Type</th>
+          <th class="sortable" data-sort="pct" style="width:220px">Gebruik</th><th class="sortable" data-sort="free">Vrij</th><th>Inhoud</th>
+        </tr></thead>
+        <tbody id="rows"><tr><td colspan="6" class="muted">Laden…</td></tr></tbody>
+      </table></div>
+    </section>
+  </main>
+</div>
+<script src="{{ url_for('static', filename='js/listutil.js') }}?v={{ version }}"></script>
+<script src="{{ url_for('static', filename='js/storage.js') }}?v={{ version }}"></script>
+{% endblock %}

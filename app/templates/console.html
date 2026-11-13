@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#050607">
+<title>Console · PVE Fleet</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v={{ version }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/xterm.css') }}?v={{ version }}">
+<style>
+  html, body { height: 100%; margin: 0; overflow: hidden; background: #050607; }
+  .c-wrap { height: 100%; display: flex; flex-direction: column; }
+  .c-bar { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 14px; background: var(--bar); border-bottom: 1px solid var(--line); }
+  .c-bar .ttl { font-weight: 600; font-size: 15px; }
+  .c-bar .stat { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text2); }
+  .c-bar .tools { margin-left: auto; display: flex; flex-wrap: wrap; gap: 6px; }
+  .c-main { flex: 1; min-height: 0; position: relative; }
+  #term, #vnc { position: absolute; inset: 0; }
+  #term { padding: 6px 8px; box-sizing: border-box; }
+  #vnc { display: flex; align-items: center; justify-content: center; background: #050607; }
+  .c-help { flex: none; display: flex; flex-wrap: wrap; gap: 4px 16px; padding: 8px 14px; font-size: 13px; color: var(--info-text); background: var(--info-bg); border-bottom: 1px solid var(--info-line); }
+  .c-over { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(5,6,7,.82); z-index: 5; padding: 20px; }
+  .c-over .box { max-width: 520px; background: var(--panel); border: 1px solid var(--line3); border-radius: 12px; padding: 20px 22px; display: flex; flex-direction: column; gap: 12px; }
+</style>
+</head>
+<body>
+<div class="c-wrap" id="app" data-server="{{ server }}" data-node="{{ node }}" data-kind="{{ kind }}" data-vmid="{{ vmid }}">
+  <header class="c-bar">
+    <span class="ttl" id="ttl">Console</span>
+    <span class="stat" id="stat"><span class="dot b-muted" aria-hidden="true"></span><span>Verbinden…</span></span>
+    {% if kind == 'shell' %}<span class="stat" id="rootstat"></span>{% endif %}
+    <div class="tools">
+      {% if kind == 'qemu' %}
+      <button type="button" class="btn ghost" id="cad" disabled>Ctrl-Alt-Del</button>
+      <button type="button" class="btn ghost" id="scale" aria-pressed="true">Passend maken</button>
+      {% else %}
+      {% if upgrade %}<button type="button" class="btn primary" id="upgrade" data-cmd="{{ upcmd }}" disabled title="Typt het commando in de shell; jij bevestigt">{{ 'Update-commando invoeren' if appupdate else 'Upgrade-commando invoeren' }}</button>{% endif %}
+      <button type="button" class="btn ghost" id="paste" disabled>Plakken</button>
+      <button type="button" class="btn ghost" id="bigger" aria-label="Grotere letters">A+</button>
+      <button type="button" class="btn ghost" id="smaller" aria-label="Kleinere letters">A−</button>
+      {% endif %}
+      <button type="button" class="btn ghost" id="full">Volledig scherm</button>
+      <button type="button" class="btn ghost" id="again">Opnieuw verbinden</button>
+    </div>
+  </header>
+  {% if upgrade and kind == 'lxc' %}
+  <div class="c-help" id="uphelp">
+    <strong>{{ 'App bijwerken' if appupdate else 'Container bijwerken' }}:</strong>
+    <span>1. Zie je een inlogprompt, log dan in als <span class="mono">root</span> (community-scripts-containers loggen vanzelf in).</span>
+    <span>2. Klik op <em>{{ 'Update-commando invoeren' if appupdate else 'Upgrade-commando invoeren' }}</em> (dat typt <span class="mono">{{ upcmd }}</span>).</span>
+    <span>3. {{ 'Volg de vragen van het update-script.' if appupdate else 'Lees wat er verandert en bevestig met Y.' }}</span>
+    <span>4. Klaar? Sluit dit venster; PVE Fleet kijkt dan opnieuw.</span>
+  </div>
+  {% elif upgrade %}
+  <div class="c-help" id="uphelp">
+    <strong>Node bijwerken:</strong>
+    <span>1. Log in als <span class="mono">root</span> met het wachtwoord van de node.</span>
+    <span>2. Klik op <em>Upgrade-commando invoeren</em> (dat typt <span class="mono">apt update; apt dist-upgrade</span> en drukt op Enter).</span>
+    <span>3. Lees wat er verandert en bevestig met <span class="mono">Y</span>.</span>
+    <span>4. Klaar? Sluit dit venster; PVE Fleet kijkt dan opnieuw naar updates en of de node moet herstarten.</span>
+  </div>
+  {% endif %}
+  <main class="c-main">
+    {% if kind == 'qemu' %}<div id="vnc"></div>{% else %}<div id="term"></div>{% endif %}
+    <div class="c-over hidden" id="over"><div class="box" role="alert"><div style="font-weight:600;font-size:17px" id="over-t"></div><div class="muted" style="line-height:1.5" id="over-d"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn lg primary" id="over-again">Opnieuw verbinden</button><button type="button" class="btn lg ghost" onclick="window.close()">Venster sluiten</button></div></div></div>
+    {% if kind == 'shell' %}
+    <div class="c-over hidden" id="rootbox"><form class="box" id="rootform" autocomplete="off">
+      <div style="font-weight:600;font-size:17px">Eén keer inloggen als root</div>
+      <div class="muted" style="line-height:1.5;font-size:14px">Dan openen alle shells van <strong id="root-name" style="color:var(--text)"></strong> zonder inlogprompt, net als in de Proxmox-webinterface. PVE Fleet bewaart het wachtwoord niet: het vraagt er een ticket mee aan bij Proxmox (2 uur geldig, wordt verlengd zolang je de console gebruikt). Uitloggen bij PVE Fleet beëindigt de sessie.{% if demo %} <em>Demo: wachtwoord <span class="mono">demo</span>.</em>{% endif %}</div>
+      <label class="field">Gebruiker<input class="input mono" name="username" value="root@pam" autocapitalize="none"></label>
+      <label class="field">Wachtwoord<input class="input" type="password" name="password" autocomplete="current-password"></label>
+      <label class="field hidden" id="otpfield">2FA-code<input class="input mono" name="otp" inputmode="numeric" autocomplete="one-time-code" placeholder="6 cijfers"></label>
+      <div class="errbox" id="root-err" role="alert" style="display:none"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="submit" class="btn lg primary" id="root-go">Inloggen</button>
+        <button type="button" class="btn lg ghost" id="root-skip">Zonder root (Linux-login)</button></div>
+    </form></div>
+    {% endif %}
+  </main>
+</div>
+<script src="{{ url_for('static', filename='js/common.js') }}?v={{ version }}"></script>
+{% if kind == 'qemu' %}
+<script src="{{ url_for('static', filename='vendor/novnc.min.js') }}?v={{ version }}"></script>
+{% else %}
+<script src="{{ url_for('static', filename='vendor/xterm.js') }}?v={{ version }}"></script>
+<script src="{{ url_for('static', filename='vendor/xterm-addon-fit.js') }}?v={{ version }}"></script>
+{% endif %}
+<script src="{{ url_for('static', filename='js/console.js') }}?v={{ version }}"></script>
+</body>
+</html>

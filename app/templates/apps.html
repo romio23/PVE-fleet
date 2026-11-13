@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Apps · PVE Fleet{% endblock %}
+{% block crumbs %}<a href="/">Overzicht</a><span>/</span><span class="here">Apps</span>{% endblock %}
+{% block body %}
+<div class="layout">
+  {% include "_sidenav.html" %}
+  <main class="content" id="app">
+    <div class="pagehead"><div><h1>Apps</h1><p class="muted" style="margin:6px 0 0">Een nieuwe versie van je eigen apps uploaden en in de container zetten: meteen of op een tijdstip, met eerst een snapshot.</p></div></div>
+    <div id="apps"><div class="card pad muted">Laden…</div></div>
+  </main>
+</div>
+<style>
+  .drop { display: block; border: 2px dashed var(--line3); border-radius: 12px; padding: 26px 18px; text-align: center; cursor: pointer; transition: border-color .15s, background .15s; }
+  .drop:hover, .drop.over { border-color: var(--info); background: var(--panel2); }
+  .drop .big { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .prog { height: 6px; border-radius: 3px; background: var(--panel2); overflow: hidden; margin-top: 12px; display: none; }
+  .prog > div { height: 100%; width: 0; background: var(--info); transition: width .2s; }
+  .st { font-size: 12px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); white-space: nowrap; }
+  .st.ok { color: var(--ok); border-color: currentColor; }
+  .st.fail { color: var(--crit); border-color: currentColor; }
+  .st.rolledback { color: var(--warn-text); border-color: currentColor; }
+  .st.pending { color: var(--info); border-color: currentColor; }
+  .st.running { color: var(--info); border-color: currentColor; }
+  .st.cancelled { color: var(--muted); }
+</style>
+<script src="{{ url_for('static', filename='js/apps.js') }}?v={{ version }}"></script>
+{% endblock %}

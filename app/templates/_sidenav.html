@@ -1,0 +1,14 @@
+<nav class="sidenav" aria-label="Hoofdmenu">
+  <a href="/" class="{{ 'active' if page == 'overview' else '' }}">Overzicht</a>
+  <a href="/nodes" class="{{ 'active' if page == 'nodes' else '' }}">Nodes <span class="count" id="nav-nodes"></span></a>
+  <a href="/vms" class="{{ 'active' if page == 'vms' else '' }}">VM's &amp; containers <span class="count" id="nav-vms"></span></a>
+  <a href="/storage" class="{{ 'active' if page == 'storage' else '' }}">Opslag <span class="count" id="nav-storage"></span></a>
+  <a href="/updates" class="{{ 'active' if page == 'updates' else '' }}">Updates <span class="count" id="nav-updates"></span></a>
+  <a href="/backups" class="{{ 'active' if page == 'backups' else '' }}">Back-ups <span class="count" id="nav-backups"></span></a>
+  <div class="sep"></div>
+  <a href="/servers" class="{{ 'active' if page == 'servers' else '' }}">Servers &amp; verbinding</a>
+  <a href="/apps" class="{{ 'active' if page == 'apps' else '' }}">Apps <span class="count" id="nav-apps"></span></a>
+  <a href="/certificates" class="{{ 'active' if page == 'certs' else '' }}">Certificaten <span class="count" id="nav-certs"></span></a>
+  <a href="/settings" class="{{ 'active' if page == 'settings' else '' }}">Instellingen</a>
+  <a href="/kiosk">Kioskweergave</a>
+</nav>

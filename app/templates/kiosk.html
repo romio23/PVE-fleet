@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PVE Fleet">
+<meta name="theme-color" content="#12161A">
+<title>PVE Fleet · Kiosk</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v={{ version }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/kiosk.css') }}?v={{ version }}">
+<link rel="apple-touch-icon" href="{{ url_for('static', filename='icon-180.png') }}">
+<script>window.PF_POLL_MS = {{ poll_ms }}; window.PF_KIOSK = true;</script>
+<script src="{{ url_for('static', filename='js/common.js') }}?v={{ version }}"></script>
+<script src="{{ url_for('static', filename='js/actions.js') }}?v={{ version }}"></script>
+</head>
+<body>
+<div class="k-root" id="root">
+  <header class="k-top">
+    <a class="btn ghost k-back hidden" id="k-back" href="/" title="Terug naar het dashboard">← Dashboard</a>
+    <span class="k-status ok" id="k-status"><span class="dot b-ok" aria-hidden="true"></span><span id="k-headline">Laden…</span></span>
+    <span class="k-sub" id="k-sub"></span>
+    <div class="k-right" style="align-items:center">
+      {% if demo %}<span class="badge-demo">Demo</span>{% endif %}
+      <span class="k-lock hidden" id="k-lock"></span>
+      <span class="small muted" id="live"><span class="txt"></span></span>
+      <span class="k-clock" id="k-clock">--:--</span>
+      <span class="muted" id="k-date"></span>
+    </div>
+  </header>
+  <div class="k-body">
+    <main class="k-main" id="k-main"></main>
+    <aside class="k-side">
+      <section class="k-card" style="flex:1;min-height:0;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><h2 style="font-size:16px;font-weight:600">Alerts</h2><span class="small muted" id="k-open"></span></div>
+        <div class="k-alerts" id="k-alerts"></div>
+      </section>
+      <div class="k-two">
+        <div class="k-card"><div class="small muted" style="text-transform:uppercase;letter-spacing:.6px">Back-ups 24 u</div><div class="v" id="k-backups">—</div><div class="small muted" id="k-backups-sub"></div></div>
+        <div class="k-card"><div class="small muted" style="text-transform:uppercase;letter-spacing:.6px">Updates</div><div class="v c-warn" id="k-updates">—</div><div class="small muted" id="k-updates-sub"></div></div>
+      </div>
+    </aside>
+  </div>
+  <div id="k-sheet"></div>
+  <div id="k-overlay"></div>
+</div>
+<script src="{{ url_for('static', filename='js/kiosk.js') }}?v={{ version }}"></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}VM's & containers · PVE Fleet{% endblock %}
+{% block crumbs %}<a href="/">Overzicht</a><span>/</span><span class="here">VM's &amp; containers</span>{% endblock %}
+{% block body %}
+<div class="layout">
+  {% include "_sidenav.html" %}
+  <main class="content" id="app" style="max-width:1400px">
+    <div class="pagehead"><div><h1>VM's &amp; containers</h1><p class="muted" style="margin:6px 0 0" id="sub">Alle VM's en containers van al je servers.</p></div></div>
+    <div class="filters" role="search">
+      <label class="sr" for="q">Zoeken</label>
+      <input class="input" type="search" id="q" placeholder="Zoek op naam, ID, tag, IP-adres of node…" autocomplete="off">
+      <div class="seg" role="group" aria-label="Status" id="f-status">
+        <button type="button" data-f="all" aria-pressed="true">Alle</button>
+        <button type="button" data-f="running" aria-pressed="false">Actief</button>
+        <button type="button" data-f="stopped" aria-pressed="false">Gestopt</button>
+        <button type="button" data-f="updates" aria-pressed="false">Met updates</button>
+      </div>
+      <div class="seg" role="group" aria-label="Soort" id="f-type">
+        <button type="button" data-f="all" aria-pressed="true">VM/CT</button>
+        <button type="button" data-f="qemu" aria-pressed="false">VM</button>
+        <button type="button" data-f="lxc" aria-pressed="false">CT</button>
+      </div>
+      <label class="sr" for="grp">Cluster, server of node</label>
+      <select class="input" id="grp"><option value="">Alle clusters en nodes</option></select>
+    </div>
+    <section class="card" style="overflow:hidden">
+      <div id="bar"></div>
+      <div class="tablewrap"><table class="tbl" style="min-width:1260px">
+        <thead><tr>
+          <th style="width:28px"><input type="checkbox" class="cb" id="selall" aria-label="Alles selecteren"></th>
+          <th class="sortable" data-sort="vmid">ID</th><th class="sortable" data-sort="name">Naam</th><th>Soort</th><th class="sortable" data-sort="status">Status</th><th class="sortable" data-sort="ip">IP-adres</th><th class="sortable" data-sort="upd">Updates</th>
+          <th class="sortable" data-sort="node">Node</th><th class="sortable" data-sort="cpu">CPU</th><th class="sortable" data-sort="ram">RAM</th>
+          <th class="sortable" data-sort="uptime">Uptime</th><th class="r"><span class="sr">Acties</span></th>
+        </tr></thead>
+        <tbody id="rows"><tr><td colspan="10" class="muted">Laden…</td></tr></tbody>
+      </table></div>
+    </section>
+  </main>
+</div>
+<script src="{{ url_for('static', filename='js/listutil.js') }}?v={{ version }}"></script>
+<script src="{{ url_for('static', filename='js/vms.js') }}?v={{ version }}"></script>
+{% endblock %}
