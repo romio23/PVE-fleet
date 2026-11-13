@@ -474,3 +474,7 @@ Meer details in de logs: zet `LOG_LEVEL=DEBUG` in `docker-compose.yml`.
 ---
 
 Gemaakt met Claude (claude.ai).
+
+## Licentie
+
+MIT — zie [LICENSE](LICENSE).

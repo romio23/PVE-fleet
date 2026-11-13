@@ -478,3 +478,7 @@ The interface and this documentation are available in English and Dutch. The swi
 ---
 
 Made with Claude (claude.ai).
+
+## License
+
+MIT — see [LICENSE](LICENSE).
