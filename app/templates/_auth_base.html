@@ -7,6 +7,7 @@
 <title>{% block title %}PVE Fleet{% endblock %}</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v={{ version }}">
+{% include '_i18n.html' %}
 </head>
 <body>
 <div class="authwrap"><main class="authcard">
@@ -15,6 +16,7 @@
     <span>PVE Fleet</span>{% if demo %} <span class="badge-demo" style="margin-left:8px">Demomodus</span>{% endif %}
   </div>
   {% block card %}{% endblock %}
+  <div style="text-align:center;margin-top:14px">{% include '_langswitch.html' %}</div>
 </main></div>
 </body>
 </html>

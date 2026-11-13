@@ -4,15 +4,15 @@ chcp 65001 >nul
 cd /d "%~dp0"
 title PVE Fleet
 set PYTHONUTF8=1
-rem PyYAML zonder C-extensie bouwen: dan is geen compiler nodig (ook bij nieuwe Python-versies)
+rem Build PyYAML without the C extension: then no compiler is needed (also with new Python versions)
 set PYYAML_FORCE_LIBYAML=0
 
 echo.
-echo  PVE Fleet - starten op Windows
+echo  PVE Fleet - starting on Windows
 echo  ==============================
 echo.
 
-rem --- Python zoeken: bij voorkeur een gangbare versie via de py-launcher ---
+rem --- Find Python: preferably a common version via the py launcher ---
 set "PY="
 for %%V in (3.13 3.12 3.14 3.11 3.10) do (
   if not defined PY py -%%V -c "import sys" >nul 2>nul && set "PY=py -%%V"
@@ -20,27 +20,27 @@ for %%V in (3.13 3.12 3.14 3.11 3.10) do (
 if not defined PY py -3 -c "import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)" >nul 2>nul && set "PY=py -3"
 if not defined PY python -c "import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)" >nul 2>nul && set "PY=python"
 if not defined PY goto :nopython
-for /f "delims=" %%I in ('%PY% -c "import sys; print(sys.version.split()[0])"') do echo  Python %%I gevonden.
+for /f "delims=" %%I in ('%PY% -c "import sys; print(sys.version.split()[0])"') do echo  Python %%I found.
 
-rem --- Eigen Python-omgeving in de map .venv, alleen de eerste keer ---
+rem --- Own Python environment in the .venv folder, first time only ---
 if not exist ".venv\Scripts\python.exe" (
-  echo  Eerste keer: Python-omgeving aanmaken in de map .venv ...
+  echo  First time: creating Python environment in the .venv folder ...
   %PY% -m venv .venv
   if errorlevel 1 goto :fail
 )
 
-rem --- Pakketten installeren als requirements.txt nieuw of gewijzigd is ---
+rem --- Install packages if requirements.txt is new or changed ---
 fc /b requirements.txt ".venv\req-installed.txt" >nul 2>nul
 if errorlevel 1 (
-  echo  Benodigde pakketten installeren, even geduld ...
+  echo  Installing required packages, please wait ...
   ".venv\Scripts\python.exe" -m pip install --disable-pip-version-check --prefer-binary -q -r requirements.txt
   if errorlevel 1 goto :fail
   copy /y requirements.txt ".venv\req-installed.txt" >nul
 )
 
 if not exist "data\config.yml" (
-  echo  Geen data\config.yml gevonden: het dashboard start met voorbeelddata.
-  echo  Eigen servers? Kopieer config.example.yml naar data\config.yml en vul die in.
+  echo  No data\config.yml found: the dashboard starts with sample data.
+  echo  Your own servers? Copy config.example.yml to data\config.yml and fill it in.
 )
 
 ".venv\Scripts\python.exe" run.py %*
@@ -48,20 +48,20 @@ if errorlevel 1 goto :fail
 goto :eof
 
 :nopython
-echo  Python 3.9 of nieuwer is niet gevonden.
+echo  Python 3.9 or newer was not found.
 echo.
-echo  Installeer Python op een van deze manieren en start dit bestand opnieuw:
-echo    - In PowerShell of de opdrachtprompt:  winget install Python.Python.3.13
-echo    - Of via https://www.python.org/downloads/
-echo      Vink tijdens de installatie "Add python.exe to PATH" aan.
+echo  Install Python in one of these ways and start this file again:
+echo    - In PowerShell or the command prompt:  winget install Python.Python.3.13
+echo    - Or via https://www.python.org/downloads/
+echo      During the installation, tick "Add python.exe to PATH".
 echo.
 pause
 exit /b 1
 
 :fail
 echo.
-echo  Er ging iets mis. Lees de melding hierboven.
-echo  Tip: verwijder de map .venv en start dit bestand opnieuw.
+echo  Something went wrong. Read the message above.
+echo  Tip: delete the .venv folder and start this file again.
 echo.
 pause
 exit /b 1

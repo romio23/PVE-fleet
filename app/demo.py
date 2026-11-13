@@ -43,7 +43,7 @@ GUESTS = [
     (102, "nextcloud", "qemu", "pve-01", True, 0.09, 6.1, 8, "web"),
     (103, "postgres", "lxc", "pve-01", True, 0.04, 3.8, 4, "db"),
     (106, "grafana", "lxc", "pve-01", True, 0.02, 0.7, 2, "monitoring"),
-    (101, "homeassistant", "qemu", "pve-02", True, 0.06, 3.1, 4, "domotica"),
+    (101, "homeassistant", "qemu", "pve-02", True, 0.06, 3.1, 4, "home-automation"),
     (104, "modelarr", "lxc", "pve-02", True, 0.02, 0.6, 2, "3d;web"),
     (105, "bambuddy", "lxc", "pve-02", True, 0.01, 0.4, 1, "3d"),
     (110, "docker-host", "qemu", "pve-02", True, 0.31, 12.4, 16, "docker"),
@@ -63,7 +63,7 @@ GUESTS = [
     (210, "frigate", "qemu", "pve-garage", True, 0.22, 4.9, 6, "camera"),
     (301, "adguard", "lxc", "pve-mini", True, 0.01, 0.2, 0.5, "dns"),
     (302, "wireguard", "lxc", "pve-mini", True, 0.01, 0.1, 0.5, "net"),
-    (303, "mqtt", "lxc", "pve-mini", True, 0.01, 0.3, 1, "domotica"),
+    (303, "mqtt", "lxc", "pve-mini", True, 0.01, 0.3, 1, "home-automation"),
 ]
 INFO = {g[0]: dict(name=g[1], kind=g[2], cpu=g[5], mem=g[6], maxmem=g[7], tags=g[8]) for g in GUESTS}
 
@@ -95,14 +95,14 @@ STATE = {
             {"id": "backup-6c1f2a9e", "type": "vzdump", "schedule": "02:00", "storage": "synology-nfs", "all": 1,
              "exclude": "120,144", "mode": "snapshot", "compress": "zstd", "enabled": 1,
              "prune-backups": "keep-daily=7,keep-weekly=4,keep-monthly=3", "notes-template": "{{guestname}}",
-             "comment": "Alles, elke nacht"},
+             "comment": "Everything, every night"},
             {"id": "backup-0d7b44c1", "type": "vzdump", "schedule": "sun 03:30", "storage": "synology-nfs",
              "vmid": "101,110", "mode": "stop", "compress": "zstd", "enabled": 0,
-             "prune-backups": "keep-last=4", "comment": "Wekelijks met stop (uit)"},
+             "prune-backups": "keep-last=4", "comment": "Weekly with stop (off)"},
         ],
         "cluster-lab": [
             {"id": "backup-9a3e11f0", "type": "vzdump", "schedule": "sat 04:00", "storage": "synology-nfs", "all": 1,
-             "mode": "snapshot", "compress": "zstd", "enabled": 1, "prune-backups": "keep-last=3", "comment": "Lab, wekelijks"},
+             "mode": "snapshot", "compress": "zstd", "enabled": 1, "prune-backups": "keep-last=3", "comment": "Lab, weekly"},
         ],
         "pve-garage": [
             {"id": "backup-41be7c22", "type": "vzdump", "schedule": "01:00", "storage": "local-usb", "vmid": "210",
@@ -179,8 +179,8 @@ def _node_down(node):
 def _snaps(vmid):
     if vmid not in STATE["snaps"]:
         now = time.time()
-        STATE["snaps"][vmid] = [{"name": "na-installatie", "description": "schone basis", "snaptime": int(now - 52 * 86400)},
-                                {"name": "voor-update-okt", "description": "voor apt upgrade", "snaptime": int(now - 7 * 86400)}]
+        STATE["snaps"][vmid] = [{"name": "after-install", "description": "clean base", "snaptime": int(now - 52 * 86400)},
+                                {"name": "before-update-oct", "description": "before apt upgrade", "snaptime": int(now - 7 * 86400)}]
     return STATE["snaps"][vmid]
 
 

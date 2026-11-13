@@ -78,6 +78,7 @@
     {% endif %}
   </main>
 </div>
+{% include '_i18n.html' %}
 <script src="{{ url_for('static', filename='js/common.js') }}?v={{ version }}"></script>
 {% if kind == 'qemu' %}
 <script src="{{ url_for('static', filename='vendor/novnc.min.js') }}?v={{ version }}"></script>

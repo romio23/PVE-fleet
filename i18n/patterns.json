@@ -1,0 +1,602 @@
+[
+[
+"\\b1 fout\\b",
+"",
+"1 error"
+],
+[
+"\\b(\\d+) fouten\\b",
+"",
+"$1 errors"
+],
+[
+"(\\d+) clusters? en (\\d+) losse nodes? · (\\d+) nodes? totaal",
+"",
+"$1 clusters and $2 standalone nodes · $3 nodes in total"
+],
+[
+"(\\d+) VM · (\\d+) CT actief",
+"",
+"$1 VM · $2 CT running"
+],
+[
+"(\\d+) VM/CT actief",
+"",
+"$1 VM/CT running"
+],
+[
+"\\b1 open melding\\b",
+"",
+"1 open notification"
+],
+[
+"(\\d+) open meldingen",
+"",
+"$1 open notifications"
+],
+[
+"(\\d+) VM\\'s & containers · (\\d+) actief",
+"",
+"$1 VMs & containers · $2 running"
+],
+[
+"^Selecteer (.+)$",
+"",
+"Select $1"
+],
+[
+"^Afsluiten: (.+)$",
+"",
+"Shut down: $1"
+],
+[
+"^Starten: (.+)$",
+"",
+"Start: $1"
+],
+[
+"^Herstarten: (.+)$",
+"",
+"Restart: $1"
+],
+[
+"^Stoppen: (.+)$",
+"",
+"Stop: $1"
+],
+[
+"^van (\\d+(?:[.,]\\d+)? ?(?:KB|MB|GB|TB))$",
+"",
+"of $1"
+],
+[
+"^Menu voor (.+)$",
+"",
+"Menu for $1"
+],
+[
+"\\b1 pakketupdates?\\b",
+"",
+"1 package update"
+],
+[
+"(\\d+) pakketupdates",
+"",
+"$1 package updates"
+],
+[
+"(\\d+) security\\b",
+"",
+"$1 security"
+],
+[
+"(\\d+) opslaglocaties · (\\d+) boven 80%",
+"",
+"$1 storage locations · $2 above 80%"
+],
+[
+"(\\d+) opslaglocatie\\b",
+"",
+"$1 storage location"
+],
+[
+"^van (\\d+) nodes$",
+"",
+"of $1 nodes"
+],
+[
+"(\\d+) node heeft de nieuwe kernel al; herstart om die te gebruiken",
+"",
+"$1 node already has the new kernel; restart to use it"
+],
+[
+"(\\d+) nodes krijgen bij bijwerken een nieuwe kernel en moeten daarna herstarten",
+"",
+"$1 nodes get a new kernel when updating and must restart afterwards"
+],
+[
+"(\\d+) nodes? hebben werk\\.",
+"",
+"$1 nodes have work to do."
+],
+[
+"^sinds (\\d{1,2}:\\d{2}) · (.+)$",
+"",
+"since $1 · $2"
+],
+[
+"^geslaagd · (\\d+) mislukt$",
+"",
+"succeeded · $1 failed"
+],
+[
+"^(\\d+) mislukte back-ups \\(24 uur\\)$",
+"",
+"$1 failed backups (24 hours)"
+],
+[
+"\\bmislukte back-ups \\(24 uur\\)",
+"",
+"failed backups (24 hours)"
+],
+[
+"\\bopenstaande pakketten",
+"",
+"pending packages"
+],
+[
+"^(\\d+) met updates$",
+"",
+"$1 with updates"
+],
+[
+"gecontroleerd (\\d{1,2}:\\d{2}) · (\\d+) containers?( ·)?",
+"",
+"checked $1 · $2 containers$3"
+],
+[
+"^gecontroleerd (\\d{1,2}:\\d{2})$",
+"",
+"checked $1"
+],
+[
+"\\bBijgewerkt (\\d{1,2}:\\d{2})",
+"",
+"Updated $1"
+],
+[
+"\\bgewijzigd (\\d{1,2}:\\d{2})",
+"",
+"changed $1"
+],
+[
+"→ (\\S+) na herstart",
+"",
+"→ $1 after restart"
+],
+[
+"Er zit een nieuwe kernel bij de updates\\. Na het bijwerken moet deze node herstarten\\.",
+"",
+"There is a new kernel in the updates. After updating, this node must restart."
+],
+[
+"Nieuwe kernel (\\S+) is geïnstalleerd",
+"",
+"New kernel $1 is installed"
+],
+[
+"New kernel (\\S+) is geïnstalleerd",
+"",
+"New kernel $1 is installed"
+],
+[
+"elke dag om (\\d{1,2}:\\d{2})",
+"",
+"every day at $1"
+],
+[
+"elke zondag om (\\d{1,2}:\\d{2})",
+"",
+"every Sunday at $1"
+],
+[
+"elke zaterdag om (\\d{1,2}:\\d{2})",
+"",
+"every Saturday at $1"
+],
+[
+"elke (maandag|dinsdag|woensdag|donderdag|vrijdag) om (\\d{1,2}:\\d{2})",
+"",
+"every $1 at $2"
+],
+[
+"bewaar (\\d+) dagen, (\\d+) weken, (\\d+) maanden",
+"",
+"keep $1 days, $2 weeks, $3 months"
+],
+[
+"bewaar (\\d+) dagen",
+"",
+"keep $1 days"
+],
+[
+"bewaar laatste (\\d+)",
+"",
+"keep last $1"
+],
+[
+"volgende: morgen (\\d{1,2}:\\d{2})",
+"",
+"next: tomorrow $1"
+],
+[
+"volgende: vandaag (\\d{1,2}:\\d{2})",
+"",
+"next: today $1"
+],
+[
+"volgende: (\\d+ \\w+) (\\d{1,2}:\\d{2})",
+"",
+"next: $1 $2"
+],
+[
+"\\((\\d+) uur geleden\\)",
+"",
+"($1 hours ago)"
+],
+[
+"\\((\\d+) dagen geleden\\)",
+"",
+"($1 days ago)"
+],
+[
+"\\((\\d+) minuten geleden\\)",
+"",
+"($1 minutes ago)"
+],
+[
+"alleen op (\\S+)",
+"",
+"only on $1"
+],
+[
+"(\\d+) uur geleden",
+"",
+"$1 hours ago"
+],
+[
+"(\\d+) dagen? geleden",
+"",
+"$1 days ago"
+],
+[
+"(\\d+) min geleden",
+"",
+"$1 min ago"
+],
+[
+"^Wekelijks met stop \\(uit\\)$",
+"",
+"Weekly with stop (off)"
+],
+[
+"^Alles, elke nacht$",
+"",
+"Everything, every night"
+],
+[
+"\\bnodes? totaal",
+"",
+"nodes in total"
+],
+[
+"^Back-up mislukt: VM/CT (\\d+) op (.+)$",
+"",
+"Backup failed: VM/CT $1 on $2"
+],
+[
+"^(.+) onbereikbaar$",
+"",
+"$1 unreachable"
+],
+[
+"geen van de hosts bereikbaar \\((.+?)\\): time-out \\(demo\\)",
+"",
+"none of the hosts reachable ($1): timeout (demo)"
+],
+[
+"geen van de hosts bereikbaar",
+"",
+"none of the hosts reachable"
+],
+[
+"^Unreachable: ",
+"",
+"Unreachable: "
+],
+[
+"Console- en shelltaken \\(vncproxy, termproxy\\) tonen of verbergen",
+"",
+"Show or hide console and shell tasks (vncproxy, termproxy)"
+],
+[
+"App-sleutel actief ·",
+"",
+"App key active ·"
+],
+[
+"eigenaar/repository, bijvoorbeeld (\\S+)",
+"",
+"owner/repository, for example $1"
+],
+[
+"No screens paired yet\\. A browser on this computer itself may open the kiosk without pairing tonen\\.",
+"",
+"No screens paired yet. A browser on this computer itself may open the kiosk without pairing."
+],
+[
+"Na (\\d+) foute pogingen",
+"",
+"After $1 wrong attempts"
+],
+[
+"(\\d+) minuut blokkeren",
+"",
+"Block for $1 minute"
+],
+[
+"(\\d+) minuten blokkeren",
+"",
+"Block for $1 minutes"
+],
+[
+"en dat geheim\\.\\s+Alleen kijken, zonder acties\\? Laat dan de regel met",
+"",
+"and that secret. View only, without actions? Then leave the line with"
+],
+[
+"^(\\d+) cores toegewezen$",
+"",
+"$1 cores assigned"
+],
+[
+"^in ([\\d,.]+) (\\S+) · uit ([\\d,.]+) (\\S+)$",
+"",
+"in $1 $2 · out $3 $4"
+],
+[
+"^lezen ([\\d,.]+ \\S+) · schrijven ([\\d,.]+ \\S+)$",
+"",
+"read $1 · write $2"
+],
+[
+"^(\\d+) actief van (\\d+)$",
+"",
+"$1 running of $2"
+],
+[
+"^· (\\S+) · gedeeld$",
+"",
+"· $1 · shared"
+],
+[
+"^, (\\d+) dagen bewaard$",
+"",
+", kept $1 days"
+],
+[
+"^(\\d+) (VM/CT|VM|CT) actief$",
+"",
+"$1 $2 running"
+],
+[
+"^(\\d+) van (\\d+) nodes online · (\\d+) VM/CT actief$",
+"",
+"$1 of $2 nodes online · $3 VM/CT running"
+],
+[
+"^(\\d+) van (\\d+) VM/CT actief$",
+"",
+"$1 of $2 VM/CT running"
+],
+[
+"^(\\d+) mislukt$",
+"",
+"$1 failed"
+],
+[
+"^(.+), acties$",
+"",
+"$1, actions"
+],
+[
+"^(.+) op (.+) (\\d+)% vol$",
+"",
+"$1 on $2 $3% full"
+],
+[
+"^(.+) (\\d+)% vol$",
+"",
+"$1 $2% full"
+],
+[
+"^(\\d+) open meldingen?$",
+"",
+"$1 open notifications"
+],
+[
+"^Snapshot (.+) verwijderen$",
+"",
+"Delete snapshot $1"
+],
+[
+"^(\\d+ \\w{3} \\d{1,2}:\\d{2}) · (.+)$",
+"",
+"$1 · $2"
+],
+[
+"^Gecontroleerd (\\d{1,2}:\\d{2})$",
+"",
+"Checked $1"
+],
+[
+"^(\\d+) nodes$",
+"",
+"$1 nodes"
+],
+[
+"^(\\d+) opdrachten verstuurd$",
+"",
+"$1 commands sent"
+],
+[
+"^(\\d+) blokkade\\(s\\) opgeheven$",
+"",
+"$1 block(s) released"
+],
+[
+"laatste (\\d+) uur",
+"",
+"last $1 hours"
+],
+[
+"^all VM/CTs behalve (.+)$",
+"",
+"all VM/CTs except $1"
+],
+[
+"\\(uit\\)$",
+"",
+"(off)"
+],
+[
+"without pairing tonen\\.",
+"",
+"without pairing."
+],
+[
+"^Netwerk (\\S+)$",
+"",
+"Network $1"
+],
+[
+"^Menu for beheer$",
+"",
+"Menu for beheer"
+],
+[
+"^(VM|CT) (\\d+) (.+?) afsluiten\\?$",
+"",
+"Shut down $1 $2 $3?"
+],
+[
+"^(\\S+) afsluiten\\?$",
+"",
+"Shut down $1?"
+],
+[
+"^(VM|CT) (\\d+) (.+?) starten\\?$",
+"",
+"Start $1 $2 $3?"
+],
+[
+"^(\\S+) starten\\?$",
+"",
+"Start $1?"
+],
+[
+"^(VM|CT) (\\d+) (.+?) herstarten\\?$",
+"",
+"Restart $1 $2 $3?"
+],
+[
+"^(\\S+) herstarten\\?$",
+"",
+"Restart $1?"
+],
+[
+"^(VM|CT) (\\d+) (.+?) stoppen\\?$",
+"",
+"Stop $1 $2 $3?"
+],
+[
+"^(\\S+) stoppen\\?$",
+"",
+"Stop $1?"
+],
+[
+"^(\\S+) bijwerken$",
+"",
+"Update $1"
+],
+[
+"^Bijwerken: (.+)$",
+"",
+"Update: $1"
+],
+[
+"^van (\\S+) \\(als root\\)\\.$",
+"",
+"of $1 (as root)."
+],
+[
+"(\\d+) package updates, waarvan (\\d+) security in (.+)\\.",
+"",
+"$1 package updates, $2 of them security, in $3."
+],
+[
+"waarvan (\\d+) security",
+"",
+"$1 of them security"
+],
+[
+"^Alleen (\\S+)$",
+"",
+"Only $1"
+],
+[
+"^aantal$",
+"",
+"count"
+],
+[
+"^Back-up van (.+) naar$",
+"",
+"Backup of $1 to"
+],
+[
+"^(.+) naar$",
+"",
+"$1 to"
+],
+[
+"\\bbehalve\\b",
+"",
+"except"
+],
+[
+"^(\\S+) · (\\d+)% vol · gedeeld$",
+"",
+"$1 · $2% full · shared"
+],
+[
+"^(\\S+) · (\\d+)% vol$",
+"",
+"$1 · $2% full"
+],
+[
+"(\\d+) getoond",
+"",
+"$1 shown"
+],
+[
+"bijv\\. voor de update van vanavond",
+"",
+"e.g. for tonight's update"
+],
+[
+"^(\\d+) VM/CT in geen enkele job$",
+"",
+"$1 VM/CT in no job"
+]
+]

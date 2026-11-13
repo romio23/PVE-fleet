@@ -1,23 +1,23 @@
-# PVE Fleet — kopieer naar data/config.yml en vul je eigen servers in.
-# Zonder data/config.yml start het dashboard in demomodus.
+# PVE Fleet — copy to data/config.yml and fill in your own servers.
+# Without data/config.yml the dashboard starts in demo mode.
 
 demo: false
 
-# Seconden tussen rondes langs alle servers (minimaal 3).
+# Seconds between rounds across all servers (minimum 3).
 poll_interval: 10
 
-# Hoe vaak (seconden) per node naar beschikbare pakketupdates wordt gekeken.
+# How often (seconds) each node is checked for available package updates.
 updates_interval: 1800
 
-# Broadcastadres voor Wake-on-LAN-pakketten die het dashboard zelf verstuurt.
+# Broadcast address for Wake-on-LAN packets the dashboard sends itself.
 wol_broadcast: 255.255.255.255
 
-# Updates in containers (Updates › Updates in VM's & containers): hoe vaak kijken (uren).
+# Updates in containers (Updates › Updates in VMs & containers): how often to check (hours).
 # guest_updates_hours: 6
-# GitHub-token (zonder rechten) als je meer dan ~60 apps laat vergelijken per uur.
+# GitHub token (without permissions) if you compare more than ~60 apps per hour.
 # github_token: "ghp_..."
 
-# Drempels voor alerts (procenten).
+# Thresholds for alerts (percentages).
 thresholds:
   ram_warn: 80
   ram_crit: 90
@@ -26,23 +26,23 @@ thresholds:
   storage_crit: 90
 
 servers:
-  # Een cluster: één token is genoeg. Zet meerdere nodes onder 'hosts';
-  # valt de eerste weg, dan gebruikt het dashboard de volgende.
+  # A cluster: one token is enough. Put several nodes under 'hosts';
+  # if the first one drops out, the dashboard uses the next.
   - name: cluster-home
     hosts: [192.168.1.11, 192.168.1.12, 192.168.1.13]
     token_id: "dashboard@pve!fleet"
     token_secret: "00000000-0000-0000-0000-000000000000"
-    verify_ssl: false        # true als je een geldig certificaat hebt
-    # Wake-on-LAN: Proxmox wekt clusternodes zelf als het MAC-adres op de node is ingesteld
-    # (pvenode config set -wakeonlan <MAC>). Liever via het dashboard zelf? Zet ze hier:
+    verify_ssl: false        # true if you have a valid certificate
+    # Wake-on-LAN: Proxmox wakes cluster nodes itself if the MAC address is set on the node
+    # (pvenode config set -wakeonlan <MAC>). Prefer the dashboard itself? Put them here:
     # wol: { pve-01: "AA:BB:CC:DD:EE:01", pve-02: "AA:BB:CC:DD:EE:02" }
 
-  # Een losse node.
+  # A standalone node.
   - name: pve-garage
     host: 192.168.1.40
     token_id: "dashboard@pve!fleet"
     token_secret: "00000000-0000-0000-0000-000000000000"
     verify_ssl: false
     # port: 8006
-    # Wake-on-LAN voor deze losse node (MAC-adres van de netwerkkaart):
+    # Wake-on-LAN for this standalone node (MAC address of the network card):
     # wol_mac: "AA:BB:CC:DD:EE:FF"

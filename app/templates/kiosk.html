@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v={{ version }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/kiosk.css') }}?v={{ version }}">
 <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon-180.png') }}">
+{% include '_i18n.html' %}
 <script>window.PF_POLL_MS = {{ poll_ms }}; window.PF_KIOSK = true;</script>
 <script src="{{ url_for('static', filename='js/common.js') }}?v={{ version }}"></script>
 <script src="{{ url_for('static', filename='js/actions.js') }}?v={{ version }}"></script>
@@ -25,6 +26,7 @@
     <span class="k-sub" id="k-sub"></span>
     <div class="k-right" style="align-items:center">
       {% if demo %}<span class="badge-demo">Demo</span>{% endif %}
+      {% include '_langswitch.html' %}
       <span class="k-lock hidden" id="k-lock"></span>
       <span class="small muted" id="live"><span class="txt"></span></span>
       <span class="k-clock" id="k-clock">--:--</span>

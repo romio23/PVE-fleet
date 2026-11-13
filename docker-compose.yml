@@ -4,13 +4,13 @@ services:
     image: pve-fleet:latest
     container_name: pve-fleet
     restart: unless-stopped
-    # host-netwerk: nodig voor Wake-on-LAN naar losse nodes, en zodat een browser
-    # op de Pi zelf als 'localhost' wordt herkend. Het dashboard luistert op poort 8080 (http)
-    # en, zodra er een certificaat is (Certificaten), op 8443 (https).
+    # host network: needed for Wake-on-LAN to standalone nodes, and so that a browser
+    # on the Pi itself is recognised as 'localhost'. The dashboard listens on port 8080 (http)
+    # and, once there is a certificate (Certificates), on 8443 (https).
     network_mode: host
     volumes:
-      - ./data:/data          # hier staat config.yml (en state.json)
+      - ./data:/data          # config.yml (and state.json) live here
     environment:
       - TZ=Europe/Amsterdam
-      # - DEMO=1              # forceer demomodus met voorbeelddata
+      # - DEMO=1              # force demo mode with sample data
       # - LOG_LEVEL=DEBUG

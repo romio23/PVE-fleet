@@ -1,62 +1,64 @@
 # PVE Fleet
 
-Een dashboard voor al je Proxmox VE-servers in één scherm: clusters én losse nodes. Je ziet de health van nodes, VM's en containers, met een aparte kioskweergave voor een iPad of een klein scherm aan een Raspberry Pi.
+🇳🇱 [Nederlandse handleiding](README-NL.md)
 
-**Versie 0.8.0.** Nieuw: de nieuwste versie van een app **ophalen van GitHub** (Apps) en `update.sh` om PVE Fleet zelf bij te werken. Eerder (0.7.0): **Apps**, een nieuwe versie van je eigen apps uploaden en in de LXC-container zetten, meteen of op een tijdstip, met eerst een snapshot (hoofdstuk 14). Eerder: certificaten voor PVE Fleet (https) en de Proxmox-nodes, via Let's Encrypt of een eigen certificaat (hoofdstuk 13); schermen koppelen met een QR-code; Nederlandse taaknamen en consoletaken standaard verborgen in Recente taken; updates in containers (pakketten en app-versies, hoofdstuk 12). Eerder: root-sessie voor de console, VM's & containers in de kiosk, de pagina's *Updates* (met rolling update) en *Back-ups*, VM/CT- en node-acties, ingebouwde console, IP-adressen en opgemaakte notities.
+A dashboard for all your Proxmox VE servers on one screen: clusters *and* standalone nodes. You see the health of nodes, VMs and containers, with a separate kiosk view for an iPad or a small screen on a Raspberry Pi. The interface is available in **English and Dutch** (switch with the NL | EN buttons; by default it follows your browser language).
+
+**Version 0.9.0.** New: the whole interface and documentation in English and Dutch. Version 0.8.0: fetch the latest version of an app **from GitHub** (Apps) and `update.sh` to update PVE Fleet itself. Earlier (0.7.0): **Apps**, upload a new version of your own apps and put it in the LXC container, right away or at a set time, with a snapshot first (chapter 14). Earlier: certificates for PVE Fleet (https) and the Proxmox nodes, via Let's Encrypt or your own certificate (chapter 13); pairing screens with a QR code; updates in containers (packages and app versions, chapter 12); root session for the console, VMs & containers in the kiosk, the *Updates* (with rolling update) and *Backups* pages, VM/CT and node actions, built-in console, IP addresses and formatted notes.
 
 ## Screenshots
 
-Gemaakt in de demomodus (voorbeelddata, geen echte servers).
+Taken in demo mode (sample data, no real servers).
 
 | | |
 |---|---|
-| ![Overzicht van alle clusters](docs/screenshots/pve-fleet-overzicht.png) **Overzicht:** clusters, nodes, alerts en back-ups in één scherm | ![Nodes](docs/screenshots/pve-fleet-nodes.png) **Nodes:** alle nodes van alle servers, zoeken en sorteren |
-| ![Updates](docs/screenshots/pve-fleet-updates.png) **Updates:** openstaande updates per node en rolling update | ![Back-ups](docs/screenshots/pve-fleet-backups.png) **Back-ups:** laatste taken en mislukte back-ups |
-| ![Apps](docs/screenshots/pve-fleet-apps.png) **Apps:** een nieuwe versie uploaden of van GitHub ophalen en in een container zetten | |
+| ![Overview of all clusters](docs/screenshots/pve-fleet-overview.png) **Overview:** clusters, nodes, alerts and backups on one screen | ![Nodes](docs/screenshots/pve-fleet-nodes.png) **Nodes:** all nodes of all servers, search and sort |
+| ![Updates](docs/screenshots/pve-fleet-updates.png) **Updates:** pending updates per node and rolling update | ![Backups](docs/screenshots/pve-fleet-backups.png) **Backups:** latest tasks and failed backups |
+| ![Apps](docs/screenshots/pve-fleet-apps.png) **Apps:** upload a new version or fetch it from GitHub and put it in a container | |
 
-## Wat zit erin
+## What's inside
 
-| Pagina | Adres | Wat je ziet |
+| Page | Address | What you see |
 |---|---|---|
-| Overzicht | `/` | Kerncijfers (klikbaar), clusters met quorum, losse nodes, alerts, back-uptaken, recente taken |
-| Nodes | `/nodes` | Alle nodes van alle clusters en losse servers; zoeken, filteren (offline, met updates) en sorteren op CPU, RAM, uptime |
-| VM's & containers | `/vms` | Alle VM's en containers over al je servers; zoeken op naam/ID/tag/node, filters (actief/gestopt, VM/CT, per cluster of node), sorteren en bulkacties |
-| Opslag | `/storage` | Alle opslag, de volste bovenaan; gedeelde opslag één keer per cluster |
-| Node | `/node/<server>/<node>` | CPU/RAM/netwerk/IO van het laatste uur, VM's en containers, opslag, SMART, openstaande updates, taken |
-| VM/CT | `/guest/<server>/<node>/<qemu\|lxc>/<id>` | Grafieken, configuratie, IP-adres, snapshots, back-ups, knop voor de ingebouwde console |
-| Kiosk | `/kiosk` | Wisselen tussen **Nodes** en **VM's & containers** (filter actief/gestopt, tik voor details); grote tegels per node, alerts met "gezien"-knop, klok; node herstarten/afsluiten/wekken met pincode; geschikt voor touchscreen |
-| Updates | `/updates` | Per node openstaande updates (security apart), kernel en of een herstart nodig is; pakketlijst, bijwerken via de console, rolling update per cluster |
-| Back-ups | `/backups` | Back-upjobs (aan/uit, nu uitvoeren, maken, wijzigen, verwijderen), laatste back-up per VM/CT, VM/CT's zonder job, recente back-uptaken |
-| Apps | `/apps` | Eigen apps: zip uploaden, versie kiezen, meteen of later bijwerken in de container, met snapshot en automatisch terugzetten; geplande en eerdere updates met log |
-| Instellingen | `/settings` | Pincode aan/uit en wijzigen, kiosk-opties, schermen koppelen, wachtwoord, logboek van acties |
-| Servers | `/servers` | Verbindingsstatus per server en uitleg over API-tokens |
+| Overview | `/` | Key figures (clickable), clusters with quorum, standalone nodes, alerts, backup tasks, recent tasks |
+| Nodes | `/nodes` | All nodes of all clusters and standalone servers; search, filter (offline, with updates) and sort by CPU, RAM, uptime |
+| VMs & containers | `/vms` | All VMs and containers across your servers; search by name/ID/tag/node, filters (running/stopped, VM/CT, per cluster or node), sorting and bulk actions |
+| Storage | `/storage` | All storage, the fullest first; shared storage once per cluster |
+| Node | `/node/<server>/<node>` | CPU/RAM/network/IO of the last hour, VMs and containers, storage, SMART, pending updates, tasks |
+| VM/CT | `/guest/<server>/<node>/<qemu\|lxc>/<id>` | Graphs, configuration, IP address, snapshots, backups, button for the built-in console |
+| Kiosk | `/kiosk` | Switch between **Nodes** and **VMs & containers** (filter running/stopped, tap for details); big tiles per node, alerts with a "seen" button, clock; restart/shut down/wake a node with a PIN; suited for touchscreens |
+| Updates | `/updates` | Pending updates per node (security separately), kernel and whether a restart is needed; package list, updating via the console, rolling update per cluster |
+| Backups | `/backups` | Backup jobs (on/off, run now, create, edit, delete), latest backup per VM/CT, VM/CTs without a job, recent backup tasks |
+| Apps | `/apps` | Your own apps: upload a zip, choose a version, update in the container now or later, with a snapshot and automatic rollback; scheduled and earlier updates with log |
+| Settings | `/settings` | PIN on/off and change, kiosk options, pair screens, password, action log |
+| Servers | `/servers` | Connection status per server and explanation about API tokens |
 
-**Acties per plek**
+**Actions per place**
 
-| Waar | Acties |
+| Where | Actions |
 |---|---|
-| Node-pagina | Node herstarten, afsluiten (naam intypen ter bevestiging), Wake-on-LAN en opnieuw verbinden als hij offline is. VM's & containers selecteren en in één keer starten, afsluiten, herstarten, snapshotten, back-uppen of migreren |
-| VM/CT-pagina | Starten, afsluiten, herstarten, geforceerd stoppen, snapshot maken, terugdraaien of verwijderen, back-up nu, migreren (de pagina verhuist mee) |
-| Kiosk | Node herstarten, afsluiten, Wake-on-LAN, opnieuw verbinden, meldingen bevestigen |
-| Console | Scherm van een VM, terminal van een container, shell van een node; opent in een eigen venster (alleen beheerder) |
+| Node page | Restart or shut down the node (type its name to confirm), Wake-on-LAN and reconnect when it is offline. Select VMs & containers and start, shut down, restart, snapshot, back up or migrate them in one go |
+| VM/CT page | Start, shut down, restart, force stop, create, roll back or delete a snapshot, back up now, migrate (the page moves along) |
+| Kiosk | Restart node, shut down, Wake-on-LAN, reconnect, acknowledge notifications |
+| Console | Screen of a VM, terminal of a container, shell of a node; opens in its own window (administrator only) |
 
-Elke actie vraagt eerst om bevestiging. Rechtsonder zie je de voortgang van de Proxmox-taak, met een knop **Log** voor de uitvoer. Alles komt in het logboek onder Instellingen.
+Every action asks for confirmation first. At the bottom right you see the progress of the Proxmox task, with a **Log** button for the output. Everything is recorded in the log under Settings.
 
-Alerts verschijnen voor: een server of node die onbereikbaar of offline is, een cluster zonder quorum, RAM boven 80/90%, CPU boven 90%, opslag boven 80/90% en mislukte back-uptaken in de laatste 24 uur.
+Alerts appear for: a server or node that is unreachable or offline, a cluster without quorum, RAM above 80/90%, CPU above 90%, storage above 80/90% and failed backup tasks in the last 24 hours.
 
 ---
 
-## 1. Snel proberen (demomodus)
+## 1. Quick try (demo mode)
 
-Zonder `data/config.yml` start het dashboard met voorbeelddata. Zo kun je alles eerst bekijken:
+Without `data/config.yml` the dashboard starts with sample data, so you can look at everything first:
 
 ```bash
 docker compose up -d --build
 ```
 
-Open daarna `http://<ip-van-de-pi>:8080`.
+Then open `http://<ip-of-the-pi>:8080`.
 
-Zonder Docker kan het ook:
+Without Docker it works too:
 
 ```bash
 python3 -m venv .venv && . .venv/bin/activate
@@ -64,80 +66,80 @@ pip install -r requirements.txt
 python run.py
 ```
 
-### Eerste keer: account en pincode
+### First time: account and PIN
 
-Bij de eerste start vraagt het dashboard om een **gebruikersnaam, wachtwoord en kiosk-pincode**. Die worden (als hash) bewaard in `data/settings.json`. Wachtwoord vergeten? Verwijder dat bestand en start opnieuw; je stelt dan alles opnieuw in en koppelt je schermen opnieuw.
+On first start the dashboard asks for a **username, password and kiosk PIN**. They are stored (hashed) in `data/settings.json`. Forgot your password? Delete that file and start again; you then set everything up again and pair your screens again.
 
-## 1b. Testen op Windows
+## 1b. Testing on Windows
 
-Je kunt het dashboard ook op je Windows-pc draaien, handig om te testen voordat het naar de Pi gaat.
+You can also run the dashboard on your Windows PC, handy for testing before it goes to the Pi.
 
-1. Installeer **Python 3.9 of nieuwer** (eenmalig). Typ in PowerShell `winget install Python.Python.3.13`, of download het via python.org en vink *Add python.exe to PATH* aan.
-2. Pak de zip uit naar een gewone map, bijvoorbeeld `C:\PVE-Fleet`.
-3. Dubbelklik op **`START_WINDOWS.bat`**.
-   - De eerste keer maakt hij een eigen Python-omgeving (map `.venv`) en installeert hij de pakketten. Dat duurt een minuutje.
-   - Daarna opent je browser vanzelf `http://localhost:8080`.
-   - Stoppen: sluit het zwarte venster of druk op Ctrl+C.
-4. Eigen servers testen: kopieer `config.example.yml` naar `data\config.yml`, vul je servers en tokens in en start opnieuw.
+1. Install **Python 3.9 or newer** (once). In PowerShell type `winget install Python.Python.3.13`, or download it from python.org and tick *Add python.exe to PATH*.
+2. Extract the zip to a normal folder, for example `C:\PVE-Fleet`.
+3. Double-click **`START_WINDOWS.bat`**.
+   - The first time it creates its own Python environment (folder `.venv`) and installs the packages. That takes a minute.
+   - Then your browser opens `http://localhost:8080` by itself.
+   - To stop: close the black window or press Ctrl+C.
+4. To test your own servers: copy `config.example.yml` to `data\config.yml`, fill in your servers and tokens and start again.
 
-**`START_DEMO_WINDOWS.bat`** start altijd met voorbeelddata, ook als er al een `data\config.yml` is.
+**`START_DEMO_WINDOWS.bat`** always starts with sample data, even if a `data\config.yml` exists.
 
-De eerste keer vraagt Windows Firewall of het programma mag communiceren. Kies **Privé netwerken** als je de kiosk ook op je iPad wilt proberen (`http://<ip-van-je-pc>:8080/kiosk`). Wil je hem alleen op de pc zelf gebruiken, start dan in de opdrachtprompt `START_WINDOWS.bat --host 127.0.0.1`.
+The first time, Windows Firewall asks whether the program may communicate. Choose **Private networks** if you also want to try the kiosk on your iPad (`http://<ip-of-your-pc>:8080/kiosk`). If you only want to use it on the PC itself, start `START_WINDOWS.bat --host 127.0.0.1` in the command prompt.
 
-Andere opties: `--port 9000` (andere poort) en `--no-browser` (browser niet openen).
+Other options: `--port 9000` (different port) and `--no-browser` (do not open the browser).
 
-Heb je Docker Desktop, dan werkt `docker compose up -d --build` uit hoofdstuk 1 ook op Windows.
+If you have Docker Desktop, `docker compose up -d --build` from chapter 1 also works on Windows.
 
-## 2. Raspberry Pi voorbereiden
+## 2. Preparing a Raspberry Pi
 
-Een Pi 4 met 2 GB is genoeg voor het dashboard. Draai je ook het scherm op de Pi zelf (Chromium), neem dan 4 GB of meer.
+A Pi 4 with 2 GB is enough for the dashboard. If you also run the screen on the Pi itself (Chromium), take 4 GB or more.
 
-1. Zet **Raspberry Pi OS (64-bit)** op een SSD of SD-kaart met Raspberry Pi Imager. Kies *Lite* als de iPad het scherm wordt, of de desktopversie als er een scherm aan de Pi komt. Zet in de Imager meteen SSH, je gebruikersnaam en je wifi aan.
-2. Geef de Pi een vast IP-adres, bijvoorbeeld met een DHCP-reservering in je router.
-3. Installeer Docker:
+1. Put **Raspberry Pi OS (64-bit)** on an SSD or SD card with Raspberry Pi Imager. Choose *Lite* if an iPad is the screen, or the desktop version if a screen is attached to the Pi. In the Imager, enable SSH, your username and your wifi right away.
+2. Give the Pi a fixed IP address, for example with a DHCP reservation in your router.
+3. Install Docker:
    ```bash
    curl -fsSL https://get.docker.com | sh
-   sudo usermod -aG docker $USER   # daarna opnieuw inloggen
+   sudo usermod -aG docker $USER   # then log in again
    ```
 
-> Tip: een SSD via USB 3 gaat veel langer mee dan een SD-kaart.
+> Tip: an SSD over USB 3 lasts much longer than an SD card.
 
-## 3. Installeren
+## 3. Installing
 
-Kopieer deze map naar de Pi (bijv. naar `~/pve-fleet`), dan:
+Copy this folder to the Pi (e.g. to `~/pve-fleet`), then:
 
 ```bash
 cd ~/pve-fleet
 mkdir -p data
 cp config.example.yml data/config.yml
-nano data/config.yml          # servers en tokens invullen, zie hieronder
+nano data/config.yml          # fill in servers and tokens, see below
 docker compose up -d --build
 ```
 
-Controleren of alles draait: `docker compose logs -f` en `http://<ip-van-de-pi>:8080/servers`.
+Check that everything is running: `docker compose logs -f` and `http://<ip-of-the-pi>:8080/servers`.
 
-Bijwerken naar een nieuwe versie, in de map van PVE Fleet op de Pi:
+Updating to a new version, in the PVE Fleet folder on the Pi:
 
 ```bash
-sh update.sh            # haalt de nieuwste release (of tag) van GitHub op en bouwt de container opnieuw
-sh update.sh --check    # alleen kijken: wat staat erop en wat is de nieuwste versie
-sh update.sh v0.8.0     # een bepaalde release, tag of tak (bijvoorbeeld main)
-sh update.sh nieuw.zip  # een zip van je eigen schijf
+sh update.sh            # fetches the latest release (or tag) from GitHub and rebuilds the container
+sh update.sh --check    # only look: what is installed and what is the latest version
+sh update.sh v0.9.0     # a specific release, tag or branch (for example main)
+sh update.sh new.zip    # a zip from your own disk
 ```
 
-Het script maakt eerst een back-up van `data/` (naast de map, de laatste drie blijven bewaard), laat `data/`, `.env` en je `docker-compose.yml` staan (een nieuwe compose-file komt ernaast als `docker-compose.yml.new`) en draait `docker compose up -d --build`. Een andere repository: `REPO=eigenaar/naam sh update.sh`; een privé-repository: `GITHUB_TOKEN=... sh update.sh`. Staat er nog geen `update.sh` in je map (versie 0.7.0 of ouder), dan eenmalig de bestanden van de nieuwe versie over de oude zetten en `docker compose up -d --build` draaien; daarna werkt `update.sh`. Er moet op GitHub een **release of tag** zijn: een gewone commit op `main` telt niet.
+The script first makes a backup of `data/` (next to the folder, the last three are kept), leaves `data/`, `.env` and your `docker-compose.yml` alone (a new compose file is placed next to it as `docker-compose.yml.new`) and runs `docker compose up -d --build`. A different repository: `REPO=owner/name sh update.sh`; a private repository: `GITHUB_TOKEN=... sh update.sh`. If there is no `update.sh` in your folder yet (version 0.7.0 or older), copy the files of the new version over the old ones once and run `docker compose up -d --build`; after that `update.sh` works. There must be a **release or tag** on GitHub: a plain commit on `main` does not count.
 
-## 4. API-token maken in Proxmox
+## 4. Creating an API token in Proxmox
 
-Doe dit **één keer per cluster** en **één keer per losse node**.
+Do this **once per cluster** and **once per standalone node**.
 
-Via de webinterface:
+Via the web interface:
 
-1. *Datacenter › Permissions › Users › Add*: gebruiker `dashboard`, realm *Proxmox VE authentication server* (`dashboard@pve`).
-2. *Datacenter › Permissions › Add › User Permission*: pad `/`, gebruiker `dashboard@pve`, rol **PVEAuditor**.
-3. *Datacenter › Permissions › API Tokens › Add*: gebruiker `dashboard@pve`, token-ID `fleet`, **Privilege Separation uit**. Kopieer het geheim; je ziet het maar één keer.
+1. *Datacenter › Permissions › Users › Add*: user `dashboard`, realm *Proxmox VE authentication server* (`dashboard@pve`).
+2. *Datacenter › Permissions › Add › User Permission*: path `/`, user `dashboard@pve`, role **PVEAuditor**.
+3. *Datacenter › Permissions › API Tokens › Add*: user `dashboard@pve`, token ID `fleet`, **Privilege Separation off**. Copy the secret; you only see it once.
 
-Of in de shell van een node (aanbevolen, inclusief de rechten voor acties):
+Or in a node's shell (recommended, including the permissions for actions):
 
 ```bash
 pveum user add dashboard@pve --comment "PVE Fleet"
@@ -146,63 +148,63 @@ pveum acl modify / --users dashboard@pve --roles PVEAuditor,FleetOperator
 pveum user token add dashboard@pve fleet --privsep 0
 ```
 
-Heb je in stap 1 al een token gemaakt? Dan zijn alleen de regels `pveum role add` en `pveum acl modify` nodig; het token zelf blijft hetzelfde.
+Did you already create a token in step 1? Then only the `pveum role add` and `pveum acl modify` lines are needed; the token itself stays the same.
 
-### Rechten voor acties
+### Permissions for actions
 
-| Actie | Recht in Proxmox |
+| Action | Permission in Proxmox |
 |---|---|
-| Alles bekijken | `PVEAuditor` (rol) |
-| VM/CT starten, afsluiten, herstarten, stoppen | `VM.PowerMgmt` |
-| Snapshot maken of verwijderen | `VM.Snapshot` |
-| Snapshot terugdraaien | `VM.Snapshot.Rollback` |
-| Back-up nu | `VM.Backup` + `Datastore.AllocateSpace` op de back-upopslag |
-| Migreren | `VM.Migrate` (+ `Datastore.AllocateSpace` bij lokale schijven) |
-| Node herstarten, afsluiten, Wake-on-LAN via het cluster | `Sys.PowerMgmt` |
-| Console van een VM of container | `VM.Console` |
-| Shell van een node | `Sys.Console` |
-| IP-adres van een VM (via de QEMU guest agent) | `VM.GuestAgent.Audit` (Proxmox 9) of `VM.Monitor` (Proxmox 8) |
-| Back-upjob nu uitvoeren | `VM.Backup` + `Datastore.AllocateSpace` (zit al in FleetOperator) |
-| *Optioneel:* lijst met openstaande updates lezen, back-upjobs maken/wijzigen/verwijderen/aan-uit | `Sys.Modify` op `/` (zie hoofdstuk 11) |
+| View everything | `PVEAuditor` (role) |
+| Start, shut down, restart, stop a VM/CT | `VM.PowerMgmt` |
+| Create or delete a snapshot | `VM.Snapshot` |
+| Roll back a snapshot | `VM.Snapshot.Rollback` |
+| Back up now | `VM.Backup` + `Datastore.AllocateSpace` on the backup storage |
+| Migrate | `VM.Migrate` (+ `Datastore.AllocateSpace` for local disks) |
+| Restart, shut down a node, Wake-on-LAN via the cluster | `Sys.PowerMgmt` |
+| Console of a VM or container | `VM.Console` |
+| Shell of a node | `Sys.Console` |
+| IP address of a VM (via the QEMU guest agent) | `VM.GuestAgent.Audit` (Proxmox 9) or `VM.Monitor` (Proxmox 8) |
+| Run a backup job now | `VM.Backup` + `Datastore.AllocateSpace` (already in FleetOperator) |
+| *Optional:* read the list of pending updates, create/modify/delete/toggle backup jobs | `Sys.Modify` on `/` (see chapter 11) |
 
-Wil je alleen kijken, geef dan alleen PVEAuditor: elke actie meldt dan netjes welk recht ontbreekt.
+If you only want to look, give only PVEAuditor: every action then neatly reports which permission is missing.
 
-**Rechten controleren:** bij *Servers & verbinding › Bewerken › Verbinding testen* leest het dashboard de rechten van het token uit. Per onderdeel zie je ✓ of ✗. Ontbreekt er iets, dan staan er `pveum`-commando's klaar die precies bij jouw token passen, met een kopieerknop.
+**Checking permissions:** under *Servers & connection › Edit › Test connection* the dashboard reads the token's permissions. Per component you see ✓ or ✗. If something is missing, ready-made `pveum` commands are shown that fit your token exactly, with a copy button.
 
-**Privilege Separation:** maak je het token in de webinterface, dan staat *Privilege Separation* standaard aan. Het token heeft dan zijn eigen rechten nodig, naast die van de gebruiker:
+**Privilege Separation:** if you create the token in the web interface, *Privilege Separation* is on by default. The token then needs its own permissions, besides those of the user:
 
 ```bash
 pveum acl modify / --tokens 'dashboard@pve!fleet' --roles PVEAuditor,FleetOperator
 ```
 
-De enkele aanhalingstekens zijn nodig vanwege het uitroepteken.
+The single quotes are needed because of the exclamation mark.
 
 ### Wake-on-LAN
 
-- **Clusternode:** het dashboard vraagt een andere node in het cluster om hem te wekken. Proxmox moet daarvoor het MAC-adres kennen: `pvenode config set -wakeonlan AA:BB:CC:DD:EE:FF` (op de node die gewekt moet worden, terwijl hij nog aan staat).
-- **Losse node:** het dashboard stuurt zelf het wekpakket. Zet het MAC-adres in `config.yml` met `wol_mac:` (zie het voorbeeld). Op de Pi werkt dat dankzij `network_mode: host` in `docker-compose.yml`; op Windows werkt het direct.
-- Zet Wake-on-LAN ook aan in het BIOS/UEFI van de server.
+- **Cluster node:** the dashboard asks another node in the cluster to wake it. Proxmox must know the MAC address for that: `pvenode config set -wakeonlan AA:BB:CC:DD:EE:FF` (on the node to be woken, while it is still on).
+- **Standalone node:** the dashboard sends the wake packet itself. Put the MAC address in `config.yml` with `wol_mac:` (see the example). On the Pi this works thanks to `network_mode: host` in `docker-compose.yml`; on Windows it works directly.
+- Also enable Wake-on-LAN in the BIOS/UEFI of the server.
 
-### Server toevoegen in het dashboard (aanbevolen)
+### Adding a server in the dashboard (recommended)
 
-Ga naar **Servers & verbinding › + Server toevoegen**, vul de IP-adressen, de token-ID en het token-geheim in en klik op **Verbinding testen**. Het dashboard:
-- herkent zelf of het een cluster of een losse node is, en vult de naam in;
-- laat per IP-adres zien of het bereikbaar is;
-- biedt aan om de IP's van alle clusternodes over te nemen;
-- legt uit wat er mis is als het niet lukt.
+Go to **Servers & connection › + Add server**, enter the IP addresses, the token ID and the token secret and click **Test connection**. The dashboard:
+- detects by itself whether it is a cluster or a standalone node, and fills in the name;
+- shows per IP address whether it is reachable;
+- offers to adopt the IPs of all cluster nodes;
+- explains what is wrong if it does not work.
 
-Met **Toevoegen** of **Opslaan** schrijft het dashboard `data/config.yml` en gebruikt het de nieuwe instellingen meteen; herstarten is niet nodig. De vorige versie blijft bewaard als `config.yml.bak`. Opmerkingen die je zelf in het bestand had gezet, verdwijnen bij opslaan. Staat de demomodus nog aan, dan gaat die bij je eerste server vanzelf uit.
+With **Add** or **Save** the dashboard writes `data/config.yml` and uses the new settings right away; no restart is needed. The previous version is kept as `config.yml.bak`. Comments you put in the file yourself disappear when saving. If demo mode is still on, it turns off by itself when you add your first server.
 
-### Of: zelf config.yml bewerken
+### Or: edit config.yml yourself
 
 In `data/config.yml`:
 
 ```yaml
 servers:
   - name: cluster-home
-    hosts: [192.168.1.11, 192.168.1.12, 192.168.1.13]   # failover binnen het cluster
+    hosts: [192.168.1.11, 192.168.1.12, 192.168.1.13]   # failover within the cluster
     token_id: "dashboard@pve!fleet"
-    token_secret: "het-geheim-uit-stap-3"
+    token_secret: "the-secret-from-step-3"
     verify_ssl: false
   - name: pve-garage
     host: 192.168.1.40
@@ -210,186 +212,186 @@ servers:
     token_secret: "..."
 ```
 
-Herstart daarna met `docker compose restart`.
+Then restart with `docker compose restart`.
 
-Een paar opmerkingen:
-- **PVEAuditor** mag alles lezen en niets wijzigen; de rol **FleetOperator** hierboven voegt precies de rechten voor de acties toe.
-- Afhankelijk van je Proxmox-versie heeft het lezen van de **lijst met updates** meer rechten nodig (`Sys.Modify`). Zonder dat recht toont het dashboard bij updates "geen rechten"; de rest werkt gewoon.
-- Proxmox gebruikt standaard een zelfondertekend certificaat, daarom `verify_ssl: false`. Heb je een geldig certificaat, zet het dan op `true`.
-- Zet `data/config.yml` op alleen-lezen voor jezelf: `chmod 600 data/config.yml`.
+A few remarks:
+- **PVEAuditor** may read everything and change nothing; the **FleetOperator** role above adds exactly the permissions for the actions.
+- Depending on your Proxmox version, reading the **list of updates** needs more permissions (`Sys.Modify`). Without that permission the dashboard shows "no permission" for updates; the rest works fine.
+- Proxmox uses a self-signed certificate by default, hence `verify_ssl: false`. If you have a valid certificate, set it to `true`.
+- Make `data/config.yml` readable only for yourself: `chmod 600 data/config.yml`.
 
-## 5. Kiosk op een iPad
+## 5. Kiosk on an iPad
 
-1. Maak in het dashboard op je pc een koppelcode via **Instellingen › Gekoppelde schermen › Scherm koppelen**. Je ziet een **QR-code** en een cijfercode.
-   - **QR-code:** scan hem met de camera van de iPad en tik op de melding. Safari opent de kiosk en het scherm is meteen gekoppeld.
-   - **Cijfercode:** open `http://<ip-van-de-pi>:8080/kiosk` in Safari en tik de 6 cijfers in.
+1. In the dashboard on your PC, create a pairing code via **Settings › Paired screens › Pair screen**. You see a **QR code** and a digit code.
+   - **QR code:** scan it with the iPad's camera and tap the notification. Safari opens the kiosk and the screen is paired right away.
+   - **Digit code:** open `http://<ip-of-the-pi>:8080/kiosk` in Safari and enter the 6 digits.
 
-   Beide zijn 10 minuten geldig en werken één keer. De iPad blijft daarna gekoppeld; ontkoppelen doe je ook in Instellingen. Open je het dashboard op de Pi zelf via `localhost`, dan zet PVE Fleet het netwerkadres van de Pi in de QR-code.
-2. Deel-knop › **Zet op beginscherm**. Het dashboard opent dan schermvullend.
-3. Instellingen › Scherm en helderheid › Automatisch vergrendelen: **Nooit**.
-4. Instellingen › Toegankelijkheid › **Begeleide toegang** aan. Open de app en klik drie keer op de zijknop of thuisknop om de iPad op dit scherm vast te zetten.
+   Both are valid for 10 minutes and work once. The iPad stays paired afterwards; you unpair it in Settings as well. If you open the dashboard on the Pi itself via `localhost`, PVE Fleet puts the Pi's network address in the QR code.
+2. Share button › **Add to Home Screen**. The dashboard then opens full screen.
+3. Settings › Display & Brightness › Auto-Lock: **Never**.
+4. Settings › Accessibility › turn on **Guided Access**. Open the app and triple-click the side button or home button to lock the iPad to this screen.
 
-Werkt goed vanaf iPadOS 15 (iPad Air 2 / mini 4 en nieuwer). Laat de iPad liefst niet jarenlang op 100% aan de lader hangen; een slimme stekker die tussen ongeveer 20% en 80% laadt, spaart de accu.
+Works well from iPadOS 15 (iPad Air 2 / mini 4 and newer). Preferably do not leave the iPad on the charger at 100% for years; a smart plug that charges between roughly 20% and 80% spares the battery.
 
-## 6. Kiosk op een scherm aan de Pi
+## 6. Kiosk on a screen attached to the Pi
 
-Gebruik hiervoor Raspberry Pi OS **met desktop** en stel via `sudo raspi-config` › *System Options* › *Boot / Auto Login* in dat de Pi automatisch inlogt op de desktop.
+Use Raspberry Pi OS **with desktop** and set via `sudo raspi-config` › *System Options* › *Boot / Auto Login* that the Pi logs in to the desktop automatically.
 
-Laat Chromium bij het opstarten de kiosk openen. Op recente versies van Raspberry Pi OS (desktop *labwc*):
+Have Chromium open the kiosk at startup. On recent versions of Raspberry Pi OS (desktop *labwc*):
 
 ```bash
 mkdir -p ~/.config/labwc
 echo 'chromium --kiosk --noerrdialogs --disable-infobars --incognito http://localhost:8080/kiosk &' >> ~/.config/labwc/autostart
 ```
 
-Een browser op de Pi zelf (`localhost`) hoeft niet gekoppeld te worden, zolang **Kiosk op deze computer zonder koppelen** aan staat (Instellingen). Heet het programma bij jou `chromium-browser`, gebruik dan die naam. Gebruikt je Pi nog een andere desktop (zoals *wayfire*), dan staat het autostart-bestand ergens anders; zoek dan op "autostart" voor jouw versie van Raspberry Pi OS.
+A browser on the Pi itself (`localhost`) does not need to be paired, as long as **Kiosk on this computer without pairing** is on (Settings). If the program is called `chromium-browser` on your system, use that name. If your Pi uses another desktop (such as *wayfire*), the autostart file is somewhere else; search for "autostart" for your version of Raspberry Pi OS.
 
-## 7. Kiosk-pincode
+## 7. Kiosk PIN
 
-- Standaard vraagt de kiosk de pincode bij **node herstarten** en **node afsluiten**. Onder *Instellingen › Kiosk & schermen* kies je ook Wake-on-LAN en meldingen bevestigen, en hoe lang de kiosk daarna ontgrendeld blijft (0 s, 30 s, 2 of 5 min).
-- Na 5 foute pogingen is de kiosk 1 of 5 minuten geblokkeerd, of tot je de blokkade in Instellingen opheft. Je krijgt dan ook een melding in het dashboard.
-- Zet je de pincode uit, dan kan iedereen die het scherm aanraakt de nodes herstarten. Voor een scherm op een openbare plek is **Alleen bekijken** veiliger.
-- In het dashboard zelf ben je ingelogd met je wachtwoord; daar is geen pincode nodig.
+- By default the kiosk asks for the PIN on **restart node** and **shut down node**. Under *Settings › Kiosk & screens* you can also choose Wake-on-LAN and acknowledging notifications, and how long the kiosk stays unlocked afterwards (0 s, 30 s, 2 or 5 min).
+- After 5 wrong attempts the kiosk is blocked for 1 or 5 minutes, or until you release the block in Settings. You then also get a notification in the dashboard.
+- If you turn the PIN off, anyone who touches the screen can restart the nodes. For a screen in a public place, **View only** is safer.
+- In the dashboard itself you are logged in with your password; no PIN is needed there.
 
-## 8. Veiligheid
+## 8. Security
 
-- Het dashboard kan nu je servers herstarten en uitzetten. Zet het daarom **nooit** open naar internet. Gebruik je het buitenshuis, ga dan via een VPN (bijv. WireGuard of Tailscale).
-- Inloggen: na 5 foute pogingen per IP-adres 1 minuut pauze. "Ingelogd blijven" duurt 30 dagen; na een wachtwoordwijziging worden andere sessies uitgelogd.
-- Het dashboard draait over gewoon http in je eigen netwerk. Wil je https, zet er dan een reverse proxy voor (bijv. Caddy of Nginx Proxy Manager).
-- `data/settings.json` bevat de geheime sleutel voor sessies en de gehashte wachtwoorden; `data/config.yml` de API-tokens. Houd de map `data` privé (`chmod 700 data`).
+- The dashboard can restart and power off your servers. Therefore **never** expose it to the internet. If you use it away from home, go through a VPN (e.g. WireGuard or Tailscale).
+- Logging in: after 5 wrong attempts per IP address, a 1-minute pause. "Stay logged in" lasts 30 days; after a password change other sessions are logged out.
+- The dashboard runs over plain http in your own network. If you want https, see chapter 13 (Let's Encrypt or your own certificate) or put a reverse proxy in front (e.g. Caddy or Nginx Proxy Manager).
+- `data/settings.json` contains the secret key for sessions and the hashed passwords; `data/config.yml` the API tokens. Keep the `data` folder private (`chmod 700 data`).
 
-## IP-adressen
+## IP addresses
 
-Bij *Nodes*, *VM's & containers* en op de node-pagina staat een kolom **IP-adres**. Je kunt erop sorteren en zoeken. Hebben ze meer adressen, dan zie je `+1` en staan de rest in de tooltip.
+In *Nodes*, *VMs & containers* and on the node page there is an **IP address** column. You can sort and search on it. If there are more addresses you see `+1` and the rest are in the tooltip.
 
-- **Nodes:** het adres uit het cluster (bij een losse node het adres waarmee PVE Fleet verbindt).
-- **Containers:** het adres dat de container nu echt heeft. Staat hij uit, dan het vaste adres uit de configuratie (als dat er is).
-- **VM's:** via de QEMU guest agent. Daarvoor moet in Proxmox bij de VM *Opties › QEMU Guest Agent* aan staan, moet `qemu-guest-agent` in de VM draaien, en moet het token `VM.GuestAgent.Audit` hebben (Proxmox 8: `VM.Monitor`). Zonder agent toont PVE Fleet het cloud-init-adres als dat er is, anders een streepje.
-- PVE Fleet haalt de adressen op de achtergrond op, elke 2 minuten voor draaiende en elke 15 minuten voor gestopte VM's & containers. Direct na het starten zie je dus even streepjes.
+- **Nodes:** the address from the cluster (for a standalone node the address PVE Fleet connects with).
+- **Containers:** the address the container really has now. If it is off, the fixed address from the configuration (if there is one).
+- **VMs:** via the QEMU guest agent. For that, *Options › QEMU Guest Agent* must be on in Proxmox for the VM, `qemu-guest-agent` must be running in the VM, and the token needs `VM.GuestAgent.Audit` (Proxmox 8: `VM.Monitor`). Without the agent PVE Fleet shows the cloud-init address if there is one, otherwise a dash.
+- PVE Fleet fetches the addresses in the background, every 2 minutes for running and every 15 minutes for stopped VMs & containers. Right after starting you will therefore see dashes for a moment.
 
-**Proxmox 8:** gebruik in het `pveum role`-commando `VM.Monitor` in plaats van `VM.GuestAgent.Audit`. *Verbinding testen* geeft automatisch het juiste commando voor jouw versie.
+**Proxmox 8:** in the `pveum role` command use `VM.Monitor` instead of `VM.GuestAgent.Audit`. *Test connection* automatically gives the right command for your version.
 
-## 9. Ingebouwde console
+## 9. Built-in console
 
-Op de pagina van een VM/CT staat de knop **Console**, op de pagina van een node de knop **Shell**. De console opent in een eigen venster van PVE Fleet. Je hoeft niet apart bij Proxmox in te loggen.
+On a VM/CT page there is a **Console** button, on a node page a **Shell** button. The console opens in its own PVE Fleet window. You do not need to log in to Proxmox separately.
 
-**Zo werkt het:** PVE Fleet vraagt met het API-token een console aan bij Proxmox en geeft die door aan je browser. Je browser praat dus alleen met PVE Fleet, nooit rechtstreeks met Proxmox.
+**How it works:** PVE Fleet uses the API token to request a console from Proxmox and passes it on to your browser. Your browser therefore only talks to PVE Fleet, never directly to Proxmox.
 
-| Wat | Je ziet | Knoppen |
+| What | You see | Buttons |
 |---|---|---|
-| VM | Het scherm van de VM (noVNC), zoals in Proxmox | Ctrl-Alt-Del, Passend maken, Volledig scherm |
-| Container | De terminal van de container (xterm.js) | Plakken, letters groter/kleiner, Volledig scherm |
-| Node | De shell van de node | idem |
+| VM | The VM's screen (noVNC), as in Proxmox | Ctrl-Alt-Del, Fit to window, Full screen |
+| Container | The container's terminal (xterm.js) | Paste, larger/smaller text, Full screen |
+| Node | The node's shell | same |
 
-Goed om te weten:
-- **Alleen de beheerder** kan de console openen, niet de kiosk. Elke geopende console komt in het logboek.
-- **Rechten:** het token heeft `VM.Console` (VM/CT) en `Sys.Console` (node-shell) nodig. Ze zitten in de FleetOperator-rol uit hoofdstuk 4. Had je die rol al, werk hem dan bij met `pveum role modify FleetOperator --privs "…"` (het commando staat klaar bij *Verbinding testen*).
-- **Inlogprompt:** in een container zie je de inlogprompt van de container zelf. De node-shell vraagt om een Linux-login, omdat het token geen root@pam is, tenzij je een **root-sessie** gebruikt (hieronder).
-- **Root-sessie:** opent de eerste node-shell, dan vraagt PVE Fleet één keer het wachtwoord van `root@pam` (en een 2FA-code als je die gebruikt). PVE Fleet vraagt daarmee een ticket aan bij Proxmox, net als de webinterface, en vergeet het wachtwoord meteen; het wordt nergens opgeslagen. Daarna openen alle shells van dat cluster zonder inlogprompt, en bij **Bijwerken** wordt het upgrade-commando meteen ingevoerd. Het ticket is 2 uur geldig en wordt verlengd zolang je de console gebruikt. Bovenin de console zie je *root-sessie* met de knop **Beëindigen**; uitloggen bij PVE Fleet of PVE Fleet herstarten beëindigt alle root-sessies. Na 5 foute wachtwoorden volgt een minuut pauze. Wil je dit niet, kies dan **Zonder root (Linux-login)**. Let op: zolang de sessie loopt, kan iedereen die als beheerder in PVE Fleet is ingelogd een root-shell openen.
-- De VM moet draaien. Een gestopte VM/CT heeft geen console.
-- Plakken: in een terminal met Ctrl+Shift+V of de knop **Plakken**. In een VM-scherm werkt plakken niet (net als in Proxmox zelf).
-- In de demomodus is er een nagebootste shell voor containers en nodes; het VM-scherm werkt daar niet.
-- Op Windows draait PVE Fleet nu met de server van Werkzeug (in plaats van waitress), omdat die websockets ondersteunt. In Docker draait gunicorn.
+Good to know:
+- **Only the administrator** can open the console, not the kiosk. Every opened console is recorded in the log.
+- **Permissions:** the token needs `VM.Console` (VM/CT) and `Sys.Console` (node shell). They are in the FleetOperator role from chapter 4. If you already had that role, update it with `pveum role modify FleetOperator --privs "…"` (the command is ready under *Test connection*).
+- **Login prompt:** in a container you see the container's own login prompt. The node shell asks for a Linux login, because the token is not root@pam, unless you use a **root session** (below).
+- **Root session:** when you open the first node shell, PVE Fleet asks once for the password of `root@pam` (and a 2FA code if you use one). PVE Fleet uses it to request a ticket from Proxmox, just like the web interface, and forgets the password immediately; it is stored nowhere. After that all shells of that cluster open without a login prompt, and with **Update** the upgrade command is entered right away. The ticket is valid for 2 hours and is extended as long as you use the console. At the top of the console you see *root session* with an **End** button; logging out of PVE Fleet or restarting PVE Fleet ends all root sessions. After 5 wrong passwords there is a one-minute pause. If you do not want this, choose **Without root (Linux login)**. Note: as long as the session is running, anyone logged in to PVE Fleet as administrator can open a root shell.
+- The VM must be running. A stopped VM/CT has no console.
+- Pasting: in a terminal with Ctrl+Shift+V or the **Paste** button. Pasting does not work in a VM screen (just like in Proxmox itself).
+- In demo mode there is a simulated shell for containers and nodes; the VM screen does not work there.
+- On Windows, PVE Fleet runs with the Werkzeug server (instead of waitress), because it supports websockets. In Docker, gunicorn runs.
 
-## 10. Updates en rolling update
+## 10. Updates and rolling update
 
-**Updates** (`/updates`) toont per node hoeveel pakketupdates er klaarstaan (security apart), welke kernel draait en of er een nieuwere kernel is geïnstalleerd. Dan staat er **Herstart nodig**.
+**Updates** (`/updates`) shows per node how many package updates are pending (security separately), which kernel is running and whether a newer kernel has been installed. Then it says **Restart needed**.
 
-De lijst met updates mag PVE Fleet alleen lezen als het token `Sys.Modify` heeft (een eis van Proxmox; zie hoofdstuk 11). Zonder dat recht vergelijkt PVE Fleet de nodes in een cluster: loopt een node achter op de nieuwste (PVE-versie of kernel), dan staat er **Loopt achter**, met de versies erbij.
+PVE Fleet may only read the list of updates if the token has `Sys.Modify` (a Proxmox requirement; see chapter 11). Without that permission PVE Fleet compares the nodes in a cluster: if a node is behind the newest one (PVE version or kernel), it says **Behind**, with the versions.
 
-**Bijwerken** werkt via de ingebouwde console, net als de knop *Upgrade* in Proxmox: Proxmox laat alleen `root` pakketten installeren, en een API-token is geen root. Zo gaat het:
-1. Klik op **Bijwerken**. Er opent een console van de node.
-2. Log in als `root` met het wachtwoord van de node.
-3. Klik op **Upgrade-commando invoeren**. PVE Fleet typt `apt update; apt dist-upgrade` (met een `;`, zodat een fout bij één repository het bijwerken niet tegenhoudt).
-4. Lees wat er verandert en bevestig met `Y`.
-5. Sluit het venster. PVE Fleet kijkt dan meteen opnieuw.
+**Updating** works via the built-in console, just like the *Upgrade* button in Proxmox: Proxmox only lets `root` install packages, and an API token is not root. This is how it goes:
+1. Click **Update**. A console of the node opens.
+2. Log in as `root` with the node's password.
+3. Click **Enter upgrade command**. PVE Fleet types `apt update; apt dist-upgrade` (with a `;`, so an error in one repository does not stop the update).
+4. Read what will change and confirm with `Y`.
+5. Close the window. PVE Fleet then checks again right away.
 
-VM's & containers blijven tijdens het bijwerken draaien. Alleen een nieuwe kernel vraagt een herstart.
+VMs & containers keep running during the update. Only a new kernel requires a restart.
 
-**Rolling update** (bij een cluster): PVE Fleet helpt je node voor node:
-1. **Verplaatsen:** de draaiende VM's & containers gaan één voor één naar een andere node (VM's live, lokale schijven worden meegekopieerd; containers worden kort herstart). Je kiest één doel-node of *Verdelen* (steeds naar de node met het meeste vrije RAM). Of je slaat deze stap over.
-2. **Bijwerken** via de console, zoals hierboven.
-3. **Herstarten**, alleen als er een nieuwe kernel is. De pagina wacht tot de node terug is.
-4. **Terugzetten:** alles wat verplaatst is, gaat terug. Of je laat ze staan.
+**Rolling update** (for a cluster): PVE Fleet helps you node by node:
+1. **Move:** the running VMs & containers move one by one to another node (VMs live, local disks are copied along; containers are restarted briefly). You choose one target node or *Distribute* (each time to the node with the most free RAM). Or you skip this step.
+2. **Update** via the console, as above.
+3. **Restart**, only if there is a new kernel. The page waits until the node is back.
+4. **Restore:** everything that was moved goes back. Or you leave them where they are.
 
-Wat er verplaatst is, bewaart PVE Fleet in `data/rolling.json`; je kunt de pagina dus tussendoor sluiten. Je kunt een stap ook in Proxmox zelf doen; de pagina ziet dat vanzelf.
+PVE Fleet stores what was moved in `data/rolling.json`; you can therefore close the page in between. You can also do a step in Proxmox itself; the page notices that automatically.
 
-Let op bij een **cluster met 2 nodes**: zodra er één herstart, verliest het cluster quorum (tenzij je een QDevice hebt). Draaiende VM's blijven draaien, maar starten, stoppen en verplaatsen lukt pas weer als de node terug is.
+Note for a **2-node cluster**: as soon as one restarts, the cluster loses quorum (unless you have a QDevice). Running VMs keep running, but starting, stopping and moving only work again when the node is back.
 
-Met de knop ⟳ kijkt PVE Fleet meteen opnieuw. Proxmox vernieuwt de pakketlijst zelf elke dag; heeft het token `Sys.Modify`, dan laat PVE Fleet die lijst ook direct vernieuwen.
+With the ⟳ button PVE Fleet checks again right away. Proxmox refreshes the package list itself every day; if the token has `Sys.Modify`, PVE Fleet can also refresh that list immediately.
 
-## 11. Back-ups
+## 11. Backups
 
-**Back-ups** (`/backups`) toont per cluster of server:
-- **Jobs:** wanneer (in gewone taal, met de volgende keer), naar welke opslag, welke VM/CT's, modus en hoe lang back-ups bewaard worden. Je kunt een job aan- en uitzetten, **Nu uitvoeren**, bewerken of verwijderen, en een **Nieuwe job** maken.
-- **VM's & containers:** de laatste back-up, hoeveel er zijn en in welke job ze zitten. Rood: *in geen enkele job* of *nooit*. Oranje: ouder dan 48 uur. Met *Alleen aandachtspunten* zie je alleen die.
-- **Recente back-uptaken**, met mislukte taken.
+**Backups** (`/backups`) shows per cluster or server:
+- **Jobs:** when (in plain language, with the next run), to which storage, which VM/CTs, mode and how long backups are kept. You can switch a job on and off, **Run now**, edit or delete it, and create a **New job**.
+- **VMs & containers:** the latest backup, how many there are and in which job they are. Red: *in no job* or *never*. Orange: older than 48 hours. With *Attention points only* you see just those.
+- **Recent backup tasks**, including failed tasks.
 
-Schema's schrijf je zoals in Proxmox: `02:00` (elke dag), `sun 03:00`, `mon..fri 21:00`, `sat 04:00`. Onder het veld zie je meteen de volgende drie keren, zoals Proxmox ze uitrekent.
+You write schedules as in Proxmox: `02:00` (every day), `sun 03:00`, `mon..fri 21:00`, `sat 04:00`. Below the field you immediately see the next three runs, as Proxmox calculates them.
 
-**Rechten:** bekijken en *Nu uitvoeren* werken met de rechten uit hoofdstuk 4. Jobs **maken, wijzigen, aan/uit zetten of verwijderen** vraagt in Proxmox het recht `Sys.Modify` op het hele datacenter. Dat recht mag ook andere instellingen wijzigen (bijvoorbeeld het netwerk), daarom is het optioneel. Wil je het toch:
+**Permissions:** viewing and *Run now* work with the permissions from chapter 4. **Creating, modifying, toggling or deleting** jobs requires the `Sys.Modify` permission on the whole datacenter in Proxmox. That permission may also change other settings (for example the network), which is why it is optional. If you want it anyway:
 
 ```bash
 pveum role add FleetJobs --privs "Sys.Modify"
 pveum acl modify / --users dashboard@pve --roles FleetJobs
-# alleen als Privilege Separation aan staat:
+# only if Privilege Separation is on:
 pveum acl modify / --tokens 'dashboard@pve!fleet' --roles FleetJobs
 ```
 
-*Verbinding testen* toont dit onderdeel met ○ als het ontbreekt, en geeft de commando's onder *Optioneel*.
+*Test connection* shows this component with ○ if it is missing, and gives the commands under *Optional*.
 
-Back-ups op een Proxmox Backup Server (PBS) worden ook getoond, via de PBS-opslag in Proxmox. Het ophalen kan dan even duren; PVE Fleet onthoudt het 5 minuten (knop **Vernieuwen** haalt het meteen op).
+Backups on a Proxmox Backup Server (PBS) are shown too, via the PBS storage in Proxmox. Fetching can then take a moment; PVE Fleet remembers it for 5 minutes (the **Refresh** button fetches it right away).
 
-## 12. Updates in VM's & containers
+## 12. Updates in VMs & containers
 
-PVE Fleet laat per container zien hoeveel **pakketupdates** er klaarstaan (Debian/Ubuntu met apt, Alpine met apk, Fedora/Rocky met dnf) en of er een **nieuwe versie van de app** is. Je ziet het op de pagina *Updates* (onderaan), in de kolom **Updates** bij *VM's & containers* (met het filter *Met updates*), op de pagina van de container en in de kiosk. Het getal bij *Updates* in het menu telt de containers mee.
+PVE Fleet shows per container how many **package updates** are pending (Debian/Ubuntu with apt, Alpine with apk, Fedora/Rocky with dnf) and whether there is a **new version of the app**. You see it on the *Updates* page (at the bottom), in the **Updates** column under *VMs & containers* (with the *With updates* filter), on the container's page and in the kiosk. The number next to *Updates* in the menu includes the containers.
 
-**Hoe het werkt:** Proxmox weet niet wat er in een container geïnstalleerd is. PVE Fleet kijkt daarom via **SSH** op elke node, met een eigen sleutel die alleen één controlescript mag starten (`command="bash /etc/pve/pvefleet/check.sh",restrict` in `authorized_keys`). Dat script draait in elke draaiende container een simulatie (`apt-get -s dist-upgrade`, `apk version`, `dnf check-update`) en installeert niets. Is de pakketlijst in de container ouder dan 6 uur, dan vernieuwt het die eerst (`apt-get update`). Standaard elke 6 uur; met `guest_updates_hours:` in `config.yml` pas je dat aan.
+**How it works:** Proxmox does not know what is installed inside a container. PVE Fleet therefore looks via **SSH** on each node, with its own key that may only start one check script (`command="bash /etc/pve/pvefleet/check.sh",restrict` in `authorized_keys`). That script runs a simulation in every running container (`apt-get -s dist-upgrade`, `apk version`, `dnf check-update`) and installs nothing. If the package list in the container is older than 6 hours, it refreshes it first (`apt-get update`). By default every 6 hours; adjust it with `guest_updates_hours:` in `config.yml`.
 
-**Eenmalig instellen** (per cluster of losse node): *Updates* › *Updates in VM's & containers* › **Instellen**. Kopieer het commando en plak het in de shell van één node. Het zet het script in `/etc/pve/pvefleet/` (gedeeld in het cluster) en voegt de sleutel toe. Klik daarna op **Inschakelen en testen**. Weigert een node de sleutel, plak het commando dan ook op die node. De sleutel staat in `data/ssh/` op de Pi; houd die map privé. Uitzetten: knop **Uitzetten** en het verwijdercommando dat erbij staat.
+**One-time setup** (per cluster or standalone node): *Updates* › *Updates in VMs & containers* › **Set up**. Copy the command and paste it into the shell of one node. It places the script in `/etc/pve/pvefleet/` (shared in the cluster) and adds the key. Then click **Enable and test**. If a node refuses the key, paste the command on that node as well. The key is in `data/ssh/` on the Pi; keep that folder private. To turn it off: the **Turn off** button and the removal command shown with it.
 
-**App-versies:** containers van de [community-scripts](https://community-scripts.org) bewaren de geïnstalleerde versie in `/root/.<app>`, en hun update-scripts noemen de GitHub-repository. PVE Fleet herkent zo ruim 400 apps en vergelijkt met de nieuwste release op GitHub (12 uur onthouden). Herkent PVE Fleet een app niet, of wil je een andere repository, stel die dan in op de pagina van de container (*App-repository instellen*). GitHub staat zonder token 60 verzoeken per uur toe; heb je veel containers, zet dan `github_token: "<token>"` in `config.yml` (een token zonder rechten is genoeg).
+**App versions:** containers from the [community-scripts](https://community-scripts.org) store the installed version in `/root/.<app>`, and their update scripts name the GitHub repository. PVE Fleet recognises more than 400 apps this way and compares with the latest release on GitHub (remembered for 12 hours). If PVE Fleet does not recognise an app, or you want a different repository, set it on the container's page (*Set up app repository*). Without a token GitHub allows 60 requests per hour; if you have many containers, put `github_token: "<token>"` in `config.yml` (a token without permissions is enough).
 
-**Bijwerken:** **Bijwerken** (pakketten) en **App bijwerken** openen de console van de container en typen het commando: `apt update; apt dist-upgrade` (of `apk`/`dnf`) of `update` (het update-script van community-scripts). Standaard maakt PVE Fleet eerst een **snapshot** (`voor-update-…`), zodat je terug kunt. Verwijder die later via de pagina van de container.
+**Updating:** **Update** (packages) and **Update app** open the container's console and type the command: `apt update; apt dist-upgrade` (or `apk`/`dnf`) or `update` (the community-scripts update script). By default PVE Fleet first creates a **snapshot** (`before-update-…`), so you can go back. Delete it later via the container's page.
 
-Nog niet: VM's (dat kan later via de QEMU guest agent) en Docker-containers binnen een VM of container.
+Not yet: VMs (that can follow later via the QEMU guest agent) and Docker containers inside a VM or container.
 
-## 13. Certificaten (https)
+## 13. Certificates (https)
 
-Onder **Certificaten** in het menu regel je https voor PVE Fleet zelf én voor de webinterface van je Proxmox-nodes (poort 8006).
+Under **Certificates** in the menu you arrange https for PVE Fleet itself *and* for the web interface of your Proxmox nodes (port 8006).
 
-**1. DNS-provider (voor Let's Encrypt).** Let's Encrypt controleert met een tijdelijk DNS-record dat het domein van jou is (DNS-01). PVE Fleet zet dat record via de API van je DNS-provider en ruimt het daarna weer op. Er hoeft niets open naar internet.
-- **TransIP:** controlepaneel › *Account* › *API*: zet de API aan en maak een *Key Pair*. Laat *Alleen whitelisted IP-adressen* uit (of zet het IP-adres van je internetverbinding erin). Vul je TransIP-gebruikersnaam in en plak de hele private key.
-- **Cloudflare:** *My Profile* › *API Tokens* › *Create Token* › sjabloon **Edit zone DNS**, met je domein bij *Zone Resources*. Plak het token.
-- Vul een e-mailadres in (Let's Encrypt mailt als een certificaat bijna verloopt en niet vernieuwd is) en klik op **Verbinding testen**: je ziet dan je domeinen.
-- Wil je eerst oefenen, zet dan *Testomgeving van Let's Encrypt* aan. Die certificaten zijn niet geldig, maar er gelden geen limieten. Zet het daarna weer uit en vraag opnieuw aan.
+**1. DNS provider (for Let's Encrypt).** Let's Encrypt verifies with a temporary DNS record that the domain is yours (DNS-01). PVE Fleet creates that record through your DNS provider's API and cleans it up afterwards. Nothing needs to be opened to the internet.
+- **TransIP:** control panel › *Account* › *API*: enable the API and create a *Key Pair*. Leave *Whitelisted IP addresses only* off (or enter the IP address of your internet connection). Enter your TransIP username and paste the whole private key.
+- **Cloudflare:** *My Profile* › *API Tokens* › *Create Token* › template **Edit zone DNS**, with your domain under *Zone Resources*. Paste the token.
+- Enter an email address (Let's Encrypt emails if a certificate is about to expire and has not been renewed) and click **Test connection**: you then see your domains.
+- If you want to practise first, turn on *Use the Let's Encrypt staging environment*. Those certificates are not valid, but there are no limits. Turn it off again afterwards and request again.
 
-**2. https voor PVE Fleet.** Klik op **Aanvragen bij Let's Encrypt** en vul de naam in, bijvoorbeeld `fleet.romioinc.nl`. Of klik op **Eigen certificaat inlezen** voor een certificaat van een andere provider (certificaat, eventueel tussencertificaat, en een onversleutelde sleutel, als PEM-tekst of bestand). PVE Fleet start dan https op poort **8443** (instelbaar), naast http op 8080. Met *http doorsturen naar https* gaat iedereen automatisch naar `https://<naam>:8443`.
-- Laat de naam in je eigen netwerk naar de Pi wijzen: een DNS-regel in je MikroTik, Pi-hole of AdGuard, bijvoorbeeld `fleet.romioinc.nl` → `192.168.2.20`.
-- Een iPad die via het IP-adres gekoppeld is, moet je via de naam opnieuw koppelen (cookies horen bij de naam). Zet het doorsturen dus pas aan als je de kiosk via de naam opent. Een browser op de Pi zelf (`http://localhost:8080/kiosk`) wordt niet doorgestuurd, zodat de kiosk aan de Pi blijft werken zonder koppelen.
-- In Docker draait PVE Fleet nu in één proces voor http en https (`python run.py`); door `network_mode: host` is poort 8443 meteen bereikbaar.
+**2. https for PVE Fleet.** Click **Requests to Let's Encrypt** and enter the name, for example `fleet.example.com`. Or click **Load own certificate** for a certificate from another provider (certificate, optionally an intermediate certificate, and an unencrypted key, as PEM text or file). PVE Fleet then starts https on port **8443** (configurable), next to http on 8080. With *Redirect http to https* everyone automatically goes to `https://<name>:8443`.
+- Point the name at the Pi in your own network: a DNS entry in your MikroTik, Pi-hole or AdGuard, for example `fleet.example.com` → `192.168.2.20`.
+- An iPad that was paired via the IP address must be paired again via the name (cookies belong to the name). So only turn on the redirect once you open the kiosk via the name. A browser on the Pi itself (`http://localhost:8080/kiosk`) is not redirected, so the kiosk on the Pi keeps working without pairing.
+- In Docker, PVE Fleet runs in a single process for http and https (`python run.py`); thanks to `network_mode: host` port 8443 is reachable right away.
 
-**3. Proxmox-nodes.** Vul het basisdomein in (bijvoorbeeld `romioinc.nl`); PVE Fleet stelt per node `<node>.romioinc.nl` voor, en dat kun je per node aanpassen. Klik op **Aanvragen** (of **Alle online nodes aanvragen**): PVE Fleet vraagt het certificaat aan en zet het op de node (`/nodes/<node>/certificates/custom`). De webinterface van die node herstart een paar seconden; VM's en containers merken niets. Met **Inlezen** zet je een eigen certificaat op een node.
-- Daarvoor heeft het token het recht `Sys.Modify` nodig (*Servers & verbinding* › *Verbinding testen* › *Optioneel*), of een actieve root-sessie (open eerst een shell als root).
-- Daarna kun je bij *Servers & verbinding* de namen gebruiken in plaats van de IP-adressen en *Certificaat controleren* aanzetten.
+**3. Proxmox nodes.** Enter the base domain (for example `example.com`); PVE Fleet suggests `<node>.example.com` per node, and you can adjust that per node. Click **Request** (or **Request for all online nodes**): PVE Fleet requests the certificate and installs it on the node (`/nodes/<node>/certificates/custom`). That node's web interface restarts for a few seconds; VMs and containers notice nothing. With **Load** you install your own certificate on a node.
+- For that the token needs the `Sys.Modify` permission (*Servers & connection* › *Test connection* › *Optional*), or an active root session (first open a shell as root).
+- After that you can use the names instead of the IP addresses under *Servers & connection* and turn on *Verify certificate*.
 
-**Vernieuwen:** certificaten van Let's Encrypt zijn 90 dagen geldig. PVE Fleet vernieuwt ze vanzelf 30 dagen voor ze verlopen (twee keer per dag gecontroleerd), voor PVE Fleet en voor elke node met *auto* aangevinkt. Eigen certificaten vernieuw je zelf.
+**Renewal:** Let's Encrypt certificates are valid for 90 days. PVE Fleet renews them automatically 30 days before they expire (checked twice a day), for PVE Fleet and for every node with *auto* ticked. You renew your own certificates yourself.
 
-**Opslag:** alles staat in `data/tls/` (alleen leesbaar voor PVE Fleet): de API-sleutel van je DNS-provider, het Let's Encrypt-account en de certificaten. Neem die map mee in je back-up (hoofdstuk 15 van de installatiehandleiding).
+**Storage:** everything is in `data/tls/` (readable only by PVE Fleet): your DNS provider's API key, the Let's Encrypt account and the certificates. Include that folder in your backup.
 
-## 14. Apps bijwerken (eigen apps in een LXC)
+## 14. Updating apps (your own apps in an LXC)
 
-Onder **Apps** zet je een nieuwe versie van je eigen apps (bijvoorbeeld Modelarr, de Homelab Proxy of een PHP-website) in de container: zip uploaden, container kiezen, **Nu** of **Op een tijdstip**. PVE Fleet maakt eerst een snapshot, zet de bestanden neer zonder je gegevens te overschrijven, herstart de app en controleert of hij weer reageert. Lukt dat niet, dan gaat de container automatisch terug naar de snapshot.
+Under **Apps** you put a new version of your own apps (for example Modelarr, the Homelab Proxy or a PHP website) in the container: upload a zip, choose the container, **Now** or **At a set time**. PVE Fleet first creates a snapshot, places the files without overwriting your data, restarts the app and checks whether it responds again. If that fails, the container automatically goes back to the snapshot.
 
-**Eenmalig instellen.** *Apps* › **Instellen**: kopieer het commando en plak het in de shell van één node van het cluster (losse nodes: op elke node). Het zet `deploy.sh` in `/etc/pve/pvefleet/` en voegt een tweede SSH-sleutel van PVE Fleet toe, beperkt tot dat script:
+**One-time setup.** *Apps* › **Set up**: copy the command and paste it into the shell of one node of the cluster (standalone nodes: on every node). It places `deploy.sh` in `/etc/pve/pvefleet/` and adds a second PVE Fleet SSH key, restricted to that script:
 
 ```
 command="bash /etc/pve/pvefleet/deploy.sh",restrict ssh-ed25519 … pve-fleet-deploy
 ```
 
-Klik daarna op **Inschakelen en testen**. De sleutel kan alleen: een pakket ontvangen, het met `pct push` in een draaiende container zetten in een map onder `/opt`, `/srv`, `/var/www` of `/home`, en daar de app herstarten. Geen shell op de node. Let wel: het bijwerken van een app betekent dat de code van die app (en een eventueel nastap-script) als root in de container draait; alleen een beheerder van PVE Fleet kan dat starten.
+Then click **Enable and test**. The key can only: receive a package, put it with `pct push` in a running container in a folder under `/opt`, `/srv`, `/var/www` or `/home`, and restart the app there. No shell on the node. Note: updating an app means the code of that app (and any post-install script) runs as root in the container; only a PVE Fleet administrator can start that.
 
-**De beschrijving: `pvefleet-app.json`.** Zet dit bestand in de zip (in de hoofdmap of in de ene bovenste map). Zonder dit bestand vraagt PVE Fleet de gegevens bij de eerste upload en onthoudt ze voor de volgende versie.
+**The description: `pvefleet-app.json`.** Put this file in the zip (in the root or in the single top folder). Without this file PVE Fleet asks for the details at the first upload and remembers them for the next version.
 
 ```json
 {
@@ -401,74 +403,78 @@ Klik daarna op **Inschakelen en testen**. De sleutel kan alleen: een pakket ontv
   "keep": ["data/", "config.yml", ".env"],
   "service": "modelarr",
   "venv": "venv",
-  "post_install": "scripts/na-update.sh",
+  "post_install": "scripts/after-update.sh",
   "health": { "port": 8085, "path": "/healthz" }
 }
 ```
 
-| Veld | Betekenis |
+| Field | Meaning |
 |---|---|
-| `name`, `title`, `version` | Technische naam (kleine letters), naam in beeld, versie |
-| `type` | `systemd` (dienst, bijvoorbeeld Python/Flask), `compose` (`docker compose up -d --build` in de map) of `static` (websitebestanden, PHP/HTML) |
-| `dir` | Map in de container, onder `/opt`, `/srv`, `/var/www` of `/home` |
-| `keep` | Paden die nooit overschreven worden als ze al bestaan (gegevens, instellingen). Bestaan ze nog niet, dan komen ze uit de zip |
-| `service` | systemd: de dienst die herstart wordt (verplicht). static: optioneel herladen, bijvoorbeeld `apache2` |
-| `venv`, `requirements` | Optioneel: Python-omgeving in de app-map; pakketten uit `requirements.txt` worden bijgewerkt (de omgeving wordt gemaakt als hij nog niet bestaat) |
-| `owner` | Optioneel: eigenaar van de nieuwe bestanden, bijvoorbeeld `www-data:www-data` |
-| `post_install` | Optioneel: script in de app dat na het neerzetten en vóór het herstarten draait (bijvoorbeeld database-migraties) |
-| `github` | Optioneel: `eigenaar/repository` (bijvoorbeeld `romio23/modelarr`); PVE Fleet kan daar de nieuwste versie ophalen, zie hieronder |
-| `health` | Optioneel: `port`, `path` (en `scheme`, `timeout`): PVE Fleet vraagt `http://<ip-container>:<port><path>`; een antwoord onder 500 telt als "werkt" |
+| `name`, `title`, `version` | Technical name (lowercase), display name, version |
+| `type` | `systemd` (service, for example Python/Flask), `compose` (`docker compose up -d --build` in the folder) or `static` (website files, PHP/HTML) |
+| `dir` | Folder in the container, under `/opt`, `/srv`, `/var/www` or `/home` |
+| `keep` | Paths that are never overwritten if they already exist (data, settings). If they do not exist yet, they come from the zip |
+| `service` | systemd: the service that is restarted (required). static: optionally reload, for example `apache2` |
+| `venv`, `requirements` | Optional: Python environment in the app folder; packages from `requirements.txt` are updated (the environment is created if it does not exist yet) |
+| `owner` | Optional: owner of the new files, for example `www-data:www-data` |
+| `post_install` | Optional: script in the app that runs after placing the files and before restarting (for example database migrations) |
+| `github` | Optional: `owner/repository` (for example `romio23/modelarr`); PVE Fleet can fetch the latest version from there, see below |
+| `health` | Optional: `port`, `path` (and `scheme`, `timeout`): PVE Fleet requests `http://<container-ip>:<port><path>`; a response below 500 counts as "working" |
 
-PVE Fleet laat de bovenste map van de zip weg, slaat `__pycache__/` en `.git/` over, en zet `pvefleet-app.json` in de app-map. Zo ziet PVE Fleet later welke versie erop staat.
+PVE Fleet drops the top folder of the zip, skips `__pycache__/` and `.git/`, and puts `pvefleet-app.json` in the app folder. This way PVE Fleet can later see which version is installed.
 
-**Bijwerken.** Na het uploaden kies je de container (PVE Fleet stelt de vorige of een container met dezelfde naam voor) en zie je wat er nu op staat: nieuwer, dezelfde of ouder. Opties: snapshot vooraf (standaard aan; PVE Fleet bewaart de laatste 2 per container, met namen die beginnen met `pvefleet-`) en automatisch terugzetten. Een geplande update kun je annuleren of meteen starten. Er draait één update tegelijk.
+**Updating.** After uploading you choose the container (PVE Fleet suggests the previous one or a container with the same name) and see what is on it now: newer, same or older. Options: snapshot beforehand (on by default; PVE Fleet keeps the last 2 per container, with names starting with `pvefleet-`) and automatic rollback. You can cancel a scheduled update or start it right away. One update runs at a time.
 
-**Nieuwste versie ophalen van GitHub.** Staat de app op GitHub, dan hoef je de zip niet zelf te downloaden en te uploaden. Vul bij *Apps* onder het uploadvak `eigenaar/repository` in (bijvoorbeeld `romio23/modelarr`) en klik op **Ophalen**. PVE Fleet haalt de nieuwste **release** op, of als die er niet is de nieuwste **tag** (een gewone commit op `main` telt dus niet: maak op GitHub een release of tag, bijvoorbeeld `v1.4.1`). Daarna gaat het zoals bij een upload: controleer de beschrijving, **Opslaan**, **Bijwerken…**. Staat het GitHub-adres in `pvefleet-app.json`, dan onthoudt PVE Fleet het: in de lijst staat dan een knop *GitHub v1.4.1 ophalen* (opvallend als dat nieuwer is dan wat je hebt) en kijkt het elke 10 minuten wat de nieuwste versie is. Een privé-repository werkt met een token (`github_token` onder Instellingen). Ophalen zet zelf niets in een container.
+**Fetching the latest version from GitHub.** If the app is on GitHub, you do not need to download and upload the zip yourself. Under *Apps*, below the upload box, enter `owner/repository` (for example `romio23/modelarr`) and click **Fetch**. PVE Fleet fetches the latest **release**, or if there is none the latest **tag** (a plain commit on `main` therefore does not count: create a release or tag on GitHub, for example `v1.4.1`). After that it goes as with an upload: check the description, **Save**, **Update…**. If the GitHub address is in `pvefleet-app.json`, PVE Fleet remembers it: the list then has a button *Fetch GitHub v1.4.1* (prominent if that is newer than what you have) and it checks every 10 minutes what the latest version is. A private repository works with a token (`github_token` under Settings). Fetching does not put anything in a container by itself.
 
-**Terug naar een vorige versie.** PVE Fleet bewaart per app de laatste 5 versies. Kies er een in de kolom *Versie* en klik op **Bijwerken…**. Of zet een snapshot terug op de pagina van de container.
+**Going back to a previous version.** PVE Fleet keeps the last 5 versions per app. Choose one in the *Version* column and click **Update…**. Or restore a snapshot on the container's page.
 
-**Eerste keer.** De app moet al een keer geïnstalleerd zijn (met zijn eigen installatiescript), zodat bijvoorbeeld de systemd-dienst bestaat. Daarna gaan de updates via PVE Fleet.
+**First time.** The app must already have been installed once (with its own install script), so that for example the systemd service exists. After that the updates go through PVE Fleet.
 
-**Opslag:** `data/apps/` (bewaarde versies en de geschiedenis) en `data/ssh/deploy_ed25519` (de app-sleutel).
+**Storage:** `data/apps/` (stored versions and the history) and `data/ssh/deploy_ed25519` (the app key).
 
-**Uitzetten:** *Apps* › *Opnieuw instellen of uitzetten* › **Uitzetten**, en het verwijdercommando op een node plakken.
+**Turning off:** *Apps* › *Reset or turn off* › **Turn off**, and paste the removal command on a node.
 
-## Problemen oplossen
+## Troubleshooting
 
-| Melding | Oorzaak |
+| Message | Cause |
 |---|---|
-| `geen van de hosts bereikbaar` | Verkeerd IP-adres, poort 8006 dicht, of de node staat uit |
-| `401/403: geen rechten` | Token-ID of geheim onjuist, of het token heeft geen PVEAuditor (let op Privilege Separation) |
-| Updates: "geen rechten" / "? Niet te zien" | Proxmox laat de lijst met updates alleen lezen met `Sys.Modify`. Zonder dat recht toont PVE Fleet of een node **achterloopt** op de nieuwste node in het cluster. Wil je de volledige lijst: zie hoofdstuk 11 (optioneel recht) |
-| Windows: `Microsoft Visual C++ 14.0 or greater is required` | Opgelost vanaf 0.1.2: het startbestand bouwt PyYAML nu zonder compiler. Start `START_WINDOWS.bat` gewoon opnieuw |
-| Actie: "het API-token mist rechten" | Geef het token de rol FleetOperator (hoofdstuk 4, *Rechten voor acties*) |
-| Wake-on-LAN: "Geen MAC-adres bekend" | Zet `wol_mac` in `config.yml` (losse node) of stel het MAC-adres in Proxmox in (clusternode) |
-| Container start niet: `PermissionError ... /data/settings.json` | De map `data` is niet van gebruiker 1000. Los op met `sudo chown -R 1000:1000 data` |
-| Kiosk blijft het koppelscherm tonen | De koppelcode is 10 minuten geldig en werkt één keer; maak een nieuwe |
-| Console: "het API-token mist het recht VM.Console" (of Sys.Console) | Werk de rol FleetOperator bij, zie hoofdstuk 9 |
-| Console: "De verbinding werd onverwacht verbroken" | De console-sessie is verlopen (60 seconden om te verbinden) of Proxmox sloot hem. Klik **Opnieuw verbinden** |
-| Back-upjob: "het API-token mag geen back-upjobs maken of wijzigen" | Het token mist `Sys.Modify`; zie hoofdstuk 11 (optioneel) |
-| Bijwerken: de console vraagt om in te loggen | Normaal: log in als `root` met het wachtwoord van de node |
-| Bijwerken: `Temporary failure resolving 'deb.debian.org'` | De node kan geen DNS-namen opzoeken. Stel een DNS-server in bij *node › System › DNS* in Proxmox en probeer opnieuw |
-| Console viel weg tijdens een upgrade | Opgelost in 0.3.1. Gebeurde het toch? Log opnieuw in en voer `dpkg --configure -a` uit, daarna weer `apt dist-upgrade` |
-| Bijwerken: `401 Unauthorized` van `enterprise.proxmox.com` | De enterprise-repository staat aan zonder abonnement. Zet hem uit: *node › Updates › Repositories*, kies de regel met `enterprise.proxmox.com` en klik op **Disable** (ook voor Ceph enterprise als die er staat). De *no-subscription*-repository moet aan staan |
-| Updates in containers: "weigert de sleutel van PVE Fleet" | Plak het installatiecommando (Updates › Instellen) ook in de shell van die node |
-| Updates in containers: "SSH-hostsleutel is veranderd" | De node is opnieuw geïnstalleerd (of het IP-adres hoort nu bij een ander apparaat). Verwijder de regel voor dat adres uit `data/ssh/known_hosts` |
-| App-versie met `?` | GitHub was niet bereikbaar of de limiet van 60 verzoeken per uur is bereikt. Zet `github_token` in `config.yml` of wacht een uur |
-| Certificaat: "TransIP-aanmelding mislukt" | Gebruikersnaam of sleutel klopt niet, of de sleutel accepteert alleen whitelisted IP-adressen. Maak een sleutel zonder whitelist of zet je IP-adres erin |
-| Certificaat: "DNS-record werd niet zichtbaar" | De DNS-provider was traag. Probeer het over een paar minuten opnieuw. Gebruik je naast de provider ook eigen nameservers, controleer dan waar het domein echt naar wijst |
-| Certificaat: "Let's Encrypt-limiet bereikt" | Te vaak aangevraagd voor dezelfde naam (5 per week). Wacht, of oefen met de testomgeving |
-| https: "Poort 8443 is niet beschikbaar" | Een ander programma gebruikt de poort. Kies een andere https-poort bij Certificaten |
-| Browser waarschuwt bij https via het IP-adres | Het certificaat hoort bij de naam. Open PVE Fleet via de naam (en laat die in je netwerk naar de Pi wijzen) |
-| Apps: "weigert de app-sleutel van PVE Fleet" | Plak het installatiecommando (*Apps* › *Instellen*) in de shell van een node van dat cluster (losse nodes: op die node) |
-| Apps: "map niet toegestaan" | De map in de beschrijving moet onder `/opt`, `/srv`, `/var/www` of `/home` liggen |
-| Apps: "De dienst … draait niet na het herstarten" | De nieuwe versie start niet. PVE Fleet zet de snapshot terug; kijk in de log welke fout de dienst gaf (`systemctl status` staat erin) |
-| Apps: "de app reageert niet na het bijwerken" | De controle (`health`) kreeg geen antwoord binnen de tijd. Klopt de poort? Start de app langzaam, verhoog dan `timeout` in de beschrijving |
-| Apps: snapshot mislukt | De opslag van de container ondersteunt geen snapshots (bijvoorbeeld opslag van het type map). Zet *Eerst een snapshot* uit; dan is er geen automatisch terugzetten |
-| Lege grafieken | Proxmox heeft voor deze node of VM/CT nog geen RRD-data (bijv. net gestart) |
+| `none of the hosts reachable` | Wrong IP address, port 8006 closed, or the node is off |
+| `401/403: no permission` | Token ID or secret incorrect, or the token has no PVEAuditor (mind Privilege Separation) |
+| Updates: "no permission" / "? Not visible" | Proxmox only lets the list of updates be read with `Sys.Modify`. Without that permission PVE Fleet shows whether a node is **behind** the newest node in the cluster. If you want the full list: see chapter 11 (optional permission) |
+| Windows: `Microsoft Visual C++ 14.0 or greater is required` | Fixed since 0.1.2: the start file now builds PyYAML without a compiler. Just start `START_WINDOWS.bat` again |
+| Action: "the API token lacks permissions" | Give the token the FleetOperator role (chapter 4, *Permissions for actions*) |
+| Wake-on-LAN: "No MAC address known" | Put `wol_mac` in `config.yml` (standalone node) or set the MAC address in Proxmox (cluster node) |
+| Container does not start: `PermissionError ... /data/settings.json` | The `data` folder does not belong to user 1000. Fix with `sudo chown -R 1000:1000 data` |
+| Kiosk keeps showing the pairing screen | The pairing code is valid for 10 minutes and works once; create a new one |
+| Console: "the API token lacks the VM.Console permission" (or Sys.Console) | Update the FleetOperator role, see chapter 9 |
+| Console: "The connection was unexpectedly lost" | The console session expired (60 seconds to connect) or Proxmox closed it. Click **Reconnect** |
+| Backup job: "the API token may not create or modify backup jobs" | The token lacks `Sys.Modify`; see chapter 11 (optional) |
+| Updating: the console asks to log in | Normal: log in as `root` with the node's password |
+| Updating: `Temporary failure resolving 'deb.debian.org'` | The node cannot look up DNS names. Set a DNS server under *node › System › DNS* in Proxmox and try again |
+| Console dropped during an upgrade | Fixed in 0.3.1. Did it happen anyway? Log in again and run `dpkg --configure -a`, then `apt dist-upgrade` again |
+| Updating: `401 Unauthorized` from `enterprise.proxmox.com` | The enterprise repository is on without a subscription. Turn it off: *node › Updates › Repositories*, select the line with `enterprise.proxmox.com` and click **Disable** (also for Ceph enterprise if present). The *no-subscription* repository must be on |
+| Updates in containers: "refuses the PVE Fleet key" | Paste the install command (Updates › Set up) in that node's shell as well |
+| Updates in containers: "SSH host key has changed" | The node was reinstalled (or the IP address now belongs to another device). Delete the line for that address from `data/ssh/known_hosts` |
+| App version with `?` | GitHub was not reachable or the limit of 60 requests per hour was reached. Put `github_token` in `config.yml` or wait an hour |
+| Certificate: "TransIP login failed" | Username or key is incorrect, or the key only accepts whitelisted IP addresses. Create a key without whitelist or enter your IP address |
+| Certificate: "DNS record was not visible" | The DNS provider was slow. Try again in a few minutes. If you also use your own nameservers next to the provider, check where the domain really points |
+| Certificate: "Let's Encrypt limit reached" | Requested too often for the same name (5 per week). Wait, or practise with the staging environment |
+| https: "Port 8443 is not available" | Another program is using the port. Choose a different https port under Certificates |
+| Browser warns on https via the IP address | The certificate belongs to the name. Open PVE Fleet via the name (and point it at the Pi in your network) |
+| Apps: "refuses the PVE Fleet app key" | Paste the install command (*Apps* › *Set up*) in the shell of a node of that cluster (standalone nodes: on that node) |
+| Apps: "folder not allowed" | The folder in the description must be under `/opt`, `/srv`, `/var/www` or `/home` |
+| Apps: "The service … is not running after the restart" | The new version does not start. PVE Fleet restores the snapshot; check the log for the error the service gave (`systemctl status` is included) |
+| Apps: "the app does not respond after the update" | The check (`health`) got no response in time. Is the port right? If the app starts slowly, increase `timeout` in the description |
+| Apps: snapshot failed | The container's storage does not support snapshots (for example directory-type storage). Turn off *Take a snapshot first*; then there is no automatic rollback |
+| Empty graphs | Proxmox has no RRD data yet for this node or VM/CT (e.g. just started) |
 
-Meer details in de logs: zet `LOG_LEVEL=DEBUG` in `docker-compose.yml`.
+More details in the logs: set `LOG_LEVEL=DEBUG` in `docker-compose.yml`.
+
+## Languages
+
+The interface and this documentation are available in English and Dutch. The switch (NL | EN) is at the top of every page; without a choice PVE Fleet follows the browser language. The Dutch texts are the source; the English translation lives in `i18n/en.tsv` and is turned into `app/static/js/i18n-en.js` with `python3 tools/build_i18n.py`. Something missing or wrong in the English text? Add or fix a line in `i18n/en.tsv` (Dutch `|||` English) and open a pull request.
 
 ---
 
-Gemaakt met Claude (claude.ai).
+Made with Claude (claude.ai).

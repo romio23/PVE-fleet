@@ -25,28 +25,29 @@ var PF = (function () {
   function uptime(s) {
     if (!s) return '—';
     var d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
-    if (d > 0) return d + ' d ' + h + ' u';
-    if (h > 0) return h + ' u ' + m + ' m';
+    if (d > 0) return d + ' d ' + h + ' ' + HU;
+    if (h > 0) return h + ' ' + HU + ' ' + m + ' m';
     return m + ' m';
   }
   function clock(ts) {
     var d = new Date(ts * 1000);
     return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
   }
-  var MONTHS = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+  var EN = !!(window.I18N && window.I18N.lang === 'en'), HU = EN ? 'h' : 'u';
+  var MONTHS = EN ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] : ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
   function when(ts) {
     if (!ts) return '—';
     var d = new Date(ts * 1000), now = new Date();
     if (d.toDateString() === now.toDateString()) return clock(ts);
     var y = new Date(now.getTime() - 86400000);
-    if (d.toDateString() === y.toDateString()) return 'gisteren ' + clock(ts);
+    if (d.toDateString() === y.toDateString()) return (EN ? 'yesterday ' : 'gisteren ') + clock(ts);
     return d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + clock(ts);
   }
   function since(ts) {
     var s = Math.max(0, Date.now() / 1000 - ts);
     if (s < 90) return Math.round(s) + ' s';
     if (s < 5400) return Math.round(s / 60) + ' min';
-    if (s < 172800) return Math.floor(s / 3600) + ' u ' + Math.round((s % 3600) / 60) + ' m';
+    if (s < 172800) return Math.floor(s / 3600) + ' ' + HU + ' ' + Math.round((s % 3600) / 60) + ' m';
     return Math.floor(s / 86400) + ' d';
   }
   function level(p, warn, crit) {
@@ -131,7 +132,7 @@ var PF = (function () {
   function guestUrl(server, node, type, vmid) {
     return '/guest/' + encodeURIComponent(server) + '/' + encodeURIComponent(node) + '/' + type + '/' + vmid;
   }
-  var LVL = { crit: 'KRIT', warn: 'WAARS', info: 'INFO' };
+  var LVL = { crit: (window.I18N && window.I18N.lang === 'en') ? 'CRIT' : 'KRIT', warn: (window.I18N && window.I18N.lang === 'en') ? 'WARN' : 'WAARS', info: 'INFO' };
   function alertItem(a, withAck) {
     var cls = a.acked ? 'muted' : (a.level === 'crit' ? 'crit' : 'warn');
     return '<div class="alert' + (a.acked ? ' acked' : '') + '"><span class="lvl c-' + cls + '">' + (a.acked ? 'GEZIEN' : LVL[a.level]) + '</span>' +

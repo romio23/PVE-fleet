@@ -7,7 +7,8 @@
   var pin = '', pinErr = '';
   var view = 'nodes', vmFilter = 'all', vms = null;   // kioskweergave: nodes of VM's & containers
   try { view = localStorage.getItem('pvef_kiosk_view') || 'nodes'; vmFilter = localStorage.getItem('pvef_kiosk_vmfilter') || 'all'; } catch (x) { /* niets */ }
-  var DAYS = ['zo', 'ma', 'di', 'wo', 'do', 'vr', 'za'], MON = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+  var EN = !!(window.I18N && window.I18N.lang === 'en');
+  var DAYS = EN ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] : ['zo', 'ma', 'di', 'wo', 'do', 'vr', 'za'], MON = EN ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] : ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
   var LOCK_CLOSED = 'M8 11V8a4 4 0 0 1 8 0v3', LOCK_OPEN = 'M8 11V8a4 4 0 0 1 7.5-2';
   function $(id) { return document.getElementById(id); }
 

@@ -17,11 +17,11 @@ os.environ.setdefault("PVEF_DATA", os.path.join(HERE, "data"))
 
 def _args():
     p = argparse.ArgumentParser(description="PVE Fleet dashboard")
-    p.add_argument("--demo", action="store_true", help="start met voorbeelddata, ook als er een config.yml is")
+    p.add_argument("--demo", action="store_true", help="start with sample data, even if there is a config.yml")
     p.add_argument("--host", default=os.environ.get("HOST", "0.0.0.0"),
-                   help="0.0.0.0 = bereikbaar vanaf andere apparaten (iPad); 127.0.0.1 = alleen deze pc")
+                   help="0.0.0.0 = reachable from other devices (iPad); 127.0.0.1 = this PC only")
     p.add_argument("--port", type=int, default=int(os.environ.get("PORT", 8080)))
-    p.add_argument("--no-browser", action="store_true", help="niet automatisch de browser openen")
+    p.add_argument("--no-browser", action="store_true", help="do not open the browser automatically")
     return p.parse_args()
 
 
@@ -37,11 +37,11 @@ app = create_app()
 if __name__ == "__main__":
     url = "http://localhost:{}".format(args.port)
     print("")
-    print("  PVE Fleet draait op {}".format(url))
+    print("  PVE Fleet is running at {}".format(url))
     if args.host == "0.0.0.0":
-        print("  Vanaf een ander apparaat (iPad): http://<ip-van-deze-pc>:{}/kiosk".format(args.port))
+        print("  From another device (iPad): http://<ip-of-this-pc>:{}/kiosk".format(args.port))
     print("  Config: {}".format(os.path.join(os.environ["PVEF_DATA"], "config.yml")))
-    print("  Stoppen: Ctrl+C of dit venster sluiten")
+    print("  Stop: Ctrl+C or close this window")
     print("")
     if not args.no_browser:
         import threading
@@ -55,5 +55,5 @@ if __name__ == "__main__":
     from app import tlsserver
     tlsserver.enable(app, args.host)      # https naast http, zodra er een certificaat is (Certificaten)
     if tlsserver.running():
-        print("  https: https://<naam>:{}".format(tlsserver.port()))
+        print("  https: https://<name>:{}".format(tlsserver.port()))
     run_simple(args.host, args.port, app, threaded=True, use_reloader=False, use_debugger=False)

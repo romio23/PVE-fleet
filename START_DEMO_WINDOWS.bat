@@ -1,3 +1,3 @@
 @echo off
-rem Start altijd met voorbeelddata, ook als data\config.yml bestaat.
+rem Always start with sample data, even if data\config.yml exists.
 call "%~dp0START_WINDOWS.bat" --demo %*

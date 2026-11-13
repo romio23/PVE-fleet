@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v={{ version }}">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E8A13A' stroke-width='2'%3E%3Crect x='3' y='4' width='18' height='6' rx='1.5'/%3E%3Crect x='3' y='14' width='18' height='6' rx='1.5'/%3E%3C/svg%3E">
+{% include '_i18n.html' %}
 <script>window.PF_POLL_MS = {{ poll_ms }};</script>
 <script src="{{ url_for('static', filename='js/common.js') }}?v={{ version }}"></script>
 <script src="{{ url_for('static', filename='js/actions.js') }}?v={{ version }}"></script>
@@ -24,6 +25,7 @@
   <div class="right">
     {% if demo %}<span class="badge-demo" title="Er is geen config.yml gevonden of demo staat aan">Demomodus · voorbeelddata</span>{% endif %}
     <span class="live" id="live"><span class="pulse" aria-hidden="true"></span><span class="txt">Laden…</span></span>
+    {% include '_langswitch.html' %}
     <a class="btn ghost" href="/kiosk">Kiosk</a>
     {% if user %}
     <details class="usermenu">

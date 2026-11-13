@@ -443,7 +443,7 @@ var PFA = (function () {
       } catch (x) { win = null; }
       var go = function () { PF.openUpgrade(g.server, g.node, onDone, g.vmid, cmd, win); };
       var d = new Date(), z = function (n) { return ('0' + n).slice(-2); };
-      var name = 'voor-update-' + d.getFullYear() + z(d.getMonth() + 1) + z(d.getDate()) + '-' + z(d.getHours()) + z(d.getMinutes());
+      var name = (window.I18N && window.I18N.lang === 'en' ? 'before-update-' : 'voor-update-') + d.getFullYear() + z(d.getMonth() + 1) + z(d.getDate()) + '-' + z(d.getHours()) + z(d.getMinutes());
       return PF.postJSON('/api/action', base(g, 'snapshot', { snapname: name, description: 'PVE Fleet, voor ' + (app ? 'app-update' : 'pakketupdate') })).then(function (res) {
         track(res);
         toast('Snapshot ' + name + ' wordt gemaakt; daarna opent de console');
