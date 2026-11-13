@@ -4,6 +4,16 @@ Een dashboard voor al je Proxmox VE-servers in één scherm: clusters én losse 
 
 **Versie 0.8.0.** Nieuw: de nieuwste versie van een app **ophalen van GitHub** (Apps) en `update.sh` om PVE Fleet zelf bij te werken. Eerder (0.7.0): **Apps**, een nieuwe versie van je eigen apps uploaden en in de LXC-container zetten, meteen of op een tijdstip, met eerst een snapshot (hoofdstuk 14). Eerder: certificaten voor PVE Fleet (https) en de Proxmox-nodes, via Let's Encrypt of een eigen certificaat (hoofdstuk 13); schermen koppelen met een QR-code; Nederlandse taaknamen en consoletaken standaard verborgen in Recente taken; updates in containers (pakketten en app-versies, hoofdstuk 12). Eerder: root-sessie voor de console, VM's & containers in de kiosk, de pagina's *Updates* (met rolling update) en *Back-ups*, VM/CT- en node-acties, ingebouwde console, IP-adressen en opgemaakte notities.
 
+## Screenshots
+
+Gemaakt in de demomodus (voorbeelddata, geen echte servers).
+
+| | |
+|---|---|
+| ![Overzicht van alle clusters](docs/screenshots/pve-fleet-overzicht.png) **Overzicht:** clusters, nodes, alerts en back-ups in één scherm | ![Nodes](docs/screenshots/pve-fleet-nodes.png) **Nodes:** alle nodes van alle servers, zoeken en sorteren |
+| ![Updates](docs/screenshots/pve-fleet-updates.png) **Updates:** openstaande updates per node en rolling update | ![Back-ups](docs/screenshots/pve-fleet-backups.png) **Back-ups:** laatste taken en mislukte back-ups |
+| ![Apps](docs/screenshots/pve-fleet-apps.png) **Apps:** een nieuwe versie uploaden of van GitHub ophalen en in een container zetten | |
+
 ## Wat zit erin
 
 | Pagina | Adres | Wat je ziet |
