@@ -113,7 +113,8 @@ def _apps_db():
         try:
             with open(path, encoding="utf-8") as fh:
                 db = json.load(fh)
-        except (OSError, ValueError):
+        except (OSError, ValueError) as e:
+            log.warning("app/data/community_apps.json missing or unreadable (%s): app versions in containers cannot be checked", e)
             db = {}
         by_name = {}
         for slug, pairs in db.items():

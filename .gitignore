@@ -1,5 +1,5 @@
-data/
-data.bak*/
+/data/
+/data.bak*/
 config.yml
 .env
 __pycache__/
