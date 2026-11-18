@@ -62,7 +62,7 @@
         '<td><a href="' + url + '" style="font-weight:500">' + e(g.name) + '</a>' +
         (g.tags.length ? ' <span class="small muted">' + g.tags.map(function (t) { return '#' + e(t); }).join(' ') + '</span>' : '') + '</td>' +
         '<td><span class="typebadge">' + (g.type === 'qemu' ? 'VM' : 'LXC') + '</span></td>' +
-        '<td>' + PF.dotStatus(off ? 'unknown' : g.status) + '</td>' +
+        '<td>' + PF.dotStatus(off ? 'unknown' : g.status) + (off ? PF.seenNote(g) : '') + '</td>' +
         '<td>' + PF.ipCell(g.ips, g.ip_src) + '</td>' +
         '<td class="mono">' + (on ? PF.pct(g.cpu) : '—') + '</td>' +
         '<td class="mono">' + (on ? mem : '— / ' + PF.bytes(g.maxmem, 0)) + '</td>' +

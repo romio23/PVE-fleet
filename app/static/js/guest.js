@@ -91,7 +91,7 @@ document.addEventListener('click', function (ev) {
     document.title = g.vmid + ' ' + g.name + ' · PVE Fleet';
     var nodeDown = d.node_status !== 'online' || !d.group.reachable;
     var st = PF.statusInfo(nodeDown ? 'unknown' : g.status);
-    var meta = [(d.ips && d.ips.length ? d.ips.join(', ') : d.ip), 'op ' + nodeName, g.status === 'running' ? 'uptime ' + PF.uptime(g.uptime) : null, d.ostype ? 'ostype ' + d.ostype : null].filter(Boolean).map(e).join(' · ');
+    var meta = [(d.ips && d.ips.length ? d.ips.join(', ') : d.ip), 'op ' + nodeName, nodeDown && g.last_seen ? 'laatst gezien ' + PF.when(g.last_seen) : null, g.status === 'running' ? 'uptime ' + PF.uptime(g.uptime) : null, d.ostype ? 'ostype ' + d.ostype : null].filter(Boolean).map(e).join(' · ');
     var html = '<section class="pagehead"><div><div class="title"><span class="mono muted" style="font-size:15px">' + g.vmid + '</span><h1>' + e(g.name) + '</h1>' +
       '<span class="typebadge" style="font-size:12px;padding:3px 8px">' + (kind === 'qemu' ? 'VM · QEMU' : 'LXC-container') + '</span>' +
       '<span class="pill c-' + st.cls + '" style="border-color:currentColor"><span class="dot b-' + st.cls + '"></span>' + st.label + '</span>' +

@@ -1591,3 +1591,19 @@ Ctrl-Alt-Del|||Ctrl-Alt-Del
 VM's & containers|||VMs & containers
 VM's|||VMs
 VM/CT's|||VM/CTs
+# 0.9.2: planning van de controle in containers, laatst bekende gegevens bij offline nodes
+Pakketupdates in de containers en nieuwe versies van de apps (community-scripts):|||Package updates in the containers and new versions of the apps (community-scripts):
+elk uur gecontroleerd|||checked every hour
+Hoe vaak controleren?|||How often to check?
+Zo vaak kijkt PVE Fleet in de containers welke updates er klaarstaan. Met|||This is how often PVE Fleet looks in the containers for pending updates. With
+kan het altijd tussendoor.|||you can always check in between.
+Elke dag op een vast tijdstip|||Every day at a fixed time
+Om de zoveel uur|||Every few hours
+Tijdstip (elke dag)|||Time (every day)
+elk uur|||every hour
+Kies een tijdstip, bijvoorbeeld 05:00|||Choose a time, for example 05:00
+Kies hoe vaak|||Choose how often
+Kies 1, 2, 3, 6, 12 of 24 uur|||Choose 1, 2, 3, 6, 12 or 24 hours
+Node offline|||Node offline
+laatst bekende adres; de node is offline|||last known address; the node is offline
+toen de node nog online was|||when the node was still online

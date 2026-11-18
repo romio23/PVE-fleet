@@ -13,7 +13,7 @@ updates_interval: 1800
 wol_broadcast: 255.255.255.255
 
 # Updates in containers (Updates › Updates in VMs & containers): how often to check (hours).
-# guest_updates_hours: 6
+# guest_updates_hours: 6   # liever instellen op de pagina Updates (Wijzigen)
 # GitHub token (without permissions) if you compare more than ~60 apps per hour.
 # github_token: "ghp_..."
 

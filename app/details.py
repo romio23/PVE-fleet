@@ -201,7 +201,7 @@ def guest_detail(collector, server, node, kind, vmid):
            "node_status": next((n["status"] for n in group["nodes"] if n["name"] == node), "unknown"),
            "errors": {}, "console_url": console_url(group.get("web_url"), kind, node, vmid, row["name"])}
     if not group["reachable"] or out["node_status"] != "online":
-        out.update({"config": [], "rrd": None, "snapshots": [], "backups": [], "ip": None, "ha": None,
+        out.update({"config": [], "rrd": None, "snapshots": [], "backups": [], "ip": row.get("ip"), "ips": row.get("ips") or [], "ha": None,
                     "onboot": None, "protection": None, "description": None})
         return out
 

@@ -60,8 +60,12 @@ var PF = (function () {
     if (status === 'online' || status === 'running') return { cls: 'ok', label: status === 'running' ? 'Actief' : 'Online' };
     if (status === 'stopped') return { cls: 'muted', label: 'Gestopt' };
     if (status === 'paused') return { cls: 'warn', label: 'Gepauzeerd' };
-    if (status === 'unknown') return { cls: 'muted', label: 'Onbekend' };
+    if (status === 'unknown') return { cls: 'muted', label: 'Node offline' };
     return { cls: 'crit', label: 'Offline' };
+  }
+  function seenNote(row) {
+    if (!row || !row.last_seen) return '';
+    return '<div class="small muted" title="Gegevens van ' + esc(when(row.last_seen)) + ', toen de node nog online was">laatst gezien ' + esc(when(row.last_seen)) + '</div>';
   }
   function dotStatus(status) {
     var s = statusInfo(status);
@@ -253,11 +257,11 @@ var PF = (function () {
   function ipCell(ips, src) {
     ips = ips || [];
     if (!ips.length) return '<span class="muted">—</span>';
-    var tip = ips.join(', ') + (src === 'config' ? ' (vast adres uit de configuratie)' : '');
+    var tip = ips.join(', ') + (src === 'config' ? ' (vast adres uit de configuratie)' : (src === 'cache' ? ' (laatst bekende adres; de node is offline)' : ''));
     return '<span class="mono ipaddr" title="' + esc(tip) + '">' + esc(ips[0]) + '</span>' +
       (ips.length > 1 ? ' <span class="small muted" title="' + esc(tip) + '">+' + (ips.length - 1) + '</span>' : '');
   }
-  return { openUpgrade: openUpgrade, ipCell: ipCell, COLORS: COLORS, errorHint: errorHint, navCounts: navCounts, consoleUrl: consoleUrl, openConsole: openConsole, esc: esc, bytes: bytes, rate: rate, pct: pct, uptime: uptime, clock: clock, when: when, since: since,
+  return { openUpgrade: openUpgrade, ipCell: ipCell, seenNote: seenNote, COLORS: COLORS, errorHint: errorHint, navCounts: navCounts, consoleUrl: consoleUrl, openConsole: openConsole, esc: esc, bytes: bytes, rate: rate, pct: pct, uptime: uptime, clock: clock, when: when, since: since,
     level: level, statusInfo: statusInfo, dotStatus: dotStatus, barCell: barCell, spark: spark, last: last, getJSON: getJSON,
     postJSON: postJSON, send: send, poll: poll, nodeUrl: nodeUrl, guestUrl: guestUrl, alertItem: alertItem, bindAcks: bindAcks,
     taskName: taskName, taskResult: taskResult, isConsoleTask: isConsoleTask, visibleTasks: visibleTasks, toggleConsoleTasks: toggleConsoleTasks };

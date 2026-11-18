@@ -58,7 +58,9 @@
     var on = names.filter(function (n) { return d.servers[n].enabled; });
     var off = names.filter(function (n) { return !d.servers[n].enabled; });
     var html = '<div class="pagehead" style="margin-top:10px"><div><h2 style="font-size:20px">Updates in VM\'s &amp; containers</h2>' +
-      '<p class="muted" style="margin:4px 0 0">Pakketupdates in de containers en nieuwe versies van de apps (community-scripts), elke ' + d.hours + ' uur gecontroleerd.</p></div>' +
+      '<p class="muted" style="margin:4px 0 0">Pakketupdates in de containers en nieuwe versies van de apps (community-scripts): <span>' + schedText(d) + '</span>' +
+      (d.next ? ' <span class="small">(volgende: ' + e(PF.when(d.next)) + ')</span>' : '') + '.' +
+      (d.admin ? ' <a href="#" data-ct="schedule">Wijzigen</a>' : '') + '</p></div>' +
       (on.length ? '<div class="end"><label class="check" style="margin:0"><input type="checkbox" id="ct-only"' + (onlyUpd ? ' checked' : '') + '>Alleen met updates</label></div>' : '') + '</div>';
     html += on.map(function (n) { return serverBlock(n, d.servers[n]); }).join('');
     if (off.length) {
@@ -72,6 +74,25 @@
     root.innerHTML = '<div style="display:flex;flex-direction:column;gap:16px;margin-top:6px">' + html + '</div>';
   }
   function load() { return PF.getJSON('/api/guest-updates').then(render, function () {}); }
+  function schedText(d) {
+    var sc = d.schedule || { mode: 'interval', hours: d.hours };
+    var t = sc.mode === 'daily' ? 'elke dag om ' + sc.at + ' gecontroleerd' : (sc.hours === 1 ? 'elk uur gecontroleerd' : 'elke ' + sc.hours + ' uur gecontroleerd');
+    return t;
+  }
+  function scheduleModal() {
+    var sc = (data && data.schedule) || { mode: 'interval', hours: 6 };
+    var hrs = [1, 2, 3, 6, 12, 24].map(function (h) { return { value: String(h), label: h === 1 ? 'elk uur' : 'elke ' + h + ' uur' }; });
+    PFA.modal({ title: 'Hoe vaak controleren?', body: '<p class="muted" style="margin:0;line-height:1.55">Zo vaak kijkt PVE Fleet in de containers welke updates er klaarstaan. Met <strong>Nu controleren</strong> kan het altijd tussendoor.</p>',
+      fields: [
+        { name: 'mode', label: 'Wanneer', type: 'radio', value: sc.mode === 'daily' ? 'daily' : 'interval', options: [{ value: 'daily', label: 'Elke dag op een vast tijdstip' }, { value: 'interval', label: 'Om de zoveel uur' }] },
+        { name: 'at', label: 'Tijdstip (elke dag)', type: 'time', value: sc.at || '05:00' },
+        { name: 'hours', label: 'Om de zoveel uur', type: 'select', value: String(sc.hours || 6), options: hrs }
+      ],
+      confirm: 'Opslaan', kind: 'primary',
+      submit: function (v) {
+        return PF.postJSON('/api/guest-updates/schedule', v.mode === 'daily' ? { mode: 'daily', at: v.at } : { mode: 'interval', hours: +v.hours }).then(function () { PFA.toast('Opgeslagen'); load(); });
+      } });
+  }
 
   function setup(server) {
     var s = data.servers[server];
@@ -101,6 +122,7 @@
     var b = ev.target.closest ? ev.target.closest('[data-ct]') : null;
     if (!b || !data) return;
     var a = b.getAttribute('data-ct');
+    if (a === 'schedule') { ev.preventDefault(); return scheduleModal(); }
     if (a === 'setup') return setup(b.getAttribute('data-s'));
     if (a === 'check') {
       b.disabled = true;

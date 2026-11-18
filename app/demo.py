@@ -380,7 +380,11 @@ class FakeClient:
             if st["node"] not in nodes:
                 continue
             i = INFO[vmid]
-            running = st["running"] and not _node_down(st["node"])
+            if _node_down(st["node"]):     # zo geeft Proxmox het terug: geen naam, geen geheugen, status unknown
+                out.append({"id": "{}/{}".format(i["kind"], vmid), "type": i["kind"], "vmid": vmid, "node": st["node"],
+                            "status": "unknown", "template": 0, "tags": i["tags"]})
+                continue
+            running = st["running"]
             out.append({"id": "{}/{}".format(i["kind"], vmid), "type": i["kind"], "vmid": vmid, "name": i["name"],
                         "node": st["node"], "status": "running" if running else "stopped", "template": 0, "tags": i["tags"],
                         "cpu": _wiggle(i["cpu"], vmid, 0.02) if running else 0, "maxcpu": 2 if i["kind"] == "lxc" else 4,

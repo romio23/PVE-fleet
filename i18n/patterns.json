@@ -1,5 +1,20 @@
 [
 [
+"^elke dag om (\\d{1,2}:\\d{2}) gecontroleerd$",
+"",
+"checked every day at $1"
+],
+[
+"^elke (\\d+) uur gecontroleerd$",
+"",
+"checked every $1 hours"
+],
+[
+"^elke (\\d+) uur$",
+"",
+"every $1 hours"
+],
+[
 "\\b1 fout\\b",
 "",
 "1 error"
@@ -598,5 +613,20 @@
 "^(\\d+) VM/CT in geen enkele job$",
 "",
 "$1 VM/CT in no job"
+],
+[
+"volgende: (\\d{1,2}:\\d{2})\\)",
+"",
+"next: $1)"
+],
+[
+"laatst gezien gisteren (\\d{1,2}:\\d{2})",
+"",
+"last seen yesterday $1"
+],
+[
+"^Gegevens van (.+), toen de node nog online was$",
+"",
+"Data from $1, when the node was still online"
 ]
 ]

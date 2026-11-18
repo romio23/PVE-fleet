@@ -80,12 +80,12 @@ class Store:
         self.path = os.path.join(data_dir, "guest_updates.json")
         self.ssh_dir = os.path.join(data_dir, "ssh")
         self.lock = threading.RLock()
-        self.data = {"settings": {}, "results": {}, "repos": {}}
+        self.data = {"settings": {}, "results": {}, "repos": {}, "schedule": {}}
         try:
             with open(self.path, encoding="utf-8") as fh:
                 d = json.load(fh)
                 if isinstance(d, dict):
-                    self.data.update({k: d.get(k) or {} for k in ("settings", "results", "repos")})
+                    self.data.update({k: d.get(k) or {} for k in ("settings", "results", "repos", "schedule")})
         except (OSError, ValueError):
             pass
         self.running = set()      # servers die nu gecontroleerd worden
@@ -396,18 +396,60 @@ def _run_bg(app, server):
     return True
 
 
+HOURS_CHOICES = (1, 2, 3, 6, 12, 24)
+AT_RE = re.compile(r"^([01]\d|2[0-3]):([0-5]\d)$")
+
+
+def schedule(col, store):
+    """Wanneer controleren: {'mode': 'interval', 'hours': N} of {'mode': 'daily', 'at': 'HH:MM'}.
+    Zonder eigen instelling: guest_updates_hours uit config.yml (standaard 6)."""
+    sc = store.data.get("schedule") or {}
+    if sc.get("mode") == "daily" and AT_RE.match(str(sc.get("at") or "")):
+        return {"mode": "daily", "at": sc["at"]}
+    try:
+        hours = float(sc.get("hours") or col.cfg.get("guest_updates_hours") or 6)
+    except (TypeError, ValueError):
+        hours = 6.0
+    return {"mode": "interval", "hours": max(0.25, hours)}
+
+
+def _daily_slot(at, now=None):
+    """Tijdstip (epoch) van vandaag om 'at' in lokale tijd."""
+    now = time.time() if now is None else now
+    hh, mm = [int(x) for x in at.split(":")]
+    lt = time.localtime(now)
+    return time.mktime((lt.tm_year, lt.tm_mon, lt.tm_mday, hh, mm, 0, 0, 0, -1))
+
+
+def is_due(sc, last, now=None):
+    now = time.time() if now is None else now
+    if sc["mode"] == "daily":
+        slot = _daily_slot(sc["at"], now)
+        return now >= slot and (last or 0) < slot
+    return now - (last or 0) > sc["hours"] * 3600
+
+
+def next_run(sc, last, now=None):
+    now = time.time() if now is None else now
+    if sc["mode"] == "daily":
+        slot = _daily_slot(sc["at"], now)
+        if now >= slot and (last or 0) >= slot:
+            slot = _daily_slot(sc["at"], now + 86400)
+        return slot
+    return max(now, (last or 0) + sc["hours"] * 3600)
+
+
 def _scheduler(app):
     while True:
         time.sleep(60)
         try:
             col = app.extensions["collector"]
             store = app.extensions["guestupdates"]
-            every = float(col.cfg.get("guest_updates_hours") or 6) * 3600
+            sc = schedule(col, store)
             for server, st in list(store.data["settings"].items()):
                 if not st.get("enabled") or not col.client(server):
                     continue
-                last = store.result(server).get("checked") or 0
-                if time.time() - last > every:
+                if is_due(sc, store.result(server).get("checked") or 0):
                     _run_bg(app, server)
         except Exception:  # pragma: no cover
             log.exception("planner")
@@ -492,8 +534,39 @@ def api_list():
                 continue
             guests["{}/{}".format(name, vmid)] = dict(gres, server=name, name=x["name"], status=x["status"], node=x["node"],
                                                    repo_override=store.data["repos"].get("{}/{}".format(name, vmid)))
-    return jsonify({"servers": servers, "guests": guests, "hours": float(col.cfg.get("guest_updates_hours") or 6),
+    sc = schedule(col, store)
+    lasts = [store.result(n).get("checked") or 0 for n in servers if servers[n]["enabled"]]
+    return jsonify({"servers": servers, "guests": guests, "hours": sc.get("hours"), "schedule": sc,
+                    "next": next_run(sc, min(lasts)) if lasts else None, "admin": g.get("scope") == "admin",
                     "demo": bool(col.cfg.get("demo"))})
+
+
+@bp.post("/api/guest-updates/schedule")
+def api_schedule():
+    _admin()
+    body = request.get_json(silent=True) or {}
+    store = _store()
+    if body.get("mode") == "daily":
+        at = str(body.get("at") or "").strip()
+        if not AT_RE.match(at):
+            return jsonify({"error": "Kies een tijdstip, bijvoorbeeld 05:00"}), 400
+        sc = {"mode": "daily", "at": at}
+        label = "dagelijks om " + at
+    else:
+        try:
+            hours = int(body.get("hours"))
+        except (TypeError, ValueError):
+            return jsonify({"error": "Kies hoe vaak"}), 400
+        if hours not in HOURS_CHOICES:
+            return jsonify({"error": "Kies 1, 2, 3, 6, 12 of 24 uur"}), 400
+        sc = {"mode": "interval", "hours": hours}
+        label = "elke {} uur".format(hours)
+    with store.lock:
+        store.data["schedule"] = sc
+        store.save()
+    from .actions import audit
+    audit({"who": g.who, "action": "guest_updates", "ok": True, "label": "Updates in containers controleren: " + label})
+    return jsonify({"ok": True, "schedule": sc})
 
 
 @bp.get("/api/guest-updates/setup")

@@ -100,6 +100,9 @@ class Collector:
         self.guest_ips = {}       # (server, type, vmid) -> {"ips", "src", "checked", "running", "node"}
         self._ip_pool = ThreadPoolExecutor(max_workers=4)
         self._ip_busy = set()
+        self.guest_cache = self._load_guest_cache()   # "server|type|vmid" -> laatst bekende gegevens
+        self._cache_saved = 0
+        self._cache_lock = threading.RLock()
 
     @staticmethod
     def _make_clients(cfg):
@@ -257,7 +260,8 @@ class Collector:
             "nodes_total": len(nodes), "nodes_online": sum(1 for n in nodes if n["status"] == "online"),
             "web_url": c.web_url(), "active_host": c.active_host,
             "nodes": nodes,
-            "guests": [self._with_ip(self._guest_row(name, g)) for g in guests],
+            "guests": self._apply_guest_cache(name, [self._with_ip(self._guest_row(name, g)) for g in guests],
+                                             {n["name"] for n in nodes if n["status"] != "online"}),
             "storage": [self._storage_row(name, s) for s in storage],
             "tasks": [self._task_row(name, t) for t in tasks[:40]],
             "polled": time.time(),
@@ -368,6 +372,10 @@ class Collector:
                 n["stale"] = True
             for gu in g["guests"]:
                 gu["status"] = "unknown"
+                gu["node_offline"] = True
+                hit = self.guest_cache.get(self._gkey(name, gu["type"], gu["vmid"]))
+                if hit:
+                    gu["last_seen"] = hit.get("seen")
             g["nodes_online"] = 0
         else:
             cfg = self.server_cfg(name) or {}
@@ -377,18 +385,122 @@ class Collector:
                 "cpu": None, "cpus": None, "mem_used": None, "mem_total": None, "mem_pct": None, "uptime": None,
                 "guests_running": 0, "guests_total": 0, "version": None, "kernel": None, "model": None,
                 "loadavg": None, "updates": None}]
+            guests = self._guests_from_cache(name)
+            if is_cluster:     # nodes uit de cache, zodat de containers ergens bij horen
+                for nn in sorted({x["node"] for x in guests if x.get("node")}):
+                    placeholder.append({
+                        "server": name, "name": nn, "status": "offline", "stale": True, "ip": None,
+                        "cpu": None, "cpus": None, "mem_used": None, "mem_total": None, "mem_pct": None, "uptime": None,
+                        "guests_running": 0, "guests_total": sum(1 for x in guests if x["node"] == nn), "version": None,
+                        "kernel": None, "model": None, "loadavg": None, "updates": None})
+            elif placeholder:
+                placeholder[0]["guests_total"] = len(guests)
+                for x in guests:
+                    x["node"] = placeholder[0]["name"] if not x.get("node") else x["node"]
             g = {"server": name, "name": name, "kind": "cluster" if is_cluster else "standalone", "quorate": None,
                  "nodes_total": len(placeholder), "nodes_online": 0, "web_url": None, "active_host": None,
-                 "guests": [], "storage": [], "tasks": [], "nodes": placeholder}
+                 "guests": guests, "storage": [], "tasks": [], "nodes": placeholder}
         g.update({"reachable": False, "error": error, "since": since, "polled": time.time()})
         return g
+
+    # ---------- laatst bekende gegevens van VM's & containers (voor nodes die offline zijn) ----------
+    CACHE_FIELDS = ("name", "node", "maxmem", "maxdisk", "cpus", "tags", "ips", "status")
+
+    @staticmethod
+    def _gkey(server, kind, vmid):
+        return "{}|{}|{}".format(server, kind, vmid)
+
+    def _cache_path(self):
+        return os.path.join(self.data_dir, "guest_cache.json")
+
+    def _load_guest_cache(self):
+        try:
+            with open(self._cache_path(), encoding="utf-8") as fh:
+                d = json.load(fh)
+            return d if isinstance(d, dict) else {}
+        except (OSError, ValueError):
+            return {}
+
+    def _save_guest_cache(self):
+        if self.cfg.get("demo") and not self.cfg.get("demo_cache"):
+            return
+        try:
+            os.makedirs(self.data_dir, exist_ok=True)
+            tmp = self._cache_path() + ".tmp"
+            with self._cache_lock, open(tmp, "w", encoding="utf-8") as fh:
+                json.dump(self.guest_cache, fh)
+            os.replace(tmp, self._cache_path())
+            self._cache_saved = time.time()
+        except OSError as e:  # pragma: no cover
+            log.warning("guest_cache.json: %s", e)
+
+    def _apply_guest_cache(self, server, rows, offline_nodes):
+        """Onthoud de gegevens van gasten op online nodes; vul gasten op offline nodes aan uit de cache."""
+        with self._cache_lock:
+            return self._apply_guest_cache_locked(server, rows, offline_nodes)
+
+    def _apply_guest_cache_locked(self, server, rows, offline_nodes):
+        now, seen, changed = time.time(), set(), False
+        for r in rows:
+            key = self._gkey(server, r["type"], r["vmid"])
+            seen.add(key)
+            hit = self.guest_cache.get(key)
+            if r["node"] in offline_nodes or r["status"] == "unknown":
+                r["node_offline"] = True
+                if hit:
+                    if r.get("noname") and hit.get("name"):
+                        r["name"] = hit["name"]
+                    for f in ("maxmem", "maxdisk", "cpus"):
+                        if not r.get(f) and hit.get(f):
+                            r[f] = hit[f]
+                    if not r.get("tags") and hit.get("tags"):
+                        r["tags"] = list(hit["tags"])
+                    if not r.get("ips") and hit.get("ips"):
+                        r["ips"], r["ip"], r["ip_src"] = list(hit["ips"]), hit["ips"][0], "cache"
+                    r["last_seen"] = hit.get("seen")
+                    r["cached"] = True
+                if r.get("ips"):
+                    r["ip_src"] = "cache"
+                continue
+            if r.get("noname"):
+                continue
+            entry = {"name": r["name"], "node": r["node"], "maxmem": r.get("maxmem"), "maxdisk": r.get("maxdisk"),
+                     "cpus": r.get("cpus"), "tags": r.get("tags") or [], "status": r.get("status"),
+                     "ips": r.get("ips") or (hit or {}).get("ips") or [], "seen": now}
+            if not hit or any(hit.get(k) != entry[k] for k in self.CACHE_FIELDS):
+                changed = True
+            self.guest_cache[key] = entry
+        for key in [k for k in self.guest_cache if k.startswith(server + "|") and k not in seen]:
+            self.guest_cache.pop(key, None)          # verwijderd uit Proxmox
+            changed = True
+        if changed or now - self._cache_saved > 600:
+            self._save_guest_cache()
+        return rows
+
+    def _guests_from_cache(self, server):
+        out = []
+        with self._cache_lock:
+            items = list(self.guest_cache.items())
+        for key, c in items:
+            srv, kind, vmid = key.rsplit("|", 2)
+            if srv != server:
+                continue
+            ips = list(c.get("ips") or [])
+            out.append({"server": server, "node": c.get("node"), "type": kind, "vmid": int(vmid), "name": c.get("name"),
+                        "status": "unknown", "cpu": 0, "cpus": c.get("cpus"), "mem": None, "maxmem": c.get("maxmem"),
+                        "maxdisk": c.get("maxdisk"), "uptime": None, "tags": list(c.get("tags") or []),
+                        "ips": ips, "ip": ips[0] if ips else None, "ip_src": "cache" if ips else None,
+                        "node_offline": True, "cached": True, "last_seen": c.get("seen")})
+        out.sort(key=lambda x: x["vmid"])
+        return out
 
     @staticmethod
     def _guest_row(server, g):
         return {"server": server, "node": g.get("node"), "type": g.get("type"), "vmid": g.get("vmid"),
                 "name": g.get("name") or "{}-{}".format(g.get("type"), g.get("vmid")),
                 "status": g.get("status"), "cpu": round(100 * (g.get("cpu") or 0), 1), "cpus": g.get("maxcpu"),
-                "mem": g.get("mem"), "maxmem": g.get("maxmem"), "uptime": g.get("uptime"),
+                "mem": g.get("mem"), "maxmem": g.get("maxmem"), "maxdisk": g.get("maxdisk"), "uptime": g.get("uptime"),
+                "noname": not g.get("name"),
                 "tags": [t for t in re.split(r"[;, ]", g.get("tags") or "") if t]}
 
     @staticmethod

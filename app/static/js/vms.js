@@ -94,9 +94,9 @@
       return '<tr class="' + (sel[k(v)] ? 'sel' : '') + '">' +
         '<td><input type="checkbox" class="cb" data-sel="' + e(k(v)) + '"' + (sel[k(v)] ? ' checked' : '') + (v.reachable ? '' : ' disabled') + ' aria-label="Selecteer ' + e(v.name) + '"></td>' +
         '<td class="mono muted">' + v.vmid + '</td>' +
-        '<td><a href="' + url + '" style="font-weight:500">' + e(v.name) + '</a>' + (v.tags.length ? ' <span class="small muted">' + v.tags.map(function (t) { return '#' + e(t); }).join(' ') + '</span>' : '') + '</td>' +
+        '<td><a href="' + url + '" style="font-weight:500' + (v.cached ? ';opacity:.75' : '') + '">' + e(v.name) + '</a>' + (v.tags.length ? ' <span class="small muted">' + v.tags.map(function (t) { return '#' + e(t); }).join(' ') + '</span>' : '') + '</td>' +
         '<td><span class="typebadge">' + (v.type === 'qemu' ? 'VM' : 'CT') + '</span></td>' +
-        '<td>' + PF.dotStatus(v.status) + '</td>' +
+        '<td>' + PF.dotStatus(v.status) + PF.seenNote(v) + '</td>' +
         '<td>' + PF.ipCell(v.ips, v.ip_src) + '</td>' +
         '<td class="mono small">' + updCell(v) + '</td>' +
         '<td><a class="mono" href="' + PF.nodeUrl(v.server, v.node) + '">' + e(v.node) + '</a>' + (v.kind === 'cluster' ? ' <span class="small muted">' + e(v.group) + '</span>' : '') + '</td>' +
