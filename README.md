@@ -4,7 +4,7 @@
 
 A dashboard for all your Proxmox VE servers on one screen: clusters *and* standalone nodes. You see the health of nodes, VMs and containers, with a separate kiosk view for an iPad or a small screen on a Raspberry Pi. The interface is available in **English and Dutch** (switch with the NL | EN buttons; by default it follows your browser language).
 
-**Version 0.9.2.** New: on the *Updates* page you choose how often the containers are checked: every few hours, or every day at a fixed time (*Change* next to "checked"). VMs and containers on a node that is offline keep their name, IP address and memory (last known data from `data/guest_cache.json`, with *last seen*); the status now reads *Node offline* instead of *Unknown*. The Docker image now contains time-zone data, so `TZ=Europe/Amsterdam` is really used inside the container. Version 0.9.1: fix: the list of community-scripts apps (`app/data/community_apps.json`) was missing from GitHub, so app updates in containers were not detected after updating from GitHub. Version 0.9.0: new: the whole interface and documentation in English and Dutch. Version 0.8.0: fetch the latest version of an app **from GitHub** (Apps) and `update.sh` to update PVE Fleet itself. Earlier (0.7.0): **Apps**, upload a new version of your own apps and put it in the LXC container, right away or at a set time, with a snapshot first (chapter 14). Earlier: certificates for PVE Fleet (https) and the Proxmox nodes, via Let's Encrypt or your own certificate (chapter 13); pairing screens with a QR code; updates in containers (packages and app versions, chapter 12); root session for the console, VMs & containers in the kiosk, the *Updates* (with rolling update) and *Backups* pages, VM/CT and node actions, built-in console, IP addresses and formatted notes.
+**Version 0.9.3.** New: the *Updates* tile in the kiosk counts containers as well as nodes (for example *5 nodes · 7 containers · 16 security*). Backup jobs: buttons and an explanation for the note variables (`{{guestname}}`, `{{vmid}}`, `{{node}}`, `{{cluster}}`) with a live example. When a permission is missing (for example `Datastore.Allocate` on a backup storage), the message names that permission and shows the `pveum` commands to copy. Version 0.9.2: new: on the *Updates* page you choose how often the containers are checked: every few hours, or every day at a fixed time (*Change* next to "checked"). VMs and containers on a node that is offline keep their name, IP address and memory (last known data from `data/guest_cache.json`, with *last seen*); the status now reads *Node offline* instead of *Unknown*. The Docker image now contains time-zone data, so `TZ=Europe/Amsterdam` is really used inside the container. Version 0.9.1: fix: the list of community-scripts apps (`app/data/community_apps.json`) was missing from GitHub, so app updates in containers were not detected after updating from GitHub. Version 0.9.0: new: the whole interface and documentation in English and Dutch. Version 0.8.0: fetch the latest version of an app **from GitHub** (Apps) and `update.sh` to update PVE Fleet itself. Earlier (0.7.0): **Apps**, upload a new version of your own apps and put it in the LXC container, right away or at a set time, with a snapshot first (chapter 14). Earlier: certificates for PVE Fleet (https) and the Proxmox nodes, via Let's Encrypt or your own certificate (chapter 13); pairing screens with a QR code; updates in containers (packages and app versions, chapter 12); root session for the console, VMs & containers in the kiosk, the *Updates* (with rolling update) and *Backups* pages, VM/CT and node actions, built-in console, IP addresses and formatted notes.
 
 ## Screenshots
 
@@ -339,6 +339,16 @@ pveum acl modify / --tokens 'dashboard@pve!fleet' --roles FleetJobs
 ```
 
 *Test connection* shows this component with ○ if it is missing, and gives the commands under *Optional*.
+
+**Backups to other storage** (for example an NFS or SMB share on a NAS): first add that storage in Proxmox (*Datacenter › Storage › Add*, with *Content: VZDump backup file*). For a job to that storage Proxmox also asks for `Datastore.Allocate` on that storage. PVE Fleet then names it in the message, with the commands, for example:
+
+```bash
+pveum role add FleetBackupTarget --privs "Datastore.Allocate Datastore.AllocateSpace Datastore.Audit"
+pveum acl modify /storage/Synology-backup --users dashboard@pve --roles FleetBackupTarget
+pveum acl modify /storage/Synology-backup --tokens 'dashboard@pve!fleet' --roles FleetBackupTarget
+```
+
+**Note for each backup:** plain text with the variables `{{guestname}}`, `{{vmid}}`, `{{node}}` and `{{cluster}}`. Below the field there are buttons to insert them, and an example.
 
 Backups on a Proxmox Backup Server (PBS) are shown too, via the PBS storage in Proxmox. Fetching can then take a moment; PVE Fleet remembers it for 5 minutes (the **Refresh** button fetches it right away).
 

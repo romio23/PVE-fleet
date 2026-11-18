@@ -34,9 +34,39 @@ def _admin():
         abort(403)
 
 
+PERM_RE = re.compile(r"\((/[^,()]*), ([A-Za-z.]+)\)")
+
+
 def _perm_msg(e, what):
-    return ("Het API-token mag geen {}. In Proxmox is daarvoor het recht Sys.Modify op '/' nodig "
-            "(zie Servers & verbinding › Verbinding testen, onderdeel 'Back-upjobs aanpassen'). ({})").format(what, e)
+    return _perm_error(e, what)["error"]
+
+
+def _perm_error(e, what, server=None):
+    """Nette melding bij 'Permission check failed (/pad, Recht)': noem het recht dat echt ontbreekt,
+    met pveum-commando's die passen bij het token van deze server."""
+    m = PERM_RE.search(str(e))
+    if not m or (m.group(1) == "/" and m.group(2) == "Sys.Modify"):
+        return {"error": ("Het API-token mag geen {}. In Proxmox is daarvoor het recht Sys.Modify op '/' nodig "
+                          "(zie Servers & verbinding › Verbinding testen, onderdeel 'Back-upjobs aanpassen'). ({})").format(what, e),
+                "commands": None}
+    path, priv = m.group(1), m.group(2)
+    token = None
+    for s in col().cfg.get("servers") or []:
+        if s.get("name") == server:
+            token = s.get("token_id")
+    user = token.split("!", 1)[0] if token and "!" in token else "dashboard@pve"
+    token = token or "dashboard@pve!fleet"
+    if priv.startswith("Datastore."):
+        role, privs = "FleetBackupTarget", "Datastore.Allocate Datastore.AllocateSpace Datastore.Audit"
+    else:
+        role, privs = "Fleet" + priv.replace(".", ""), priv
+    cmds = ("pveum role add {role} --privs \"{privs}\"\n"
+            "pveum acl modify {path} --users {user} --roles {role}\n"
+            "pveum acl modify {path} --tokens '{token}' --roles {role}").format(role=role, privs=privs, path=path, user=user, token=token)
+    where = "de opslag {}".format(path.split("/", 2)[2]) if path.startswith("/storage/") else path
+    return {"error": "Het API-token mag geen {}: Proxmox mist het recht {} op {}. Plak de commando's hieronder één keer "
+                     "in de shell van een node en probeer het opnieuw.".format(what, priv, where),
+            "commands": cmds}
 
 
 # ------------------------------------------------------------------ pagina
@@ -309,7 +339,7 @@ def api_job_save(server):
             c.put("/cluster/backup/{}".format(q(job_id)), data)
             label = "Back-upjob {} gewijzigd".format(job_id)
     except PvePermissionError as e:
-        return jsonify({"error": _perm_msg(e, "back-upjobs maken of wijzigen")}), 403
+        return jsonify(_perm_error(e, "back-upjobs maken of wijzigen", server)), 403
     except PveError as e:
         return jsonify({"error": "Proxmox: {}".format(e)}), 502
     audit({"who": g.who, "action": "backupjob", "server": server, "label": label, "ok": True})

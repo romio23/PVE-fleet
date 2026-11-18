@@ -1607,3 +1607,11 @@ Kies 1, 2, 3, 6, 12 of 24 uur|||Choose 1, 2, 3, 6, 12 or 24 hours
 Node offline|||Node offline
 laatst bekende adres; de node is offline|||last known address; the node is offline
 toen de node nog online was|||when the node was still online
+# 0.9.3: notitievariabelen bij back-ups, melding over ontbrekende rechten
+tekst met variabelen; klik hieronder om er een in te voegen|||text with variables; click below to insert one
+naam van de VM of container|||name of the VM or container
+het ID, bijv. 110|||the ID, e.g. 110
+de node waarop de back-up gemaakt wordt|||the node the backup is made on
+de naam van het cluster|||the name of the cluster
+Voorbeeld:|||Example:
+(geen notitie)|||(no note)

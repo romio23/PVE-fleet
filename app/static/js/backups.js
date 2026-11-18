@@ -138,6 +138,61 @@
   function group(server) { return data.groups.filter(function (g) { return g.server === server; })[0]; }
   function jobOf(g, id) { return g.jobs.filter(function (j) { return j.id === id; })[0]; }
 
+  // ------------------------------------------------------------ notitie: variabelen met uitleg en voorbeeld
+  var NOTE_VARS = [
+    ['{{guestname}}', 'naam van de VM of container'],
+    ['{{vmid}}', 'het ID, bijv. 110'],
+    ['{{node}}', 'de node waarop de back-up gemaakt wordt'],
+    ['{{cluster}}', 'de naam van het cluster']
+  ];
+  function notesHelp(root, g) {
+    var inp = root.querySelector('[name="notes_template"]');
+    if (!inp) return;
+    var lab = inp.closest('label');
+    var box = document.createElement('div');
+    box.className = 'notevars';
+    box.style.margin = '-4px 0 12px';
+    box.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:6px">' + NOTE_VARS.map(function (v) {
+      return '<button type="button" class="btn ghost" data-nv="' + e(v[0]) + '" title="' + e(v[1]) + '" style="padding:4px 9px;font-size:12px"><span class="mono">' + e(v[0]) + '</span></button>';
+    }).join('') + '</div>' +
+      '<div class="small muted" style="margin-top:6px;line-height:1.6">' + NOTE_VARS.map(function (v) { return '<span class="mono">' + e(v[0]) + '</span> = <span>' + e(v[1]) + '</span>'; }).join(' · ') + '</div>' +
+      '<div class="small" style="margin-top:6px">Voorbeeld: <span class="mono" id="nv-prev"></span></div>';
+    lab.parentNode.insertBefore(box, lab.nextSibling);
+    var ex = g.guests[0] || { name: 'modelarr', vmid: 110, node: 'pvedell01' };
+    function prev() {
+      var t = inp.value.replace(/\{\{\s*guestname\s*\}\}/g, ex.name).replace(/\{\{\s*vmid\s*\}\}/g, ex.vmid)
+        .replace(/\{\{\s*node\s*\}\}/g, ex.node).replace(/\{\{\s*cluster\s*\}\}/g, g.name);
+      document.getElementById('nv-prev').textContent = t || '(geen notitie)';
+    }
+    box.addEventListener('click', function (ev) {
+      var b = ev.target.closest ? ev.target.closest('[data-nv]') : null;
+      if (!b) return;
+      var v = b.getAttribute('data-nv'), a = inp.selectionStart, z = inp.selectionEnd;
+      if (typeof a !== 'number') { a = z = inp.value.length; }
+      var before = inp.value.slice(0, a), after = inp.value.slice(z);
+      var sep = before && !/\s$/.test(before) ? ' ' : '';
+      inp.value = before + sep + v + after;
+      var pos = (before + sep + v).length;
+      inp.focus(); try { inp.setSelectionRange(pos, pos); } catch (x) { /* niet elk veld */ }
+      inp.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    inp.addEventListener('input', prev); prev();
+  }
+  function permCommands(cmds) {
+    var fail = document.querySelector('.modal .mfail');
+    if (!fail) return;
+    var box = document.getElementById('bj-perm');
+    if (!box) { box = document.createElement('div'); box.id = 'bj-perm'; fail.parentNode.insertBefore(box, fail.nextSibling); }
+    box.innerHTML = '<pre class="log" style="user-select:all;margin:8px 0 6px">' + e(cmds) + '</pre><button type="button" class="btn ghost" id="bj-copy">Kopiëren</button>';
+    document.getElementById('bj-copy').addEventListener('click', function () {
+      var btn = this;
+      function done(ok) { btn.textContent = ok ? 'Gekopieerd ✓' : 'Selecteer en kopieer met Ctrl+C'; setTimeout(function () { btn.textContent = 'Kopiëren'; }, 2500); }
+      if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(cmds).then(function () { done(true); }, function () { done(false); }); return; }
+      var ta = document.createElement('textarea'); ta.value = cmds; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select();
+      var ok = false; try { ok = document.execCommand('copy'); } catch (x) { ok = false; } document.body.removeChild(ta); done(ok);
+    });
+  }
+
   // ------------------------------------------------------------ job maken / bewerken
   function editor(g, j) {
     var isNew = !j;
@@ -169,7 +224,7 @@
       { name: 'keep_weekly', label: 'Bewaar weken', type: 'number', value: p['keep-weekly'] || '', placeholder: 'leeg = niet' },
       { name: 'keep_monthly', label: 'Bewaar maanden', type: 'number', value: p['keep-monthly'] || '', placeholder: 'leeg = niet', hint: 'alles leeg = de instelling van de opslag' },
       { name: 'comment', label: 'Omschrijving (optioneel)', value: j.comment },
-      { name: 'notes_template', label: 'Notitie bij elke back-up', value: j.notes_template, mono: true, hint: 'bijv. {{guestname}}' }
+      { name: 'notes_template', label: 'Notitie bij elke back-up', value: j.notes_template, mono: true, hint: 'tekst met variabelen; klik hieronder om er een in te voegen' }
     ];
     function pickedIds() {
       return Array.prototype.map.call(document.querySelectorAll('.modal [data-vm]:checked'), function (c) { return +c.getAttribute('data-vm'); });
@@ -198,6 +253,7 @@
           }, 350);
         }
         sch.addEventListener('input', preview); preview();
+        notesHelp(root, g);
       },
       validate: function (v) {
         if (!v.schedule) return 'Vul in wanneer de job draait';
@@ -208,7 +264,11 @@
         var body = { id: isNew ? '' : j.id, enabled: v.enabled, schedule: v.schedule, storage: v.storage, node: v.node, selection: v.selection,
           vmids: pickedIds(), mode: v.mode, compress: v.compress, comment: v.comment, notes_template: v.notes_template,
           prune: { 'keep-last': v.keep_last, 'keep-daily': v.keep_daily, 'keep-weekly': v.keep_weekly, 'keep-monthly': v.keep_monthly } };
-        return PF.postJSON('/api/backups/' + encodeURIComponent(g.server) + '/job', body).then(function (r) { PFA.toast(r.message); });
+        var pc = document.getElementById('bj-perm'); if (pc) pc.innerHTML = '';
+        return PF.postJSON('/api/backups/' + encodeURIComponent(g.server) + '/job', body).then(function (r) { PFA.toast(r.message); }, function (ex) {
+          if (ex.body && ex.body.commands) permCommands(ex.body.commands);
+          throw ex;
+        });
       } }).then(function (v) { clearTimeout(timer); if (v) load(true); });
   }
 

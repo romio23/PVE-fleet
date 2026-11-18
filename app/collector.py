@@ -69,9 +69,9 @@ def nodes_needing_update(nodes):
 def _guest_work():
     from . import guestupdates
     try:
-        return guestupdates.work_count()
+        return guestupdates.work_stats()
     except Exception:  # pragma: no cover
-        return 0
+        return {"containers": 0, "security": 0, "packages": 0, "apps": 0}
 
 
 def _kernel(kversion):
@@ -582,6 +582,7 @@ class Collector:
         running = [x for x in all_guests if x["status"] == "running"]
         tasks = sorted([t for g in groups for t in g["tasks"]], key=lambda t: -(t["start"] or 0))
         backups = [t for t in tasks if t["type"] == "vzdump" and t["start"] and now - t["start"] < 86400 and t["end"]]
+        gw = _guest_work()
         kpis = {
             "nodes_online": len(online), "nodes_total": len(all_nodes),
             "guests_running": len(running), "guests_total": len(all_guests),
@@ -598,7 +599,9 @@ class Collector:
             "updates_nodes": sum(1 for n in all_nodes if ((n["updates"] or {}).get("count") or 0) > 0),
             "reboot_nodes": sum(1 for n in all_nodes if (n["updates"] or {}).get("reboot_needed")),
             "update_work": sum(len(nodes_needing_update(g["nodes"])) for g in groups if g["reachable"]),
-            "guest_update_work": _guest_work(),
+            "guest_update_work": gw["containers"],
+            "guest_update_security": gw["security"],
+            "guest_update_apps": gw["apps"],
             "backup_failed": sum(1 for a in alerts if a["id"].startswith("backup:")),
         }
         slim = []

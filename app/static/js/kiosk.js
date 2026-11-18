@@ -159,12 +159,16 @@
     b.textContent = total ? k.backups_ok + '/' + total : '—';
     b.className = 'v ' + (k.backups_failed ? 'c-warn' : 'c-ok');
     $('k-backups-sub').textContent = total ? (k.backups_failed ? k.backups_failed + ' mislukt' : 'alles geslaagd') : 'geen taken';
-    if (k.updates) {
-      $('k-updates').textContent = k.updates;
-      $('k-updates-sub').textContent = 'op ' + k.updates_nodes + ' nodes · ' + k.updates_security + ' security';
-    } else if (k.update_work) {
-      $('k-updates').textContent = k.update_work + (k.update_work === 1 ? ' node' : ' nodes');
-      $('k-updates-sub').textContent = 'bijwerken of herstarten nodig';
+    // nodes én containers: hetzelfde getal als in het menu van het dashboard
+    var un = k.update_work !== undefined ? k.update_work : (k.updates_nodes || 0), uc = k.guest_update_work || 0;
+    var sec = (k.updates_security || 0) + (k.guest_update_security || 0);
+    if (un + uc) {
+      var parts = [];
+      if (un) parts.push(un + (un === 1 ? ' node' : ' nodes'));
+      if (uc) parts.push(uc + (uc === 1 ? ' container' : ' containers'));
+      if (sec) parts.push(sec + ' security');
+      $('k-updates').textContent = String(un + uc);
+      $('k-updates-sub').textContent = parts.join(' · ');
     } else {
       $('k-updates').textContent = '0';
       $('k-updates-sub').textContent = 'alles bijgewerkt';

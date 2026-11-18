@@ -1,5 +1,15 @@
 [
 [
+"^Het API-token mag geen back-upjobs maken of wijzigen: Proxmox mist het recht (\\S+) op de opslag (.+)\\. Plak de commando's hieronder één keer in de shell van een node en probeer het opnieuw\\.$",
+"",
+"The API token may not create or change backup jobs: Proxmox is missing the privilege $1 on the storage $2. Paste the commands below once into the shell of a node and try again."
+],
+[
+"^Het API-token mag geen back-upjobs maken of wijzigen: Proxmox mist het recht (\\S+) op (\\S+)\\. Plak de commando's hieronder één keer in de shell van een node en probeer het opnieuw\\.$",
+"",
+"The API token may not create or change backup jobs: Proxmox is missing the privilege $1 on $2. Paste the commands below once into the shell of a node and try again."
+],
+[
 "^elke dag om (\\d{1,2}:\\d{2}) gecontroleerd$",
 "",
 "checked every day at $1"

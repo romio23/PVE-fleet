@@ -486,18 +486,28 @@ def summary(server, vmid):
             "stale": bool(gres.get("stale")), "checked": gres.get("checked"), "error": gres.get("error")}
 
 
-def work_count():
-    """Aantal containers met updates (pakketten of app)."""
+def work_stats():
+    """Containers met updates (pakketten of app), en het aantal security-updates daarin."""
+    out = {"containers": 0, "security": 0, "packages": 0, "apps": 0}
     if STORE is None:
-        return 0
-    n = 0
+        return out
     for server, res in list(STORE.data["results"].items()):
         if not STORE.settings(server).get("enabled"):
             continue
         for gres in (res.get("guests") or {}).values():
-            if (gres.get("count") or 0) > 0 or any(a.get("update") for a in gres.get("apps") or []):
-                n += 1
-    return n
+            pk = gres.get("count") or 0
+            app_upd = any(a.get("update") for a in gres.get("apps") or [])
+            if pk > 0 or app_upd:
+                out["containers"] += 1
+                out["packages"] += max(0, pk)
+                out["security"] += gres.get("security") or 0
+                out["apps"] += 1 if app_upd else 0
+    return out
+
+
+def work_count():
+    """Aantal containers met updates (pakketten of app)."""
+    return work_stats()["containers"]
 
 
 # ------------------------------------------------------------------ API
