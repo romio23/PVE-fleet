@@ -1615,3 +1615,7 @@ de node waarop de back-up gemaakt wordt|||the node the backup is made on
 de naam van het cluster|||the name of the cluster
 Voorbeeld:|||Example:
 (geen notitie)|||(no note)
+# 0.9.4: back-ups naar netwerkopslag
+Oorzaak: unprivileged containers mogen op deze netwerkopslag geen tijdelijke map maken. Laat Proxmox die map lokaal maken; voer dit één keer uit in de shell van een node (het past alle nodes aan):|||Cause: unprivileged containers may not create a temporary folder on this network storage. Let Proxmox create that folder locally; run this once in the shell of a node (it changes all nodes):
+Hun back-up mislukt dan vaak met "Permission denied", tenzij Proxmox de tijdelijke map lokaal maakt. Heb je dit nog niet gedaan, voer dan één keer uit in de shell van een node:|||Their backup then often fails with "Permission denied", unless Proxmox creates the temporary folder locally. If you have not done this yet, run this once in the shell of a node:
+Let op:|||Note:

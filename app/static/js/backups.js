@@ -114,7 +114,12 @@
       }).join('') + '</div>' : '';
       var tasks = (g.tasks || []).slice(0, 8);
       var taskHtml = tasks.length ? '<div class="list" style="padding:4px 18px 10px">' + tasks.map(function (t) {
-        return '<div class="row"><div><div>' + e(PF.taskName(t)) + ' <span class="muted small">op ' + e(t.node) + '</span></div><div class="small muted mono" style="margin-top:2px">' + PF.when(t.start) + '</div></div>' + PF.taskResult(t) + '</div>';
+        var why = '';
+        if (t.reason && t.reason.lines && t.reason.lines.length) {
+          why = '<div class="small c-crit" style="margin-top:4px;word-break:break-word">' + t.reason.lines.map(e).join('<br>') + '</div>';
+          if (t.reason.hint === 'tmpdir') why += tmpdirHelp(g, 'Oorzaak: unprivileged containers mogen op deze netwerkopslag geen tijdelijke map maken. Laat Proxmox die map lokaal maken; voer dit één keer uit in de shell van een node (het past alle nodes aan):');
+        }
+        return '<div class="row" style="align-items:flex-start"><div style="min-width:0;flex:1"><div>' + e(PF.taskName(t)) + ' <span class="muted small">op ' + e(t.node) + '</span></div><div class="small muted mono" style="margin-top:2px">' + PF.when(t.start) + '</div>' + why + '</div>' + PF.taskResult(t) + '</div>';
       }).join('') + '</div>' : '<div class="small muted" style="padding:10px 18px">Geen recente back-uptaken.</div>';
       return '<section class="card" style="overflow:hidden">' + head +
         (errs ? '<div style="padding:10px 18px 0">' + errs + '</div>' : '') +
@@ -178,6 +183,52 @@
     });
     inp.addEventListener('input', prev); prev();
   }
+  // ------------------------------------------------------------ netwerkopslag + unprivileged containers
+  function tmpdirHelp(g, text) {
+    return '<div class="small" style="margin-top:6px;line-height:1.5">' + e(text) + '</div>' + cmdBox(g.tmpdir_cmd || '');
+  }
+  function cmdBox(cmd) {
+    return '<pre class="log" style="user-select:all;margin:6px 0;white-space:pre-wrap">' + e(cmd) + '</pre><button type="button" class="btn ghost" data-copycmd style="padding:4px 10px;font-size:12px">Kopiëren</button>';
+  }
+  document.addEventListener('click', function (ev) {
+    var btn = ev.target.closest ? ev.target.closest('[data-copycmd]') : null;
+    if (!btn) return;
+    var pre = btn.previousElementSibling, cmds = pre ? pre.textContent : '';
+    function done(ok) { btn.textContent = ok ? 'Gekopieerd ✓' : 'Selecteer en kopieer met Ctrl+C'; setTimeout(function () { btn.textContent = 'Kopiëren'; }, 2500); }
+    if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(cmds).then(function () { done(true); }, function () { done(false); }); return; }
+    var ta = document.createElement('textarea'); ta.value = cmds; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select();
+    var ok = false; try { ok = document.execCommand('copy'); } catch (x) { ok = false; } document.body.removeChild(ta); done(ok);
+  });
+  function netWarning(root, g, pickedIds) {
+    var box = document.createElement('div');
+    box.id = 'bj-netwarn';
+    box.style.cssText = 'margin:-4px 0 12px;display:none;padding:10px 12px;border-radius:8px;background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--text)';
+    var st = root.querySelector('[name="storage"]'), sel = root.querySelector('[name="selection"]');
+    st.closest('label').parentNode.insertBefore(box, st.closest('label').nextSibling);
+    var unpriv = {};
+    (g.unprivileged || []).forEach(function (v) { unpriv[v] = 1; });
+    function check() {
+      var s = g.storages.filter(function (x) { return x.name === st.value; })[0];
+      var hit = [];
+      if (s && s.network) {
+        var picked = {};
+        pickedIds().forEach(function (v) { picked[v] = 1; });
+        g.guests.forEach(function (x) {
+          if (x.type !== 'lxc' || !unpriv[x.vmid]) return;
+          var inJob = sel.value === 'all' ? !picked[x.vmid] : !!picked[x.vmid];
+          if (inJob) hit.push(x.vmid + ' ' + x.name);
+        });
+      }
+      if (!hit.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+      box.style.display = '';
+      box.innerHTML = '<div class="small" style="line-height:1.5"><strong>Let op:</strong> <span>' + e(st.value) + '</span> <span>is netwerkopslag (' + e(s.type.toUpperCase()) + '), en deze unprivileged containers zitten in de job:</span> <span class="mono">' + e(hit.join(', ')) + '</span>. ' +
+        '<span>Hun back-up mislukt dan vaak met "Permission denied", tenzij Proxmox de tijdelijke map lokaal maakt. Heb je dit nog niet gedaan, voer dan één keer uit in de shell van een node:</span></div>' + cmdBox(g.tmpdir_cmd || '');
+    }
+    st.addEventListener('change', check); sel.addEventListener('change', check);
+    root.addEventListener('change', function (ev) { if (ev.target && ev.target.hasAttribute && ev.target.hasAttribute('data-vm')) check(); });
+    check();
+  }
+
   function permCommands(cmds) {
     var fail = document.querySelector('.modal .mfail');
     if (!fail) return;
@@ -254,6 +305,7 @@
         }
         sch.addEventListener('input', preview); preview();
         notesHelp(root, g);
+        netWarning(root, g, pickedIds);
       },
       validate: function (v) {
         if (!v.schedule) return 'Vul in wanneer de job draait';

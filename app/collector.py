@@ -514,7 +514,7 @@ class Collector:
         st = t.get("status")
         return {"server": server, "node": t.get("node"), "type": t.get("type"), "id": t.get("id"),
                 "user": t.get("user"), "start": t.get("starttime"), "end": t.get("endtime"),
-                "status": st, "ok": st == "OK", "running": not t.get("endtime")}
+                "status": st, "ok": st == "OK", "running": not t.get("endtime"), "upid": t.get("upid")}
 
     # ---------- overzicht + alerts ----------
     def _build_snapshot(self, groups):

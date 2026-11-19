@@ -19,6 +19,14 @@ _pool = ThreadPoolExecutor(max_workers=6)
 _cache = {}            # server -> (tijd, data)
 _cache_lock = threading.Lock()
 CACHE_SECONDS = 300
+NET_TYPES = {"nfs", "cifs", "cephfs", "glusterfs"}   # opslag via het netwerk
+PRIV_SECONDS = 900
+_priv = {}          # (server, vmid) -> (tijd, unprivileged)
+_reasons = {}       # upid -> reden van een mislukte back-up (verandert niet meer)
+TMPDIR_CMD = ("for ip in $(grep -oP '\"ip\": \"\\K[^\"]+' /etc/pve/.members); do\n"
+              "  ssh -o ConnectTimeout=5 root@$ip 'grep -q \"^tmpdir:\" /etc/vzdump.conf || echo \"tmpdir: /var/tmp\" >> /etc/vzdump.conf; "
+              "echo \"$(hostname): $(grep ^tmpdir: /etc/vzdump.conf)\"'\n"
+              "done")
 
 SCHEDULE_RE = re.compile(r"^[A-Za-z0-9 :,.*/~\-]{1,100}$")
 JOB_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{1,60}$")
@@ -160,6 +168,7 @@ def _collect(server):
             continue
         seen.add(key)
         out["storages"].append({"name": s["name"], "node": None if s["shared"] else s["node"], "type": s["type"],
+                                "network": s["type"] in NET_TYPES,
                                 "pct": s["pct"], "used": s["used"], "total": s["total"], "shared": s["shared"]})
         todo.append((s["node"], s["name"]))
     futs = {(n, st): _pool.submit(_contents, c, n, st) for n, st in todo}
@@ -180,7 +189,73 @@ def _collect(server):
     for vmid, it in latest.items():
         it["count"] = counts.get(vmid, 0)
     out["latest"] = {str(k): v for k, v in latest.items()}
+    out["unprivileged"] = _unprivileged(server, c, grp, online)
     return out
+
+
+def _unprivileged(server, c, grp, online):
+    """VMID's van unprivileged containers (uit hun configuratie; 15 minuten onthouden)."""
+    now, todo, res = time.time(), [], []
+    for x in grp["guests"]:
+        if x["type"] != "lxc":
+            continue
+        hit = _priv.get((server, x["vmid"]))
+        if hit and now - hit[0] < PRIV_SECONDS:
+            if hit[1]:
+                res.append(x["vmid"])
+        elif x["node"] in online:
+            todo.append(x)
+
+    def one(x):
+        return x, bool(int((c.get("/nodes/{}/lxc/{}/config".format(q(x["node"]), int(x["vmid"]))) or {}).get("unprivileged") or 0))
+    for f in [_pool.submit(one, x) for x in todo]:
+        try:
+            x, unpriv = f.result(timeout=20)
+        except Exception:  # noqa: BLE001 - geen rechten of node traag: dan geen waarschuwing
+            continue
+        _priv[(server, x["vmid"])] = (now, unpriv)
+        if unpriv:
+            res.append(x["vmid"])
+    return sorted(res)
+
+
+FAIL_RE = re.compile(r"^ERROR: Backup of VM (\d+) failed - (.*)$")
+TMP_DENIED_RE = re.compile(r"\.tmp: Cannot open: Permission denied")
+
+
+def task_reason(c, t):
+    """Waarom een back-uptaak mislukte, uit de log van Proxmox. Geeft {'lines': [...], 'hint': 'tmpdir'|None}."""
+    upid = t.get("upid")
+    if not upid:
+        return None
+    if upid in _reasons:
+        return _reasons[upid]
+    try:
+        rows = c.get("/nodes/{}/tasks/{}/log".format(q(t["node"]), q(upid)), {"start": 0, "limit": 2000}) or []
+    except PveError:
+        return None
+    lines = [str(r.get("t") or "") for r in rows]
+    out, last_detail = [], None
+    for ln in lines:
+        s = ln.strip()
+        if s.startswith("INFO: tar: ") and "not recoverable" not in s:
+            last_detail = s[len("INFO: tar: "):]
+        m = FAIL_RE.match(s)
+        if m:
+            msg = m.group(2)
+            if msg.startswith("command '") and last_detail:
+                msg = last_detail
+            out.append("VM {}: {}".format(m.group(1), msg[:240]))
+            last_detail = None
+    if not out:
+        err = [s.strip() for s in lines if s.strip().startswith(("ERROR:", "TASK ERROR:"))]
+        out = [e[:240] for e in err[:3]]
+    hint = "tmpdir" if any(TMP_DENIED_RE.search(s) for s in lines) else None
+    res = {"lines": out[:6], "hint": hint}
+    if len(_reasons) > 300:
+        _reasons.clear()
+    _reasons[upid] = res
+    return res
 
 
 def collect(server, force=False):
@@ -231,7 +306,17 @@ def api_backups():
                          "age_h": round((now - lb["ctime"]) / 3600, 1) if lb and lb.get("ctime") else None})
         data["guests"] = sorted(rows, key=lambda r: r["vmid"])
         data["nodes"] = [{"name": n["name"], "status": n["status"]} for n in grp["nodes"]]
-        data["tasks"] = [t for t in grp["tasks"] if t["type"] == "vzdump"][:20]
+        tasks = [dict(t) for t in grp["tasks"] if t["type"] == "vzdump"][:20]
+        c = col().client(grp["server"])
+        failed = [t for t in tasks[:8] if t.get("end") and not t.get("ok")]
+        if c and failed:
+            for t, f in [(t, _pool.submit(task_reason, c, t)) for t in failed]:
+                try:
+                    t["reason"] = f.result(timeout=20)
+                except Exception:  # noqa: BLE001
+                    t["reason"] = None
+        data["tasks"] = tasks
+        data["tmpdir_cmd"] = TMPDIR_CMD
         data.pop("latest", None)
         out.append(data)
     return jsonify({"groups": out})

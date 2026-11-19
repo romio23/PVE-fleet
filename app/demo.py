@@ -421,6 +421,20 @@ class FakeClient:
             from urllib.parse import unquote
             upid = unquote(m.group(1))
             t = next((x for x in STATE["tasks"] if x["upid"] == upid), None)
+            fm = re.match(r"^UPID:([^:]+):vzdump:(\d+)$", upid)
+            if not t and fm and m.group(2) == "log":     # de vaste back-uptaken van de demo
+                vmid = int(fm.group(2))
+                if vmid != 204:
+                    return [{"n": 1, "t": "INFO: Finished Backup of VM {}".format(vmid)}, {"n": 2, "t": "TASK OK"}]
+                f = "/mnt/pve/synology-nfs/dump/vzdump-lxc-204-demo"
+                lines = ["INFO: starting new backup job: vzdump 204 --storage synology-nfs --mode snapshot --compress zstd",
+                         "INFO: Starting Backup of VM 204 (lxc)", "INFO: backup mode: snapshot",
+                         "INFO: creating vzdump archive '{}.tar.zst'".format(f),
+                         "INFO: tar: {}.tmp: Cannot open: Permission denied".format(f),
+                         "INFO: tar: Error is not recoverable: exiting now",
+                         "ERROR: Backup of VM 204 failed - command 'set -o pipefail && lxc-usernsexec -m u:0:100000:65536 -- tar cpf - ...' failed: exit code 2",
+                         "INFO: Backup job finished with errors", "TASK ERROR: job errors"]
+                return [{"n": i + 1, "t": ln} for i, ln in enumerate(lines)]
             if not t:
                 raise PveError("500 taak niet gevonden")
             if m.group(2) == "status":
