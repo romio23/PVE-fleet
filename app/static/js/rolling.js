@@ -151,7 +151,7 @@
     if (!d.started) {
       var todo = nodes.filter(needsWork);
       $('headacts').innerHTML = '';
-      $('nodes').innerHTML = '<section class="card pad"><h2 class="small-title">Zo gaat het</h2>' +
+      $('nodes').innerHTML = autoBanner() + '<section class="card pad"><h2 class="small-title">Zo gaat het</h2>' +
         '<ol style="margin:0 0 14px;padding-left:20px;line-height:1.8;color:var(--text2)">' +
         '<li><strong>Verplaatsen:</strong> de draaiende VM\'s &amp; containers gaan naar een andere node (VM\'s live, containers worden kort herstart).</li>' +
         '<li><strong>Bijwerken:</strong> automatisch via de app-sleutel (apt-get dist-upgrade), of stap voor stap zelf in de console. Eigen configuratiebestanden blijven staan.</li>' +
@@ -210,6 +210,16 @@
 
   // ------------------------------------------------------------ automatisch
   var STEP = { move: 'Verplaatsen', upgrade: 'Bijwerken', reboot: 'Herstarten', restart: 'Weer starten', back: 'Terugzetten' };
+  function selButtons(attr) {
+    return '<div style="margin:0 0 6px;display:flex;gap:8px"><button type="button" class="btn ghost" style="padding:3px 10px;font-size:12px" data-selall="' + attr + '" data-val="1">Alles aanvinken</button>' +
+      '<button type="button" class="btn ghost" style="padding:3px 10px;font-size:12px" data-selall="' + attr + '" data-val="0">Alles uitvinken</button></div>';
+  }
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest ? ev.target.closest('[data-selall]') : null;
+    if (!b) return;
+    var on = b.getAttribute('data-val') === '1';
+    Array.prototype.forEach.call(document.querySelectorAll('.modal [' + b.getAttribute('data-selall') + ']'), function (c) { c.checked = on; });
+  });
   function autoRunning() { return !!(auto && auto.run && auto.run.status === 'running'); }
   function hms(t) { var d = new Date(t * 1000); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) + ':' + ('0' + d.getSeconds()).slice(-2); }
   function loadAuto() {
@@ -272,7 +282,7 @@
     var cls = r.status === 'done' ? 'info' : (r.status === 'stopped' ? 'warn' : 'crit');
     var ttl = r.status === 'done' ? 'Automatische rolling update klaar' : (r.status === 'stopped' ? 'Automatische rolling update gestopt' : (r.status === 'interrupted' ? 'Automatische rolling update onderbroken' : 'Automatische rolling update gestopt door een fout'));
     var desc = r.status === 'done' ? 'Alle nodes zijn na elkaar bijgewerkt.'
-      : '<span>' + e(r.error || 'Gestopt op verzoek.') + '</span><br>Hieronder kun je stap voor stap verder; wat er verplaatst is, staat erbij.';
+      : '<span>' + e(r.error || 'Gestopt op verzoek.') + '</span><br>' + (data && data.started ? 'Hieronder kun je stap voor stap verder; wat er verplaatst is, staat erbij.' : 'Er is niets verplaatst of bijgewerkt.');
     return '<div class="banner ' + cls + '" style="margin-bottom:12px"><div class="txt" style="flex:1"><div class="ttl">' + e(ttl) + '</div><div class="desc">' + desc + '</div>' +
       '<details style="margin-top:8px"><summary class="small" style="cursor:pointer">Wat er gebeurd is</summary><div style="margin-top:8px">' + autoNodes(r, true) + '</div></details></div>' +
       '<button type="button" class="btn ghost" data-do="autoclear">Melding sluiten</button></div>';
@@ -292,7 +302,7 @@
     return PFA.modal({ title: 'Alle nodes automatisch bijwerken', wide: true,
       body: '<p style="margin:0 0 8px">PVE Fleet doet de nodes na elkaar, in deze volgorde: <span class="mono">' + e(order.join(' → ')) + '</span>. Per node: verplaatsen, bijwerken (apt-get dist-upgrade), herstarten als er een nieuwe kernel is, weer starten wat bleef staan, terugzetten. Nodes zonder werk worden overgeslagen.</p>' +
         '<p class="small muted" style="margin:0 0 8px">Aangevinkt: gaat tijdelijk naar een andere node (VM\'s live, containers kort uit). Uitgevinkt: blijft staan, gaat bij de herstart even uit en wordt daarna weer gestart.</p>' +
-        '<div style="max-height:300px;overflow:auto;padding:2px;margin:0 0 8px">' + nodes.map(function (n) {
+        selButtons('data-am') + '<div style="max-height:300px;overflow:auto;padding:2px;margin:0 0 8px">' + nodes.map(function (n) {
           var run = running(n), st = stays(n);
           return '<div style="margin:0 0 8px"><div class="small" style="margin:0 0 4px"><strong class="mono">' + e(n.name) + '</strong> <span class="muted">· ' + (needsWork(n) ? (n.count ? '<span>' + n.count + ' updates</span>' : '<span>herstart nodig</span>') : '<span>up-to-date</span>') + '</span></div>' +
             (run.length ? run.map(function (g) {
@@ -364,7 +374,7 @@
     opts.unshift({ value: '*', label: 'Verdelen', meta: 'over de andere nodes, steeds naar de node met het meeste vrije RAM' });
     return PFA.modal({ title: 'VM\'s & containers van ' + n.name + ' verplaatsen', wide: true,
       body: '<p style="margin:0 0 6px">Deze ' + run.length + ' VM\'s &amp; containers draaien op ' + e(n.name) + ' (samen tot ' + PF.bytes(need, 0) + ' RAM). Vink uit wat hier mag blijven:</p>' +
-        '<div style="margin:0 0 6px;max-height:190px;overflow:auto;padding:2px">' + run.map(function (g) {
+        selButtons('data-mv') + '<div style="margin:0 0 6px;max-height:190px;overflow:auto;padding:2px">' + run.map(function (g) {
           return '<label class="check" style="margin:0 0 4px"><input type="checkbox" data-mv="' + e(stayKey(g)) + '" checked><span class="mono">' + e(gname(g)) + '</span> <span class="small muted">' + (g.type === 'qemu' ? 'VM · blijft draaien tijdens verplaatsen' : 'container · kort uit tijdens verplaatsen') + '</span></label>';
         }).join('') + '</div>' +
         '<p class="small muted" style="margin:0">Aangevinkt: gaat één voor één naar een andere node en na de herstart terug. VM\'s blijven draaien (live migratie), containers worden kort gestopt en op de andere node weer gestart. ' +

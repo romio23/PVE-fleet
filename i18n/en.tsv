@@ -1723,3 +1723,6 @@ de Proxmox-taak duurde te lang|||the Proxmox task took too long
 apt-get dist-upgrade mislukt|||apt-get dist-upgrade failed
 Gestopt door een fout:|||Stopped by an error:
 Onverwachte fout:|||Unexpected error:
+Alles aanvinken|||Tick all
+Alles uitvinken|||Untick all
+Er is niets verplaatst of bijgewerkt.|||Nothing was moved or updated.
