@@ -34,7 +34,7 @@
       <button type="button" class="btn ghost" id="cad" disabled>Ctrl-Alt-Del</button>
       <button type="button" class="btn ghost" id="scale" aria-pressed="true">Passend maken</button>
       {% else %}
-      {% if upgrade %}<button type="button" class="btn primary" id="upgrade" data-cmd="{{ upcmd }}" disabled title="Typt het commando in de shell; jij bevestigt">{{ 'Update-commando invoeren' if appupdate else 'Upgrade-commando invoeren' }}</button>{% endif %}
+      {% if upgrade %}<button type="button" class="btn primary" id="upgrade" data-cmd="{{ upcmd }}" data-app="{{ '1' if appupdate else '0' }}" disabled title="Typt het commando in de shell; jij bevestigt">{{ 'Update-commando invoeren' if appupdate else 'Upgrade-commando invoeren' }}</button>{% endif %}
       <button type="button" class="btn ghost" id="paste" disabled>Plakken</button>
       <button type="button" class="btn ghost" id="bigger" aria-label="Grotere letters">A+</button>
       <button type="button" class="btn ghost" id="smaller" aria-label="Kleinere letters">A−</button>
@@ -46,18 +46,18 @@
   {% if upgrade and kind == 'lxc' %}
   <div class="c-help" id="uphelp">
     <strong>{{ 'App bijwerken' if appupdate else 'Container bijwerken' }}:</strong>
-    <span>1. Zie je een inlogprompt, log dan in als <span class="mono">root</span> (community-scripts-containers loggen vanzelf in).</span>
-    <span>2. Klik op <em>{{ 'Update-commando invoeren' if appupdate else 'Upgrade-commando invoeren' }}</em> (dat typt <span class="mono">{{ upcmd }}</span>).</span>
-    <span>3. {{ 'Volg de vragen van het update-script.' if appupdate else 'Lees wat er verandert en bevestig met Y.' }}</span>
-    <span>4. Klaar? Sluit dit venster; PVE Fleet kijkt dan opnieuw.</span>
+    <span>1. PVE Fleet typt <span class="mono">{{ upcmd }}</span> vanzelf in zodra de root-prompt er staat. Zie je een inlogprompt, log dan eerst in als <span class="mono">root</span>.</span>
+    <span>2. {{ 'Volg de vragen van het update-script.' if appupdate else 'Lees wat er verandert en bevestig met Y.' }}</span>
+    <span>3. Gebeurt er niets? Klik op <em>{{ 'Update-commando invoeren' if appupdate else 'Upgrade-commando invoeren' }}</em>.</span>
+    <span>Klaar? Sluit dit venster; PVE Fleet kijkt dan opnieuw.</span>
   </div>
   {% elif upgrade %}
   <div class="c-help" id="uphelp">
     <strong>Node bijwerken:</strong>
-    <span>1. Log in als <span class="mono">root</span> met het wachtwoord van de node.</span>
-    <span>2. Klik op <em>Upgrade-commando invoeren</em> (dat typt <span class="mono">apt update; apt dist-upgrade</span> en drukt op Enter).</span>
-    <span>3. Lees wat er verandert en bevestig met <span class="mono">Y</span>.</span>
-    <span>4. Klaar? Sluit dit venster; PVE Fleet kijkt dan opnieuw naar updates en of de node moet herstarten.</span>
+    <span>1. Log in als <span class="mono">root</span> met het wachtwoord van de node. Daarna typt PVE Fleet <span class="mono">apt update; apt dist-upgrade</span> vanzelf in.</span>
+    <span>2. Lees wat er verandert en bevestig met <span class="mono">Y</span>.</span>
+    <span>3. Gebeurt er niets? Klik op <em>Upgrade-commando invoeren</em>.</span>
+    <span>Klaar? Sluit dit venster; PVE Fleet kijkt dan opnieuw naar updates en of de node moet herstarten.</span>
   </div>
   {% endif %}
   <main class="c-main">

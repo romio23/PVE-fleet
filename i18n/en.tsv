@@ -1619,3 +1619,46 @@ Voorbeeld:|||Example:
 Oorzaak: unprivileged containers mogen op deze netwerkopslag geen tijdelijke map maken. Laat Proxmox die map lokaal maken; voer dit één keer uit in de shell van een node (het past alle nodes aan):|||Cause: unprivileged containers may not create a temporary folder on this network storage. Let Proxmox create that folder locally; run this once in the shell of a node (it changes all nodes):
 Hun back-up mislukt dan vaak met "Permission denied", tenzij Proxmox de tijdelijke map lokaal maakt. Heb je dit nog niet gedaan, voer dan één keer uit in de shell van een node:|||Their backup then often fails with "Permission denied", unless Proxmox creates the temporary folder locally. If you have not done this yet, run this once in the shell of a node:
 Let op:|||Note:
+# 0.9.5: alles bijwerken, commando meteen invoeren, rolling update per VM/CT
+Doorgaan|||Continue
+Kies minstens één container|||Choose at least one container
+Alle nodes bijwerken|||Update all nodes
+Alle containers bijwerken|||Update all containers
+Alle apps bijwerken|||Update all apps
+Containers worden bijgewerkt · bekijken|||Containers are being updated · view
+Containers bijwerken|||Updating containers
+PVE Fleet werkt deze containers één voor één bij, zonder console:|||PVE Fleet updates these containers one by one, without a console:
+(of apk/dnf). Je eigen configuratiebestanden blijven staan. Vink uit wat je wilt overslaan.|||(or apk/dnf). Your own configuration files are kept. Untick what you want to skip.
+Hiervoor gebruikt PVE Fleet de app-sleutel (pagina Apps). App-updates zitten hier niet in: die stellen soms vragen; gebruik daarvoor|||For this PVE Fleet uses the app key (Apps page). App updates are not included: they sometimes ask questions; for those use
+Per container eerst een snapshot maken (aanbevolen)|||Take a snapshot of each container first (recommended)
+wacht|||waiting
+gelukt|||done
+overgeslagen|||skipped
+overgeslagen: draait niet|||skipped: not running
+gelukt · herstart nodig|||done · restart needed
+PVE Fleet kijkt nu opnieuw welke updates er nog zijn.|||PVE Fleet now checks again which updates are left.
+De update-scripts van community-scripts stellen soms vragen; daarom gaan deze één voor één, elk in een eigen console. PVE Fleet voert|||The community-scripts update scripts sometimes ask questions, so these go one by one, each in its own console. PVE Fleet enters
+vanzelf in. Sluit je een console, dan volgt de volgende app.|||automatically. When you close a console, the next app follows.
+Beginnen|||Start
+Alle apps zijn langsgeweest|||All apps have been handled
+Er worden al containers bijgewerkt|||Containers are already being updated
+Hiervoor is de app-sleutel nodig. Stel die eerst in op de pagina Apps (Instellen); had je dat al gedaan, plak het installatiecommando daar dan opnieuw.|||This needs the app key. Set it up first on the Apps page (Set up); if you already did, paste the installation command from there again.
+container · kort uit tijdens verplaatsen|||container · briefly off while moving
+VM · blijft draaien tijdens verplaatsen|||VM · keeps running while moving
+Aangevinkt: gaat één voor één naar een andere node en na de herstart terug. VM's blijven draaien (live migratie), containers worden kort gestopt en op de andere node weer gestart. Uitgevinkt: blijft hier, gaat bij de herstart even uit en wordt daarna door PVE Fleet weer gestart. Gestopte VM/CT's blijven staan.|||Ticked: moves to another node one by one and comes back after the restart. VMs keep running (live migration), containers are briefly stopped and started again on the other node. Unticked: stays here, is briefly off during the restart and is then started again by PVE Fleet. Stopped VMs/CTs stay where they are.
+Weer starten|||Start again
+Draaien.|||Running.
+Ze gaan bij de herstart even uit; daarna zet PVE Fleet ze weer aan.|||They are briefly off during the restart; PVE Fleet then starts them again.
+Starten klaar|||Starting done
+Het upgrade-commando is ingevoerd; lees wat er verandert en bevestig met|||The upgrade command has been entered; read what changes and confirm with
+Het update-commando is ingevoerd; volg de vragen van het update-script.|||The update command has been entered; follow the questions of the update script.
+Eerst inloggen:|||Log in first:
+Log in als root. Daarna voert PVE Fleet het commando vanzelf in.|||Log in as root. PVE Fleet then enters the command automatically.
+met het wachtwoord van de node. Daarna typt PVE Fleet|||with the node's password. Then PVE Fleet types
+vanzelf in.|||automatically.
+1. PVE Fleet typt|||1. PVE Fleet types
+vanzelf in zodra de root-prompt er staat. Zie je een inlogprompt, log dan eerst in als|||automatically as soon as the root prompt appears. If you see a login prompt, first log in as
+2. Volg de vragen van het update-script.|||2. Follow the questions of the update script.
+2. Lees wat er verandert en bevestig met Y.|||2. Read what changes and confirm with Y.
+3. Gebeurt er niets? Klik op|||3. Nothing happens? Click
+2. Lees wat er verandert en bevestig met|||2. Read what changes and confirm with

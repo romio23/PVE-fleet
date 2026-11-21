@@ -1,5 +1,90 @@
 [
 [
+"^Alle containers bijwerken \\((\\d+)\\)$",
+"",
+"Update all containers ($1)"
+],
+[
+"^Alle apps bijwerken \\((\\d+)\\)$",
+"",
+"Update all apps ($1)"
+],
+[
+"^· (\\d+) pakketten, (\\d+) security$",
+"",
+"· $1 packages, $2 security"
+],
+[
+"^· (\\d+) pakketten$",
+"",
+"· $1 packages"
+],
+[
+"^· 1 pakket, (\\d+) security$",
+"",
+"· 1 package, $1 security"
+],
+[
+"^· 1 pakket$",
+"",
+"· 1 package"
+],
+[
+"^Klaar: (\\d+) bijgewerkt\\.$",
+"",
+"Done: $1 updated."
+],
+[
+"^Klaar: (\\d+) bijgewerkt, (\\d+) mislukt\\.$",
+"",
+"Done: $1 updated, $2 failed."
+],
+[
+"^mislukt: (.+)$",
+"",
+"failed: $1"
+],
+[
+"^App (\\d+) van (\\d+): (.+)$",
+"",
+"App $1 of $2: $3"
+],
+[
+"^VM's & containers van (\\S+) verplaatsen$",
+"",
+"Move VMs & containers of $1"
+],
+[
+"^Deze (\\d+) VM's & containers draaien op (\\S+) \\(samen tot (.+) RAM\\)\\. Vink uit wat hier mag blijven:$",
+"",
+"These $1 VMs & containers run on $2 (together up to $3 RAM). Untick what may stay here:"
+],
+[
+"^(\\d+) verplaatst; (\\d+) blijven hier:$",
+"",
+"$1 moved; $2 stay here:"
+],
+[
+"^(\\d+) blijven hier:$",
+"",
+"$1 stay here:"
+],
+[
+"^Na de herstart: (\\d+) VM/CT's die hier bleven\\.$",
+"",
+"After the restart: $1 VMs/CTs that stayed here."
+],
+[
+"^(\\d+) staan nog uit:$",
+"",
+"$1 are still off:"
+],
+[
+"^Starten klaar, (\\d+) mislukt$",
+"",
+"Starting done, $1 failed"
+],
+[
 "^is netwerkopslag \\((\\w+)\\), en deze unprivileged containers zitten in de job:$",
 "",
 "is network storage ($1), and these unprivileged containers are in the job:"

@@ -21,6 +21,10 @@
   function needsWork(n) { return !!(n.count || n.reboot_needed || (n.behind && n.behind.length)); }
   function pendingBack(n) { return n.moved.filter(function (m) { return !m.returned && m.now && m.now !== n.name; }); }
   function movePhaseDone(n) { return n.moved.length > 0 && n.moved.every(function (m) { return m.returned; }); }
+  function stayKey(g) { return g.type + '/' + g.vmid; }
+  function stays(n) { var o = {}; (n.stay || []).forEach(function (m) { o[stayKey(m)] = 1; }); return o; }
+  function toMove(n) { var st = stays(n); return running(n).filter(function (g) { return !st[stayKey(g)]; }); }
+  function stayedDown(n) { return (n.stay || []).filter(function (m) { return m.now === n.name && m.status !== 'running'; }); }
 
   /* Stappen van één node: elk {key, title, state: 'done'|'todo'|'busy'|'wait'|'skip', html} */
   function steps(n) {
@@ -29,10 +33,17 @@
     var s = [];
     // 1 leegmaken
     var s1 = { key: 'move', title: 'VM\'s & containers verplaatsen' };
+    var mv = toMove(n), nstay = (n.stay || []).length;
     if (isJob && job.kind === 'move') { s1.state = 'busy'; s1.html = jobHtml(); }
     else if (!run.length || movePhaseDone(n)) { s1.state = 'done'; s1.html = n.moved.length ? n.moved.length + ' verplaatst' : 'Er draait niets op deze node.'; }
+    else if (!mv.length && nstay) {
+      s1.state = 'done';
+      s1.html = (n.moved.length ? n.moved.length + ' verplaatst; ' : '') + nstay + ' blijven hier: <span class="mono small">' + n.stay.slice(0, 6).map(function (m) { return e(m.vmid + ' ' + (m.name || '')); }).join(', ') + (nstay > 6 ? ' …' : '') + '</span>. ' +
+        '<span class="small muted">Ze gaan bij de herstart even uit; daarna zet PVE Fleet ze weer aan.</span> <button type="button" class="btn ghost" data-do="unskip" data-n="' + e(n.name) + '">Toch verplaatsen</button>';
+    }
     else if (n.skip_move) { s1.state = 'done'; s1.html = 'Overgeslagen: ' + run.length + ' VM/CT\'s blijven hier en gaan bij de herstart even uit. <button type="button" class="btn ghost" data-do="unskip" data-n="' + e(n.name) + '">Toch verplaatsen</button>'; }
     else {
+      run = mv;
       s1.state = 'todo';
       s1.html = run.length + ' actief: <span class="mono small">' + run.slice(0, 6).map(function (g) { return e(g.vmid + ' ' + g.name); }).join(', ') + (run.length > 6 ? ' …' : '') + '</span>' +
         '<div class="stepacts"><button type="button" class="btn primary" data-do="move" data-n="' + e(n.name) + '"' + (others(n).length ? '' : ' disabled') + '>Verplaatsen…</button>' +
@@ -71,6 +82,18 @@
           (run.length ? '<span class="small c-warn">Er draaien nog ' + run.length + ' VM/CT\'s; die gaan dan even uit.</span>' : '') + '</div>' : '');
     } else { s3.state = 'done'; s3.html = rebootWait ? 'Opnieuw opgestart, kernel <span class="mono">' + e(n.kernel || '') + '</span>.' : 'Niet nodig.'; }
     s.push(s3);
+    // 3b weer starten wat hier bleef
+    if (nstay) {
+      var down = stayedDown(n), s3b = { key: 'restart', title: 'Weer starten' };
+      if (isJob && job.kind === 'start') { s3b.state = 'busy'; s3b.html = jobHtml(); }
+      else if (!online(n) || s3.state === 'busy') { s3b.state = 'wait'; s3b.html = 'Na de herstart: ' + nstay + ' VM/CT\'s die hier bleven.'; }
+      else if (down.length) {
+        s3b.state = 'todo';
+        s3b.html = down.length + ' staan nog uit: <span class="mono small">' + down.slice(0, 6).map(function (m) { return e(m.vmid + ' ' + (m.name || '')); }).join(', ') + (down.length > 6 ? ' …' : '') + '</span>' +
+          '<div class="stepacts"><button type="button" class="btn primary" data-do="restart" data-n="' + e(n.name) + '">Weer starten</button></div>';
+      } else { s3b.state = 'done'; s3b.html = 'Draaien.'; }
+      s.push(s3b);
+    }
     // 4 terugzetten
     var s4 = { key: 'back', title: 'Terugzetten' };
     if (isJob && job.kind === 'back') { s4.state = 'busy'; s4.html = jobHtml(); }
@@ -93,7 +116,7 @@
   function jobHtml() {
     return '<div class="small" style="display:flex;flex-direction:column;gap:3px">' + job.items.map(function (it) {
       var icon = it.state === 'run' ? '<span class="spinner" aria-hidden="true"></span>' : (it.state === 'ok' ? '<span class="c-ok">✓</span>' : (it.state === 'fail' ? '<span class="c-crit">✗</span>' : '<span class="muted">•</span>'));
-      return '<div>' + icon + ' <span class="mono">' + e(gname(it.g)) + '</span> → ' + e(it.to) + (it.msg ? ' <span class="' + (it.state === 'fail' ? 'c-crit' : 'muted') + '">' + e(it.msg) + '</span>' : '') + '</div>';
+      return '<div>' + icon + ' <span class="mono">' + e(gname(it.g)) + '</span>' + (it.action === 'start' ? ' starten' : ' → ' + e(it.to)) + (it.msg ? ' <span class="' + (it.state === 'fail' ? 'c-crit' : 'muted') + '">' + e(it.msg) + '</span>' : '') + '</div>';
     }).join('') + '</div>';
   }
 
@@ -186,14 +209,15 @@
     function next() {
       if (i >= items.length) {
         var fails = items.filter(function (x) { return x.state === 'fail'; }).length;
-        PFA.toast(kind === 'move' ? 'Verplaatsen klaar' + (fails ? ', ' + fails + ' mislukt' : '') : 'Terugzetten klaar' + (fails ? ', ' + fails + ' mislukt' : ''), fails > 0);
+        PFA.toast((kind === 'move' ? 'Verplaatsen klaar' : (kind === 'start' ? 'Starten klaar' : 'Terugzetten klaar')) + (fails ? ', ' + fails + ' mislukt' : ''), fails > 0);
         job = null;
         return PF.postJSON('/api/refresh/' + encodeURIComponent(server)).then(load, load);
       }
       var it = items[i++];
       it.state = 'run'; render(data);
-      var body = { action: 'migrate', server: server, node: it.from, type: it.g.type, vmid: it.g.vmid,
-        params: { target: it.to, online: true, with_local_disks: true } };
+      var body = it.action === 'start' ? { action: 'start', server: server, node: it.from, type: it.g.type, vmid: it.g.vmid }
+        : { action: 'migrate', server: server, node: it.from, type: it.g.type, vmid: it.g.vmid,
+          params: { target: it.to, online: true, with_local_disks: true } };
       return Promise.resolve(onEach ? onEach(it) : null).then(function () {
         return PF.postJSON('/api/action', body);
       }).then(function (res) {
@@ -214,18 +238,30 @@
   }
 
   function move(n) {
-    var run = running(n), targets = others(n).sort(function (a, b) { return (a.mem_pct || 0) - (b.mem_pct || 0); });
+    var run = toMove(n), targets = others(n).sort(function (a, b) { return (a.mem_pct || 0) - (b.mem_pct || 0); });
     if (!targets.length) return PFA.toast('Er is geen andere node online', true);
     var need = run.reduce(function (s, g) { return s + (g.maxmem || 0); }, 0);
+    var keepHere = [];
     var opts = targets.map(function (t) { return { value: t.name, label: t.name, meta: 'RAM ' + PF.pct(t.mem_pct) + ' · ' + running(t).length + ' VM/CT actief' }; });
     opts.unshift({ value: '*', label: 'Verdelen', meta: 'over de andere nodes, steeds naar de node met het meeste vrije RAM' });
     return PFA.modal({ title: 'VM\'s & containers van ' + n.name + ' verplaatsen', wide: true,
-      body: '<p style="margin:0 0 6px">Deze ' + run.length + ' VM\'s &amp; containers gaan één voor één naar een andere node (samen tot ' + PF.bytes(need, 0) + ' RAM):</p>' +
-        '<ul style="margin:0 0 6px;padding-left:18px;max-height:150px;overflow:auto">' + run.map(function (g) { return '<li class="mono">' + e(gname(g)) + '</li>'; }).join('') + '</ul>' +
-        '<p class="small muted" style="margin:0">VM\'s blijven draaien (live migratie, lokale schijven worden meegekopieerd). Containers worden kort gestopt en op de andere node weer gestart. Gestopte VM/CT\'s blijven staan.</p>',
+      body: '<p style="margin:0 0 6px">Deze ' + run.length + ' VM\'s &amp; containers draaien op ' + e(n.name) + ' (samen tot ' + PF.bytes(need, 0) + ' RAM). Vink uit wat hier mag blijven:</p>' +
+        '<div style="margin:0 0 6px;max-height:190px;overflow:auto;padding:2px">' + run.map(function (g) {
+          return '<label class="check" style="margin:0 0 4px"><input type="checkbox" data-mv="' + e(stayKey(g)) + '" checked><span class="mono">' + e(gname(g)) + '</span> <span class="small muted">' + (g.type === 'qemu' ? 'VM · blijft draaien tijdens verplaatsen' : 'container · kort uit tijdens verplaatsen') + '</span></label>';
+        }).join('') + '</div>' +
+        '<p class="small muted" style="margin:0">Aangevinkt: gaat één voor één naar een andere node en na de herstart terug. VM\'s blijven draaien (live migratie), containers worden kort gestopt en op de andere node weer gestart. ' +
+        'Uitgevinkt: blijft hier, gaat bij de herstart even uit en wordt daarna door PVE Fleet weer gestart. Gestopte VM/CT\'s blijven staan.</p>',
       fields: [{ name: 'target', label: 'Naar', type: 'radio', value: '*', options: opts }],
-      confirm: 'Verplaatsen', kind: 'primary' }).then(function (v) {
+      confirm: 'Doorgaan', kind: 'primary',
+      submit: function () {
+        keepHere = run.filter(function (g) { var c = document.querySelector('.modal [data-mv="' + stayKey(g) + '"]'); return c && !c.checked; });
+        return Promise.resolve();
+      } }).then(function (v) {
       if (!v) return;
+      run = run.filter(function (g) { return keepHere.indexOf(g) < 0; });
+      var stayList = (n.stay || []).concat(keepHere.map(function (g) { return { vmid: g.vmid, type: g.type, name: g.name }; }));
+      var pre = keepHere.length ? save({ op: 'stay', node: n.name, stay: stayList }) : Promise.resolve();
+      if (!run.length) return pre.then(load);
       // doel per VM/CT
       var load_ = {};
       targets.forEach(function (t) { load_[t.name] = t.mem_pct || 0; });
@@ -240,10 +276,18 @@
         }
         return { g: g, from: n.name, to: to, state: 'wait' };
       });
-      return runJob('move', n.name, items, function (it) {
-        return save({ op: 'moved', node: n.name, moved: [{ vmid: it.g.vmid, type: it.g.type, name: it.g.name, to: it.to }] });
+      return pre.then(function () {
+        return runJob('move', n.name, items, function (it) {
+          return save({ op: 'moved', node: n.name, moved: [{ vmid: it.g.vmid, type: it.g.type, name: it.g.name, to: it.to }] });
+        });
       });
     });
+  }
+
+  function restart(n) {
+    var items = stayedDown(n).map(function (m) { return { g: { vmid: m.vmid, type: m.type, name: m.name || '' }, from: n.name, to: n.name, state: 'wait', action: 'start' }; });
+    if (!items.length) return;
+    return runJob('start', n.name, items).then(load);
   }
 
   function back(n) {
@@ -287,7 +331,8 @@
     else if (what === 'reboot') PFA.nodePower(server, n.name, 'node_reboot', { cluster: true, running: running(n).length }).then(function (r) {
       if (r !== undefined) { waitReboot[n.name] = Date.now(); render(data); }
     }, function () { /* melding is al getoond */ });
-    else if (what === 'skip') save({ op: 'skipmove', node: n.name }).then(load);
+    else if (what === 'restart') restart(n);
+    else if (what === 'skip') save({ op: 'skipmove', node: n.name, stay: running(n).map(function (g) { return { vmid: g.vmid, type: g.type, name: g.name }; }) }).then(load);
     else if (what === 'unskip') save({ op: 'unskipmove', node: n.name }).then(load);
     else if (what === 'done' || what === 'undone') save({ op: what, node: n.name }).then(load);
   });

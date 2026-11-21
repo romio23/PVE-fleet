@@ -61,7 +61,7 @@
       '<p class="muted" style="margin:4px 0 0">Pakketupdates in de containers en nieuwe versies van de apps (community-scripts): <span>' + schedText(d) + '</span>' +
       (d.next ? ' <span class="small">(volgende: ' + e(PF.when(d.next)) + ')</span>' : '') + '.' +
       (d.admin ? ' <a href="#" data-ct="schedule">Wijzigen</a>' : '') + '</p></div>' +
-      (on.length ? '<div class="end"><label class="check" style="margin:0"><input type="checkbox" id="ct-only"' + (onlyUpd ? ' checked' : '') + '>Alleen met updates</label></div>' : '') + '</div>';
+      (on.length ? '<div class="end" style="flex-wrap:wrap;gap:8px">' + bulkButtons(d) + '<label class="check" style="margin:0"><input type="checkbox" id="ct-only"' + (onlyUpd ? ' checked' : '') + '>Alleen met updates</label></div>' : '') + '</div>';
     html += on.map(function (n) { return serverBlock(n, d.servers[n]); }).join('');
     if (off.length) {
       html += '<section class="card pad"><h2 class="small-title">' + (on.length ? 'Nog niet ingesteld' : 'Eenmalig instellen') + '</h2>' +
@@ -73,7 +73,112 @@
     html += '<p class="small muted" style="margin:0">VM\'s worden nog niet gecontroleerd. Docker-containers binnen een VM of container ook niet.</p>';
     root.innerHTML = '<div style="display:flex;flex-direction:column;gap:16px;margin-top:6px">' + html + '</div>';
   }
-  function load() { return PF.getJSON('/api/guest-updates').then(render, function () {}); }
+  var bulkRunning = false;
+  function load() {
+    return PF.getJSON('/api/guest-updates').then(function (d) {
+      render(d);
+      if (d.admin) PF.getJSON('/api/guest-updates/upgrade-all').then(function (r) {
+        var run = !!(r.job && r.job.status === 'running');
+        if (run !== bulkRunning) { bulkRunning = run; render(data); }
+      }, function () {});
+    }, function () {});
+  }
+
+  // ------------------------------------------------------------ alles bijwerken
+  function pkgTargets(d) {
+    return Object.keys(d.guests).map(function (k) { return d.guests[k]; }).filter(function (x) {
+      return (x.count || 0) > 0 && x.status === 'running' && d.servers[x.server] && d.servers[x.server].enabled;
+    }).sort(function (a, b) { return a.vmid - b.vmid; });
+  }
+  function appTargets(d) {
+    return Object.keys(d.guests).map(function (k) { return d.guests[k]; }).filter(function (x) {
+      var m = mainApp(x);
+      return m && m.update && x.status === 'running' && d.servers[x.server] && d.servers[x.server].enabled;
+    }).sort(function (a, b) { return a.vmid - b.vmid; });
+  }
+  function bulkButtons(d) {
+    if (!d.admin) return '';
+    if (bulkRunning) return '<button type="button" class="btn primary" data-ct="bulkview"><span class="spinner" style="display:inline-block;width:11px;height:11px;vertical-align:-1px;margin-right:6px"></span>Containers worden bijgewerkt · bekijken</button>';
+    var p = pkgTargets(d).length, a = appTargets(d).length;
+    return (p ? '<button type="button" class="btn primary" data-ct="allpkg">Alle containers bijwerken (' + p + ')</button>' : '') +
+      (a ? '<button type="button" class="btn blue" data-ct="allapps">Alle apps bijwerken (' + a + ')</button>' : '');
+  }
+  function allPackages() {
+    var list = pkgTargets(data);
+    if (!list.length) return;
+    var rows = list.map(function (x) {
+      return '<label class="check" style="margin:0 0 6px"><input type="checkbox" data-bulk="' + e(x.server + '/' + x.vmid) + '" checked>' +
+        '<span><span class="mono">' + x.vmid + '</span> ' + e(x.name) + ' <span class="small muted">· ' + x.count + ' pakket' + (x.count === 1 ? '' : 'ten') +
+        (x.security ? ', ' + x.security + ' security' : '') + '</span></span></label>';
+    }).join('');
+    PFA.modal({ title: 'Alle containers bijwerken', wide: true,
+      body: '<p style="margin:0 0 8px;line-height:1.55">PVE Fleet werkt deze containers één voor één bij, zonder console: <span class="mono">apt-get dist-upgrade</span> (of apk/dnf). Je eigen configuratiebestanden blijven staan. Vink uit wat je wilt overslaan.</p>' +
+        '<div style="max-height:260px;overflow:auto;padding:4px 2px;margin-bottom:6px">' + rows + '</div>' +
+        '<p class="small muted" style="margin:0">Hiervoor gebruikt PVE Fleet de app-sleutel (pagina Apps). App-updates zitten hier niet in: die stellen soms vragen; gebruik daarvoor <em>Alle apps bijwerken</em>.</p>',
+      fields: [{ name: 'snap', label: 'Per container eerst een snapshot maken (aanbevolen)', type: 'checkbox', value: true }],
+      confirm: 'Bijwerken', kind: 'primary',
+      validate: function () { return document.querySelectorAll('.modal [data-bulk]:checked').length ? null : 'Kies minstens één container'; },
+      submit: function (v) {
+        var targets = Array.prototype.map.call(document.querySelectorAll('.modal [data-bulk]:checked'), function (c) {
+          var p = c.getAttribute('data-bulk').split('/'); return { server: p[0], vmid: +p[1] };
+        });
+        return PF.postJSON('/api/guest-updates/upgrade-all', { targets: targets, snapshot: v.snap }).then(function () {
+          setTimeout(followBulk, 50);
+        });
+      } });
+  }
+  var BSTATE = { wait: 'wacht', busy: 'bezig…', ok: 'gelukt', fail: 'mislukt', skip: 'overgeslagen' };
+  function followBulk() {
+    var timer = null;
+    PFA.modal({ title: 'Containers bijwerken', wide: true,
+      body: '<div id="bk-items" class="list" style="margin-bottom:8px"></div><pre class="log" id="bk-log" style="max-height:40vh">Bezig…</pre><div id="bk-st" class="small" style="margin-top:8px"></div>',
+      confirm: null, cancelLabel: 'Sluiten',
+      onRender: function () {
+        function tick() {
+          PF.getJSON('/api/guest-updates/upgrade-all').then(function (r) {
+            var j = r.job, el = document.getElementById('bk-log');
+            if (!el || !j) { clearInterval(timer); return; }
+            document.getElementById('bk-items').innerHTML = j.items.map(function (i) {
+              var cls = i.state === 'ok' ? 'c-ok' : (i.state === 'fail' ? 'c-crit' : (i.state === 'busy' ? '' : 'muted'));
+              return '<div class="row"><span><span class="mono">' + i.vmid + '</span> ' + e(i.name || '') + '</span><span class="small ' + cls + '">' +
+                e(BSTATE[i.state] || i.state) + (i.msg && i.state !== 'ok' ? ': ' + e(i.msg) : (i.reboot ? ' · herstart nodig' : '')) + '</span></div>';
+            }).join('');
+            var atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 20;
+            el.textContent = (j.log || []).join('\n');
+            if (atEnd) el.scrollTop = el.scrollHeight;
+            var st = document.getElementById('bk-st');
+            if (j.status === 'running') st.innerHTML = '<span class="spinner" style="display:inline-block;vertical-align:-3px"></span> Bezig. Je mag dit venster sluiten; het bijwerken gaat door.';
+            else {
+              clearInterval(timer);
+              var ok = j.items.filter(function (i) { return i.state === 'ok'; }).length, bad = j.items.filter(function (i) { return i.state === 'fail'; }).length;
+              st.innerHTML = '<span class="' + (bad ? 'c-warn' : 'c-ok') + '">Klaar: ' + ok + ' bijgewerkt' + (bad ? ', ' + bad + ' mislukt' : '') + '.</span> PVE Fleet kijkt nu opnieuw welke updates er nog zijn.';
+              setTimeout(load, 2500);
+            }
+          }, function () {});
+        }
+        tick(); timer = setInterval(tick, 1500);
+      } }).then(function () { clearInterval(timer); load(); });
+  }
+  function allApps() {
+    var list = appTargets(data);
+    if (!list.length) return;
+    PFA.modal({ title: 'Alle apps bijwerken', wide: true,
+      body: '<p style="margin:0 0 8px;line-height:1.55">De update-scripts van community-scripts stellen soms vragen; daarom gaan deze één voor één, elk in een eigen console. PVE Fleet voert <span class="mono">update</span> vanzelf in. Sluit je een console, dan volgt de volgende app.</p>' +
+        '<ol style="margin:0;padding-left:20px;line-height:1.7">' + list.map(function (x) { var m = mainApp(x); return '<li><span class="mono">' + x.vmid + '</span> ' + e(x.name) + ': ' + e(m.name) + ' ' + e(m.installed || '') + ' → ' + e(m.latest || '') + '</li>'; }).join('') + '</ol>',
+      confirm: 'Beginnen', kind: 'primary' }).then(function (ok) {
+      if (!ok) return;
+      var i = 0;
+      (function next() {
+        if (i >= list.length) { PFA.toast('Alle apps zijn langsgeweest'); load(); return; }
+        var x = list[i++], m = mainApp(x);
+        PFA.toast('App ' + i + ' van ' + list.length + ': ' + x.name);
+        PFA.guestUpdate(g(x), 'app', { app: m && m.name, installed: m && m.installed, latest: m && m.latest }, function () {
+          PF.postJSON('/api/guest-updates/' + encodeURIComponent(x.server) + '/check').then(function () {}, function () {});
+          setTimeout(next, 600);
+        });
+      })();
+    });
+  }
   function schedText(d) {
     var sc = d.schedule || { mode: 'interval', hours: d.hours };
     var t = sc.mode === 'daily' ? 'elke dag om ' + sc.at + ' gecontroleerd' : (sc.hours === 1 ? 'elk uur gecontroleerd' : 'elke ' + sc.hours + ' uur gecontroleerd');
@@ -123,6 +228,9 @@
     if (!b || !data) return;
     var a = b.getAttribute('data-ct');
     if (a === 'schedule') { ev.preventDefault(); return scheduleModal(); }
+    if (a === 'allpkg') return allPackages();
+    if (a === 'bulkview') return followBulk();
+    if (a === 'allapps') return allApps();
     if (a === 'setup') return setup(b.getAttribute('data-s'));
     if (a === 'check') {
       b.disabled = true;

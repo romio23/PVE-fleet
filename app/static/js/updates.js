@@ -85,7 +85,7 @@
       var head = '<div class="card-head"><h2>' + e(g.name) + '</h2><span class="small muted">' + (g.kind === 'cluster' ? 'cluster · ' + g.nodes.length + ' nodes' : 'losse node') + '</span>' +
         (g.kind === 'cluster' && g.quorate === false ? '<span class="pill c-crit" style="border-color:currentColor">geen quorum</span>' : '') +
         '<div class="end">' + (g.kind === 'cluster' && g.nodes.length > 1 && g.reachable
-          ? '<a class="btn ' + (g.rolling ? 'blue' : (work ? 'primary' : 'ghost')) + '" href="/updates/rolling/' + encodeURIComponent(g.server) + '">' + (g.rolling ? 'Rolling update hervatten' : 'Rolling update') + '</a>' : '') + '</div></div>';
+          ? '<a class="btn ' + (g.rolling ? 'blue' : (work ? 'primary' : 'ghost')) + '" href="/updates/rolling/' + encodeURIComponent(g.server) + '" title="Node voor node: VM\'s &amp; containers verplaatsen, bijwerken, herstarten en terugzetten">' + (g.rolling ? 'Rolling update hervatten' : (work ? 'Alle nodes bijwerken' : 'Rolling update')) + '</a>' : '') + '</div></div>';
       if (!g.reachable) return '<section class="card warnline">' + head + '<div class="pad small c-crit" style="padding:14px 18px">Niet bereikbaar: ' + e(g.error || '') + '</div></section>';
       return '<section class="card" style="overflow:hidden">' + head + '<div class="tablewrap"><table class="tbl" style="min-width:900px"><thead><tr>' +
         '<th>Node</th><th>Status</th><th>PVE</th><th>Kernel</th><th>Updates</th><th>Gecontroleerd</th><th class="r"><span class="sr">Acties</span></th></tr></thead><tbody>' +

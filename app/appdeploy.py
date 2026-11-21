@@ -117,7 +117,29 @@ okdir() { [[ "$1" =~ ^/(opt|srv|var/www|home)(/[A-Za-z0-9._-]+)+$ && "$1" != *..
 okrel() { [ "$1" = "-" ] || { [[ "$1" =~ ^[A-Za-z0-9._/-]+$ && "$1" != *..* && "$1" != /* ]] || fail "ongeldig pad: $1"; }; }
 case "${A[0]:-}" in
   ping)
-    echo "PVEFLEET-DEPLOY 1 $(hostname)" ;;
+    echo "PVEFLEET-DEPLOY 2 $(hostname)" ;;
+  upgrade)
+    # pakketten in een container onbeheerd bijwerken; eigen configuratiebestanden blijven staan
+    okid "${A[1]:-}"
+    [ "$(pct status "${A[1]}" | awk '{print $2}')" = running ] || fail "container ${A[1]} draait niet"
+    pct exec "${A[1]}" -- sh -c '
+      export LC_ALL=C DEBIAN_FRONTEND=noninteractive
+      if command -v apt-get >/dev/null 2>&1; then
+        echo "apt-get update"; apt-get update -q || exit 4
+        echo "apt-get dist-upgrade"
+        apt-get -y -q -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold dist-upgrade || exit 5
+        apt-get -y -q autoremove >/dev/null 2>&1 || true
+      elif command -v apk >/dev/null 2>&1; then
+        echo "apk upgrade"; apk update && apk upgrade || exit 5
+      elif command -v dnf >/dev/null 2>&1; then
+        echo "dnf upgrade"; dnf -y upgrade || exit 5
+      else
+        echo "geen apt, apk of dnf gevonden"; exit 6
+      fi
+      [ -e /var/run/reboot-required ] && echo "PVEFLEET-REBOOT"
+      echo "PVEFLEET-OK"
+    ' 2>&1
+    exit $? ;;
   info)
     okid "${A[1]:-}"; okdir "${A[2]:-}"
     st=$(pct status "${A[1]}" | awk '{print $2}')

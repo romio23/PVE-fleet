@@ -5,13 +5,13 @@ from datetime import timedelta
 
 from flask import Flask, abort, g, jsonify, render_template
 
-from . import actions, appdeploy, auth, backups, certs, console, guestupdates, servers_api, updates
+from . import actions, appdeploy, auth, backups, bulkupdate, certs, console, guestupdates, servers_api, updates
 from . import config as config_mod
 from .collector import Collector
 from .details import NotFound, guest_detail, node_detail
 from .settings import SettingsStore
 
-__version__ = "0.9.4"
+__version__ = "0.9.5"
 
 
 def create_app(start_collector=True):
@@ -45,6 +45,7 @@ def create_app(start_collector=True):
     guestupdates.init_app(app)
     certs.init_app(app)
     appdeploy.init_app(app)
+    bulkupdate.init_app(app)
     console.sock.init_app(app)
     if start_collector:
         collector.start()      # eerste ronde start meteen op de achtergrond

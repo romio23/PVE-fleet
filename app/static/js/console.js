@@ -86,7 +86,33 @@
       overlay('Console niet geopend', err.message);
     });
   }
-  var lastRoot = false, autoUpgradeDone = false;
+  var lastRoot = false, autoUpgradeDone = false, autoTimer = null, promptTimer = null, tail = '';
+  var dec = new TextDecoder();
+  var ANSI = /\x1b\[[0-9;?]*[ -\/]*[@-~]|\x1b\][^\x07\x1b]*(\x07|\x1b\\)|\x1b[()][0-9A-Za-z]|\x1b[=>]|\r/g;
+  // Commando meteen invoeren zodra er een root-prompt staat (eindigt op #). Bij 'login:' wachten
+  // tot je zelf ingelogd bent; een gewone gebruiker ($) krijgt het commando niet.
+  function watchPrompt(chunk) {
+    if (!$('upgrade') || autoUpgradeDone) return;
+    tail = (tail + chunk.replace(ANSI, '')).slice(-400);
+    clearTimeout(promptTimer);
+    if (/(^|\n)[^\n]*\S#\s?$/.test(tail)) {
+      promptTimer = setTimeout(function () { if (/#\s?$/.test(tail)) autoRun(); }, 350);
+    } else if (/(login|Password|Wachtwoord):\s?$/i.test(tail)) {
+      var help = $('uphelp');
+      if (help) help.innerHTML = '<strong>Eerst inloggen:</strong> <span>Log in als root. Daarna voert PVE Fleet het commando vanzelf in.</span>';
+    }
+  }
+  function autoRun() {
+    if (autoUpgradeDone || !$('upgrade')) return;
+    autoUpgradeDone = true;
+    clearTimeout(autoTimer); clearTimeout(promptTimer);
+    var app = $('upgrade').getAttribute('data-app') === '1';
+    var help = $('uphelp');
+    if (help) help.innerHTML = app
+      ? '<strong>App bijwerken:</strong> <span>Het update-commando is ingevoerd; volg de vragen van het update-script.</span> <span>Klaar? Sluit dit venster; PVE Fleet kijkt dan opnieuw.</span>'
+      : '<strong>Bijwerken:</strong> <span>Het upgrade-commando is ingevoerd; lees wat er verandert en bevestig met <span class="mono">Y</span>.</span> <span>Klaar? Sluit dit venster; PVE Fleet kijkt dan opnieuw.</span>';
+    sendInput($('upgrade').getAttribute('data-cmd') + '\r');
+  }
 
   // ---------------------------------------------------------------- terminal
   function sendInput(d) {
@@ -118,19 +144,18 @@
       if ($('upgrade')) $('upgrade').disabled = false;
       sendSize();
       if ($('upgrade') && lastRoot && !autoUpgradeDone) {
-        // Met een root-sessie is er geen inlogprompt: het upgrade-commando meteen invoeren.
-        autoUpgradeDone = true;
-        var help = $('uphelp');
-        if (help) help.innerHTML = '<strong>Node bijwerken:</strong> <span>Je bent als root ingelogd. Het upgrade-commando is ingevoerd; lees wat er verandert en bevestig met <span class="mono">Y</span>.</span> <span>Klaar? Sluit dit venster; PVE Fleet kijkt dan opnieuw.</span>';
-        setTimeout(function () { sendInput($('upgrade').getAttribute('data-cmd') + '\r'); }, 900);
+        // Root-sessie: geen inlogprompt. Normaal herkent watchPrompt de prompt; lukt dat niet
+        // (een bijzondere prompt), dan na een paar seconden toch invoeren.
+        clearTimeout(autoTimer);
+        autoTimer = setTimeout(function () { autoRun(); }, 4000);
       }
       term.focus();
       clearInterval(ping);
       ping = setInterval(function () { if (ws && ws.readyState === 1) ws.send('2'); }, 30000);
     };
     ws.onmessage = function (ev) {
-      if (typeof ev.data === 'string') term.write(ev.data);
-      else term.write(new Uint8Array(ev.data));
+      if (typeof ev.data === 'string') { term.write(ev.data); watchPrompt(ev.data); }
+      else { var u = new Uint8Array(ev.data); term.write(u); watchPrompt(dec.decode(u, { stream: true })); }
     };
     ws.onclose = function (ev) {
       clearInterval(ping);
@@ -199,6 +224,7 @@
       if (term) { term.options.fontSize = fontSize; try { fit.fit(); } catch (x) { /* niets */ } }
     }
     if ($('upgrade')) $('upgrade').addEventListener('click', function () {
+      autoUpgradeDone = true; clearTimeout(autoTimer); clearTimeout(promptTimer);
       sendInput($('upgrade').getAttribute('data-cmd') + '\r');
       term.focus();
     });

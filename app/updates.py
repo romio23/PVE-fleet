@@ -168,6 +168,9 @@ def api_rolling(server):
         n["moved"] = moved
         n["done"] = bool(np.get("done"))
         n["skip_move"] = bool(np.get("skip_move"))
+        n["stay"] = [dict(m, now=where[(m["type"], m["vmid"])]["node"] if (m["type"], m["vmid"]) in where else None,
+                          status=where[(m["type"], m["vmid"])]["status"] if (m["type"], m["vmid"]) in where else None)
+                     for m in np.get("stay", [])]
         n["guests"] = [{"vmid": x["vmid"], "type": x["type"], "name": x["name"], "status": x["status"],
                         "maxmem": x.get("maxmem"), "mem": x.get("mem")}
                        for x in grp["guests"] if x["node"] == n["name"]]
@@ -223,8 +226,22 @@ def api_rolling_update(server):
                     m["returned"] = True
                     if body.get("kept"):
                         m["kept"] = True
-        elif op in ("skipmove", "unskipmove"):
-            plan["nodes"].setdefault(node, {})["skip_move"] = op == "skipmove"
+        elif op in ("skipmove", "unskipmove", "stay"):
+            # stay: deze VM/CT's niet verplaatsen (ze gaan bij de herstart even uit; daarna weer starten)
+            np = plan["nodes"].setdefault(node, {})
+            if op == "unskipmove":
+                np["skip_move"] = False
+                np["stay"] = []
+            else:
+                if op == "skipmove":
+                    np["skip_move"] = True
+                stay = []
+                for m in body.get("stay") or []:
+                    try:
+                        stay.append({"vmid": int(m["vmid"]), "type": str(m["type"]), "name": str(m.get("name", ""))[:80]})
+                    except (KeyError, TypeError, ValueError):
+                        continue
+                np["stay"] = stay
         elif op in ("done", "undone"):
             plan["nodes"].setdefault(node, {})["done"] = op == "done"
             if op == "done":
