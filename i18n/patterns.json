@@ -1,5 +1,25 @@
 [
 [
+"^mislukt: het script op node (\\S+) is te oud \\(versie (\\S+)\\)\\. Plak het installatiecommando van de pagina Apps \\(Instellen\\) opnieuw op een node; dat is een ander commando dan dat van de controle op updates\\.$",
+"",
+"failed: the script on node $1 is too old (version $2). Paste the installation command from the Apps page (Set up) again on a node; this is a different command from the one for the update check."
+],
+[
+"^het script op node (\\S+) is te oud \\(versie (\\S+)\\)\\. Plak het installatiecommando van de pagina Apps \\(Instellen\\) opnieuw op een node; dat is een ander commando dan dat van de controle op updates\\.$",
+"",
+"the script on node $1 is too old (version $2). Paste the installation command from the Apps page (Set up) again on a node; this is a different command from the one for the update check."
+],
+[
+"^het script op deze node is verouderd \\(versie (\\d+)\\)\\. Plak het commando hierboven opnieuw op een node\\.$",
+"",
+"the script on this node is outdated (version $1). Paste the command above again on a node."
+],
+[
+"^mislukt: het script op de node is te oud\\. Plak het installatiecommando van de pagina Apps \\(Instellen\\) opnieuw op een node\\.$",
+"",
+"failed: the script on the node is too old. Paste the installation command from the Apps page (Set up) again on a node."
+],
+[
 "^Alle containers bijwerken \\((\\d+)\\)$",
 "",
 "Update all containers ($1)"

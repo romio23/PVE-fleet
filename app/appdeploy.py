@@ -31,6 +31,13 @@ log = logging.getLogger(__name__)
 bp = Blueprint("appdeploy", __name__)
 
 KEY_TAG = "pve-fleet-deploy"
+SCRIPT_VERSION = 2      # deploy.sh: 2 = met de opdracht 'upgrade' (alle containers bijwerken)
+
+
+def script_version(out):
+    """Versie uit het antwoord op 'ping' (PVEFLEET-DEPLOY <versie> <node>); 0 als onbekend."""
+    m = re.search(r"PVEFLEET-DEPLOY (\d+)", out or "")
+    return int(m.group(1)) if m else 0
 SCRIPT_PATH = "/etc/pve/pvefleet/deploy.sh"
 KEEP_RELEASES = 5
 KEEP_SNAPSHOTS = 2
@@ -910,9 +917,13 @@ def api_enable():
             try:
                 host = n.get("ip") or col.client(s["name"]).active_host
                 rc, out = ssh_run(store, host, "ping", port=port, user=user, timeout=30)
-                good = "PVEFLEET-DEPLOY" in out
-                results.append({"server": s["name"], "node": n["name"], "ok": good,
-                                "msg": "klaar" if good else "onverwacht antwoord: {}".format(out.strip()[:120] or rc)})
+                ver = script_version(out)
+                good = ver >= SCRIPT_VERSION
+                if ver and not good:
+                    msg = "het script op deze node is verouderd (versie {}). Plak het commando hierboven opnieuw op een node.".format(ver)
+                else:
+                    msg = "klaar" if good else "onverwacht antwoord: {}".format(out.strip()[:120] or rc)
+                results.append({"server": s["name"], "node": n["name"], "ok": good, "msg": msg})
             except PveError as e:
                 results.append({"server": s["name"], "node": n["name"], "ok": False, "msg": str(e)})
     ok = any(r["ok"] for r in results) and not any(r["ok"] is False for r in results)

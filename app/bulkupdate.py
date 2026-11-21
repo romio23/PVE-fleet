@@ -63,6 +63,7 @@ def run(app, job):
     col = app.extensions["collector"]
     demo = bool(col.cfg.get("demo"))
     servers = set()
+    checked = {}     # node-host -> foutmelding of None: eerst kijken of deploy.sh 'upgrade' kent, vóór een snapshot
     for it in job["items"]:
         with _lock:
             it["state"] = "busy"
@@ -80,6 +81,20 @@ def run(app, job):
                 continue
             node = row["node"]
             servers.add(it["server"])
+            if not demo:
+                port, user = appdeploy._ssh_opts(app, it["server"])
+                host = appdeploy._node_host(app, grp, it["server"], node)
+                if host not in checked:
+                    try:
+                        _, pong = appdeploy.ssh_run(store, host, "ping", port=port, user=user, timeout=30)
+                        v = appdeploy.script_version(pong)
+                        checked[host] = None if v >= appdeploy.SCRIPT_VERSION else (
+                            "het script op node {} is te oud (versie {}). Plak het installatiecommando van de pagina Apps (Instellen) "
+                            "opnieuw op een node; dat is een ander commando dan dat van de controle op updates.".format(node, v or "?"))
+                    except PveError as e:
+                        checked[host] = str(e)
+                if checked[host]:
+                    raise PveError(checked[host])
             if job["snapshot"]:
                 snap = _snapshot(c, node, it["vmid"], "pakketupdates")
                 with _lock:
@@ -110,7 +125,7 @@ def run(app, job):
                 rc, out = appdeploy.ssh_run(store, host, "upgrade {}".format(int(it["vmid"])), on_line=on_line,
                                             port=port, user=user, timeout=3600)
                 if "onbekende opdracht" in out:
-                    raise PveError("het script op de node is te oud. Plak het installatiecommando opnieuw (Apps › Instellen).")
+                    raise PveError("het script op de node is te oud. Plak het installatiecommando van de pagina Apps (Instellen) opnieuw op een node.")
                 ok = rc == 0 and "PVEFLEET-OK" in out
                 reboot = flags["reboot"]
                 if not ok:
