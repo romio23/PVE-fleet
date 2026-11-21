@@ -1,5 +1,140 @@
 [
 [
+"^Blijven hier \\(gaan bij de herstart even uit\\): (.+)$",
+"",
+"Staying here (briefly off during the reboot): $1"
+],
+[
+"^Verplaatsen: (.+) → (\\S+)$",
+"",
+"Moving: $1 → $2"
+],
+[
+"^Verplaatst: (\\d+) VM/CT's\\.$",
+"",
+"Moved: $1 VMs/CTs."
+],
+[
+"^Bijwerken: apt-get dist-upgrade op (\\S+)…$",
+"",
+"Updating: apt-get dist-upgrade on $1…"
+],
+[
+"^Let op: Proxmox meldt nog (\\d+) updates \\(vaak pakketten die apt bewust tegenhoudt\\)\\.$",
+"",
+"Note: Proxmox still reports $1 updates (often packages apt deliberately holds back)."
+],
+[
+"^Herstart gevraagd; wachten tot (\\S+) weg is…$",
+"",
+"Reboot requested; waiting for $1 to go down…"
+],
+[
+"^(\\S+) is aan het herstarten; wachten tot hij terug is…$",
+"",
+"$1 is rebooting; waiting for it to come back…"
+],
+[
+"^(\\S+) is terug \\(na (\\d+) s\\)\\. Even laten opstarten…$",
+"",
+"$1 is back (after $2 s). Letting it start up…"
+],
+[
+"^Terugzetten: (.+) ← (\\S+)$",
+"",
+"Moving back: $1 ← $2"
+],
+[
+"^Niets te doen: (\\S+) is al bijgewerkt\\.$",
+"",
+"Nothing to do: $1 is already up to date."
+],
+[
+"^(\\S+) is al bijgewerkt; alleen terugzetten wat er nog elders staat\\.$",
+"",
+"$1 is already up to date; only moving back what is still elsewhere."
+],
+[
+"^(\\S+) is klaar\\.$",
+"",
+"$1 is done."
+],
+[
+"^Gestart door (\\S+): (\\d+) nodes, volgorde (.+)\\.$",
+"",
+"Started by $1: $2 nodes, order $3."
+],
+[
+"^Stoppen gevraagd door (\\S+)\\. PVE Fleet maakt de lopende stap af en stopt dan\\.$",
+"",
+"Stop requested by $1. PVE Fleet finishes the current step and then stops."
+],
+[
+"node (\\S+) is offline; PVE Fleet herstart geen node zolang er een andere niet online is",
+"",
+"node $1 is offline; PVE Fleet does not reboot a node while another one is not online"
+],
+[
+"verplaatsen van (.+?) naar (\\S+) mislukt: ",
+"",
+"moving $1 to $2 failed: "
+],
+[
+"terugzetten van (.+?) mislukt: ",
+"",
+"moving back $1 failed: "
+],
+[
+"starten van (.+?) mislukt: ",
+"",
+"starting $1 failed: "
+],
+[
+"(\\S+) is na (\\d+) minuten nog niet herstart",
+"",
+"$1 has not rebooted after $2 minutes"
+],
+[
+"(\\S+) is na (\\d+) minuten nog niet terug",
+"",
+"$1 is not back after $2 minutes"
+],
+[
+"(VM|CT) (\\d+) staat na het verplaatsen nog niet op (\\S+)",
+"",
+"$1 $2 is not on $3 yet after the move"
+],
+[
+"het script op node (\\S+) is te oud \\(versie (\\S+)\\)\\. Plak het installatiecommando van de pagina Apps \\(Instellen\\) opnieuw op een node en druk daar op 'Inschakelen en testen'\\.",
+"",
+"the script on node $1 is too old (version $2). Paste the installation command from the Apps page (Set up) again on a node and press 'Enable and test' there."
+],
+[
+"het script op node (\\S+) is te oud\\. Plak het installatiecommando van de pagina Apps \\(Instellen\\) opnieuw op een node\\.",
+"",
+"the script on node $1 is too old. Paste the installation command from the Apps page (Set up) again on a node."
+],
+[
+"^Offline: (.+)\\. Eerst alle nodes online\\.$",
+"",
+"Offline: $1. Get all nodes online first."
+],
+[
+"^(\\S+) is al bijgewerkt en is overgeslagen$",
+"",
+"$1 is already up to date and was skipped"
+],
+[
+"^(\\d+) van (\\d+) nodes hebben werk\\.$",
+"",
+"$1 of $2 nodes have work to do."
+],
+[
+"^(\\d+) verplaatst$",
+"",
+"$1 moved"
+],
+[
 "^mislukt: het script op node (\\S+) is te oud \\(versie (\\S+)\\)\\. Plak het installatiecommando van de pagina Apps \\(Instellen\\) opnieuw op een node; dat is een ander commando dan dat van de controle op updates\\.$",
 "",
 "failed: the script on node $1 is too old (version $2). Paste the installation command from the Apps page (Set up) again on a node; this is a different command from the one for the update check."

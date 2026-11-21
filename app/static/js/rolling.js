@@ -10,6 +10,10 @@
   var job = null;      // lopende reeks migraties: {node, label, items:[{g, to, state, msg}], idx}
   var waitReboot = {}; // node -> tijdstip van herstartopdracht
   var checking = {};
+  var AUTO = API + '/auto';
+  var auto = null;       // {run, enabled, demo}: automatische rolling update op de server
+  var autoSkipped = {};  // stap voor stap: nodes zonder werk die al vanzelf zijn overgeslagen
+  var logOpen = {};      // welke logboeken open staan (per node)
 
   function save(body) { return PF.postJSON(API, body); }
   function load() { return PF.getJSON(API).then(render, function (err) { $('nodes').innerHTML = '<div class="banner crit"><div class="txt">' + e(err.message) + '</div></div>'; }); }
@@ -137,10 +141,12 @@
     var warn = [];
     if (d.kind !== 'cluster') warn.push(['crit', 'Dit is geen cluster. Gebruik de pagina Updates.']);
     if (d.quorate === false) warn.push(['crit', 'Het cluster heeft geen quorum. Los dat eerst op voordat je een node herstart.']);
-    var off = nodes.filter(function (n) { return !online(n) && !waitReboot[n.name]; });
+    var busy = autoRunning() ? auto.run.current : null;   // de node die de automatische update nu herstart
+    var off = nodes.filter(function (n) { return !online(n) && !waitReboot[n.name] && n.name !== busy; });
     if (off.length) warn.push(['warn', 'Offline: ' + off.map(function (n) { return n.name; }).join(', ') + '. Herstart niet nog een node zolang deze niet terug is.']);
     if (nodes.length === 2) warn.push(['warn', 'Een cluster met 2 nodes verliest quorum zodra er één herstart (tenzij je een QDevice hebt). VM\'s & containers blijven dan draaien, maar starten, stoppen en verplaatsen lukt pas weer als de node terug is.']);
     $('checks').innerHTML = warn.map(function (w) { return '<div class="banner ' + w[0] + '" style="margin-bottom:10px"><div class="txt"><div class="desc" style="margin:0">' + e(w[1]) + '</div></div></div>'; }).join('');
+    if (autoRunning()) { renderAuto(nodes); return; }
 
     if (!d.started) {
       var todo = nodes.filter(needsWork);
@@ -148,26 +154,29 @@
       $('nodes').innerHTML = '<section class="card pad"><h2 class="small-title">Zo gaat het</h2>' +
         '<ol style="margin:0 0 14px;padding-left:20px;line-height:1.8;color:var(--text2)">' +
         '<li><strong>Verplaatsen:</strong> de draaiende VM\'s &amp; containers gaan naar een andere node (VM\'s live, containers worden kort herstart).</li>' +
-        '<li><strong>Bijwerken:</strong> in de console log je in als root; PVE Fleet typt het upgrade-commando.</li>' +
+        '<li><strong>Bijwerken:</strong> automatisch via de app-sleutel (apt-get dist-upgrade), of stap voor stap zelf in de console. Eigen configuratiebestanden blijven staan.</li>' +
         '<li><strong>Herstarten:</strong> alleen als er een nieuwe kernel is.</li>' +
         '<li><strong>Terugzetten:</strong> alles wat verplaatst is, gaat terug naar de eigen node.</li></ol>' +
-        '<p class="muted" style="margin:0 0 14px">Je doet steeds één node tegelijk. PVE Fleet onthoudt wat er verplaatst is, dus je kunt deze pagina tussendoor sluiten.</p>' +
+        '<p class="muted" style="margin:0 0 14px">Steeds één node tegelijk. <strong>Automatisch</strong>: PVE Fleet doet alle nodes na elkaar en stopt bij de eerste fout. <strong>Stap voor stap</strong>: jij klikt elke stap zelf en werkt bij in de console. Nodes zonder werk worden overgeslagen. Je kunt deze pagina tussendoor sluiten.</p>' +
         '<div class="list">' + nodes.map(function (n) {
           return '<div class="row"><span class="mono">' + e(n.name) + '</span><span>' + (needsWork(n) ? (n.count ? '<span class="c-warn">' + n.count + ' updates</span> ' : '') + (n.reboot_needed ? '<span class="c-info">herstart nodig</span>' : '') : '<span class="c-ok">up-to-date</span>') +
             ' <span class="muted small">· ' + running(n).length + ' VM/CT actief</span></span></div>';
         }).join('') + '</div>' +
-        '<div class="stepacts" style="margin-top:16px"><button type="button" class="btn primary lg" data-do="start"' + (d.kind === 'cluster' && d.quorate !== false ? '' : ' disabled') + '>Rolling update starten</button>' +
+        '<div class="stepacts" style="margin-top:16px"><button type="button" class="btn primary lg" data-do="auto"' + (d.kind === 'cluster' && d.quorate !== false ? '' : ' disabled') + '>Alles automatisch bijwerken…</button>' +
+        '<button type="button" class="btn ghost lg" data-do="start"' + (d.kind === 'cluster' && d.quorate !== false ? '' : ' disabled') + '>Stap voor stap</button>' +
         (todo.length ? '<span class="small muted">' + todo.length + ' van ' + nodes.length + ' nodes hebben werk.</span>' : '<span class="small c-ok">Alle nodes zijn al bijgewerkt.</span>') + '</div></section>';
       return;
     }
-    $('headacts').innerHTML = '<button type="button" class="btn ghost" data-do="reset">Rolling update afsluiten</button>';
-    var activeSet = false;
+    $('headacts').innerHTML = '<button type="button" class="btn ghost" data-do="auto" style="margin-right:8px">Automatisch verder…</button><button type="button" class="btn ghost" data-do="reset">Rolling update afsluiten</button>';
+    var activeSet = false, skipNow = null;
     var allDone = true;
     $('nodes').innerHTML = nodes.map(function (n, i) {
       var st = steps(n), ns = nodeState(n, st);
       if (ns !== 'done') allDone = false;
       var active = !activeSet && ns !== 'done';
       if (active) activeSet = true;
+      // stap voor stap: een node zonder werk vanzelf overslaan (alleen als de updatestatus bekend is)
+      if (active && idle(n) && n.checked && !n.error && !job && !autoSkipped[n.name]) skipNow = n.name;
       var badge = ns === 'done' ? '<span class="pill c-ok" style="border-color:currentColor">✓ Klaar</span>'
         : (active ? '<span class="pill c-info" style="border-color:currentColor">Nu aan de beurt</span>' : (needsWork(n) ? '<span class="pill c-warn" style="border-color:currentColor">Te doen</span>' : '<span class="pill">Up-to-date</span>'));
       var head = '<div class="card-head"><span class="mono muted">' + (i + 1) + '</span><h2 class="mono">' + e(n.name) + '</h2>' + badge +
@@ -185,10 +194,119 @@
           : '<span class="small muted">Rond de stappen hierboven af. Je kunt een stap ook in Proxmox zelf doen; deze pagina ziet dat vanzelf.</span>') +
         '</div></section>';
     }).join('');
+    $('nodes').insertAdjacentHTML('afterbegin', autoBanner());
+    if (skipNow) {
+      autoSkipped[skipNow] = 1;
+      save({ op: 'done', node: skipNow }).then(function () {
+        PFA.toast(skipNow + ' is al bijgewerkt en is overgeslagen', false);
+        return load();
+      }, function () { /* knop blijft staan */ });
+    }
     if (allDone) {
       $('nodes').insertAdjacentHTML('afterbegin', '<div class="banner info"><div class="txt"><div class="ttl">Rolling update klaar</div><div class="desc">Alle nodes zijn bijgewerkt. Sluit de rolling update af om opnieuw te beginnen bij de volgende updates.</div></div>' +
         '<button type="button" class="btn primary" data-do="reset">Afsluiten</button></div>');
     }
+  }
+
+  // ------------------------------------------------------------ automatisch
+  var STEP = { move: 'Verplaatsen', upgrade: 'Bijwerken', reboot: 'Herstarten', restart: 'Weer starten', back: 'Terugzetten' };
+  function autoRunning() { return !!(auto && auto.run && auto.run.status === 'running'); }
+  function hms(t) { var d = new Date(t * 1000); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) + ':' + ('0' + d.getSeconds()).slice(-2); }
+  function loadAuto() {
+    return PF.getJSON(AUTO).then(function (r) {
+      var was = autoRunning();
+      auto = r;
+      if (was && !autoRunning()) return load();     // net klaar: het plan opnieuw ophalen
+      if (data) render(data);
+    }, function () { /* volgende keer */ });
+  }
+  function logLine(l) {
+    var apt = l.msg.charAt(0) === '│';    // uitvoer van apt: niet vertalen, wel als code
+    return '<div style="white-space:pre-wrap"><span class="mono muted">' + e(hms(l.t)) + '</span>  <span' + (apt ? ' class="mono"' : '') + '>' + e(l.msg) + '</span></div>';
+  }
+  function nodeLine(n, r) {
+    var icon = n.state === 'busy' ? '<span class="spinner" aria-hidden="true"></span>' : (n.state === 'ok' ? '<span class="c-ok">✓</span>'
+      : (n.state === 'skip' ? '<span class="c-ok">–</span>' : (n.state === 'fail' ? '<span class="c-crit">✗</span>' : (n.state === 'stopped' ? '<span class="c-warn">■</span>' : '<span class="muted">•</span>'))));
+    var txt = n.state === 'busy' ? '<span class="c-info">' + e(STEP[n.step] || 'Bezig') + '…</span>'
+      : (n.state === 'ok' ? '<span class="c-ok">klaar</span>' : (n.state === 'skip' ? '<span class="muted">al bijgewerkt, overgeslagen</span>'
+      : (n.state === 'fail' ? '<span class="c-crit">mislukt</span> <span class="small">' + e(n.msg || '') + '</span>'
+      : (n.state === 'stopped' ? '<span class="c-warn">gestopt</span>' : '<span class="muted">wacht</span>'))));
+    var lines = r.log.filter(function (l) { return l.node === n.name; });
+    var open = logOpen[n.name] !== undefined ? logOpen[n.name] : (n.state === 'busy' || n.state === 'fail');
+    return '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;padding:9px 0;border-bottom:1px solid var(--line)"><span style="width:18px;text-align:center">' + icon + '</span><span class="mono" style="min-width:90px">' + e(n.name) + '</span><span>' + txt + '</span>' +
+      (lines.length ? '<details data-log="' + e(n.name) + '" style="flex-basis:100%"' + (open ? ' open' : '') + '><summary class="small muted" style="cursor:pointer">Logboek (<span>' + lines.length + '</span> regels)</summary>' +
+        '<div class="small" data-logbox="' + e(n.name) + '" style="max-height:260px;overflow:auto;margin:6px 0 0;padding:8px 10px;background:rgba(0,0,0,.22);border-radius:6px;line-height:1.5">' +
+        lines.map(logLine).join('') + '</div></details>' : '') + '</div>';
+  }
+  function autoNodes(r, withGeneral) {
+    var gen = r.log.filter(function (l) { return !l.node; });
+    return '<div>' + r.nodes.map(function (n) { return nodeLine(n, r); }).join('') + '</div>' +
+      (withGeneral && gen.length ? '<div class="small muted" style="margin-top:10px">' + gen.map(logLine).join('') + '</div>' : '');
+  }
+  function keepScroll(fn) {
+    var at = {};
+    Array.prototype.forEach.call(document.querySelectorAll('[data-logbox]'), function (b) {
+      at[b.getAttribute('data-logbox')] = b.scrollHeight - b.scrollTop - b.clientHeight < 30 ? -1 : b.scrollTop;
+    });
+    fn();
+    Array.prototype.forEach.call(document.querySelectorAll('[data-logbox]'), function (b) {
+      var k = b.getAttribute('data-logbox');
+      b.scrollTop = (at[k] === undefined || at[k] === -1) ? b.scrollHeight : at[k];
+    });
+  }
+  function renderAuto() {
+    var r = auto.run;
+    var cur = r.nodes.filter(function (n) { return n.state === 'busy'; })[0];
+    $('headacts').innerHTML = '';
+    keepScroll(function () {
+      $('nodes').innerHTML = '<section class="card" style="border-color:var(--info-line)"><div class="card-head"><span class="spinner" aria-hidden="true"></span><h2>Automatische rolling update loopt</h2>' +
+        '<span class="small muted">' + (cur ? '<span class="mono">' + e(cur.name) + '</span> · <span>' + e(STEP[cur.step] || 'Voorbereiden') + '</span>' : 'Voorbereiden') + '</span>' +
+        '<div class="end">' + (r.stop ? '<span class="small c-warn">Stopt na deze stap…</span>' : '<button type="button" class="btn danger" data-do="autostop">Stoppen</button>') + '</div></div>' +
+        '<div style="padding:6px 18px 16px">' + autoNodes(r, true) +
+        '<p class="small muted" style="margin:12px 0 0">Je kunt deze pagina sluiten; PVE Fleet gaat door. Bij een fout stopt PVE Fleet bij die node en gaat niet verder.</p></div></section>';
+    });
+  }
+  function autoBanner() {
+    var r = auto && auto.run;
+    if (!r || r.status === 'running') return '';
+    var cls = r.status === 'done' ? 'info' : (r.status === 'stopped' ? 'warn' : 'crit');
+    var ttl = r.status === 'done' ? 'Automatische rolling update klaar' : (r.status === 'stopped' ? 'Automatische rolling update gestopt' : (r.status === 'interrupted' ? 'Automatische rolling update onderbroken' : 'Automatische rolling update gestopt door een fout'));
+    var desc = r.status === 'done' ? 'Alle nodes zijn na elkaar bijgewerkt.'
+      : '<span>' + e(r.error || 'Gestopt op verzoek.') + '</span><br>Hieronder kun je stap voor stap verder; wat er verplaatst is, staat erbij.';
+    return '<div class="banner ' + cls + '" style="margin-bottom:12px"><div class="txt" style="flex:1"><div class="ttl">' + e(ttl) + '</div><div class="desc">' + desc + '</div>' +
+      '<details style="margin-top:8px"><summary class="small" style="cursor:pointer">Wat er gebeurd is</summary><div style="margin-top:8px">' + autoNodes(r, true) + '</div></details></div>' +
+      '<button type="button" class="btn ghost" data-do="autoclear">Melding sluiten</button></div>';
+  }
+  function autoStart() {
+    if (auto && !auto.enabled && !auto.demo) {
+      return PFA.modal({ title: 'Eerst de app-sleutel instellen',
+        body: '<p style="margin:0 0 8px">PVE Fleet werkt de nodes bij via SSH met de app-sleutel. Die staat nog niet aan.</p>' +
+          '<p class="small muted" style="margin:0">Ga naar <a href="/apps">Apps</a> › Instellen, plak het commando op één node en druk op Inschakelen en testen. Daarna kun je hier starten.</p>',
+        confirm: 'Naar Apps', kind: 'primary' }).then(function (v) { if (v) location.href = '/apps'; });
+    }
+    var order = (data.order || []).concat(data.nodes.map(function (n) { return n.name; }).filter(function (x) { return (data.order || []).indexOf(x) < 0; }));
+    var nodes = order.map(function (name) { return data.nodes.filter(function (n) { return n.name === name; })[0]; }).filter(Boolean);
+    var off = nodes.filter(function (n) { return !online(n); });
+    if (off.length) return PFA.toast('Offline: ' + off.map(function (n) { return n.name; }).join(', ') + '. Eerst alle nodes online.', true);
+    var stay = [];
+    return PFA.modal({ title: 'Alle nodes automatisch bijwerken', wide: true,
+      body: '<p style="margin:0 0 8px">PVE Fleet doet de nodes na elkaar, in deze volgorde: <span class="mono">' + e(order.join(' → ')) + '</span>. Per node: verplaatsen, bijwerken (apt-get dist-upgrade), herstarten als er een nieuwe kernel is, weer starten wat bleef staan, terugzetten. Nodes zonder werk worden overgeslagen.</p>' +
+        '<p class="small muted" style="margin:0 0 8px">Aangevinkt: gaat tijdelijk naar een andere node (VM\'s live, containers kort uit). Uitgevinkt: blijft staan, gaat bij de herstart even uit en wordt daarna weer gestart.</p>' +
+        '<div style="max-height:300px;overflow:auto;padding:2px;margin:0 0 8px">' + nodes.map(function (n) {
+          var run = running(n), st = stays(n);
+          return '<div style="margin:0 0 8px"><div class="small" style="margin:0 0 4px"><strong class="mono">' + e(n.name) + '</strong> <span class="muted">· ' + (needsWork(n) ? (n.count ? '<span>' + n.count + ' updates</span>' : '<span>herstart nodig</span>') : '<span>up-to-date</span>') + '</span></div>' +
+            (run.length ? run.map(function (g) {
+              return '<label class="check" style="margin:0 0 3px 12px"><input type="checkbox" data-am="' + e(stayKey(g)) + '"' + (st[stayKey(g)] ? '' : ' checked') + '><span class="mono">' + e(gname(g)) + '</span> <span class="small muted">' + (g.type === 'qemu' ? 'VM' : 'container') + '</span></label>';
+            }).join('') : '<div class="small muted" style="margin-left:12px">Niets actief.</div>') + '</div>';
+        }).join('') + '</div>' +
+        '<p class="small muted" style="margin:0">Bij een fout (verplaatsen mislukt, apt-fout, node komt niet terug) stopt PVE Fleet bij die node en gaat niet verder. Je kunt altijd op Stoppen drukken. ' +
+        'Heb je PVE Fleet net bijgewerkt? Plak dan eerst het installatiecommando op de pagina Apps (Instellen) opnieuw; hiervoor is een nieuwere versie van het script op de nodes nodig.</p>',
+      confirm: 'Starten', kind: 'primary',
+      submit: function () {
+        stay = Array.prototype.filter.call(document.querySelectorAll('.modal [data-am]'), function (c) { return !c.checked; })
+          .map(function (c) { return c.getAttribute('data-am'); });
+        return PF.postJSON(AUTO, { order: order, stay: stay });
+      } }).then(function (v) { if (v) return loadAuto(); });
   }
 
   // ------------------------------------------------------------ migraties na elkaar
@@ -319,6 +437,11 @@
     var what = b.getAttribute('data-do'), name = b.getAttribute('data-n');
     var n = name ? data.nodes.filter(function (x) { return x.name === name; })[0] : null;
     if (job && ['move', 'back', 'reboot'].indexOf(what) >= 0) return PFA.toast('Wacht tot de lopende migraties klaar zijn', true);
+    if (what === 'auto') { if (autoRunning()) return; return autoStart(); }
+    if (what === 'autostop') return PFA.modal({ title: 'Automatische rolling update stoppen?', body: 'PVE Fleet maakt de lopende stap af (een migratie of herstart breekt PVE Fleet niet halverwege af) en stopt dan. Daarna kun je stap voor stap verder.', confirm: 'Stoppen', kind: 'danger' })
+      .then(function (v) { if (v) return PF.postJSON(AUTO + '/stop').then(loadAuto, function (err) { PFA.toast(err.message, true); }); });
+    if (what === 'autoclear') return PF.postJSON(AUTO + '/clear').then(loadAuto, function (err) { PFA.toast(err.message, true); });
+    if (autoRunning()) return PFA.toast('De automatische rolling update loopt nog', true);
     if (what === 'start') save({ op: 'start', order: data.nodes.map(function (x) { return x.name; }) }).then(load, function (err) { PFA.toast(err.message, true); });
     else if (what === 'reset') PFA.modal({ title: 'Rolling update afsluiten?', body: 'PVE Fleet vergeet welke VM\'s &amp; containers er verplaatst zijn. Er wordt niets in Proxmox veranderd.', confirm: 'Afsluiten', kind: 'primary' })
       .then(function (v) { if (v) save({ op: 'reset' }).then(function () { location.href = '/updates'; }); });
@@ -336,6 +459,12 @@
     else if (what === 'unskip') save({ op: 'unskipmove', node: n.name }).then(load);
     else if (what === 'done' || what === 'undone') save({ op: what, node: n.name }).then(load);
   });
+  $('app').addEventListener('toggle', function (ev) {
+    var d = ev.target;
+    if (d && d.getAttribute && d.getAttribute('data-log')) logOpen[d.getAttribute('data-log')] = d.open;
+  }, true);
   window.addEventListener('pf:refresh', load);
+  loadAuto();
+  setInterval(function () { if (!document.hidden) loadAuto(); }, 3000);
   PF.poll(API, render, 5000);
 })();

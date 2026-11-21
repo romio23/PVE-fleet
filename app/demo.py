@@ -805,6 +805,9 @@ class FakeClient:
                 STATE["kernel"][node] = KERNEL_NEW
             STATE["down_until"][node] = time.time() + 25
             STATE["up_since"][node] = time.time() + 25
+            for st in STATE["guests"].values():     # wat nog op de node draait, gaat bij de herstart uit
+                if st["node"] == node:
+                    st["running"] = False
         elif command == "shutdown":
             STATE["down_until"][node] = float("inf")
         else:

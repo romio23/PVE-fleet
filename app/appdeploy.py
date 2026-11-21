@@ -31,7 +31,7 @@ log = logging.getLogger(__name__)
 bp = Blueprint("appdeploy", __name__)
 
 KEY_TAG = "pve-fleet-deploy"
-SCRIPT_VERSION = 2      # deploy.sh: 2 = met de opdracht 'upgrade' (alle containers bijwerken)
+SCRIPT_VERSION = 3      # deploy.sh: 2 = 'upgrade' (alle containers bijwerken), 3 = 'nodeupgrade' (automatische rolling update)
 
 
 def script_version(out):
@@ -124,7 +124,7 @@ okdir() { [[ "$1" =~ ^/(opt|srv|var/www|home)(/[A-Za-z0-9._-]+)+$ && "$1" != *..
 okrel() { [ "$1" = "-" ] || { [[ "$1" =~ ^[A-Za-z0-9._/-]+$ && "$1" != *..* && "$1" != /* ]] || fail "ongeldig pad: $1"; }; }
 case "${A[0]:-}" in
   ping)
-    echo "PVEFLEET-DEPLOY 2 $(hostname)" ;;
+    echo "PVEFLEET-DEPLOY 3 $(hostname)" ;;
   upgrade)
     # pakketten in een container onbeheerd bijwerken; eigen configuratiebestanden blijven staan
     okid "${A[1]:-}"
@@ -147,6 +147,18 @@ case "${A[0]:-}" in
       echo "PVEFLEET-OK"
     ' 2>&1
     exit $? ;;
+  nodeupgrade)
+    # deze node zelf bijwerken (automatische rolling update); eigen configuratiebestanden blijven staan
+    export DEBIAN_FRONTEND=noninteractive APT_LISTCHANGES_FRONTEND=none
+    echo "apt-get update"
+    apt-get update -q 2>&1 || echo "apt-get update gaf fouten (bijvoorbeeld de enterprise-repository zonder abonnement); toch doorgaan"
+    echo "apt-get dist-upgrade"
+    apt-get -y -q -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold dist-upgrade 2>&1 || fail "apt-get dist-upgrade mislukt"
+    newest=$(ls /boot/vmlinuz-* 2>/dev/null | sed 's|^/boot/vmlinuz-||' | sort -V | tail -n 1)
+    if [ -e /var/run/reboot-required ] || { [ -n "$newest" ] && [ "$newest" != "$(uname -r)" ]; }; then
+      echo "PVEFLEET-REBOOT"
+    fi
+    echo "PVEFLEET-OK" ;;
   info)
     okid "${A[1]:-}"; okdir "${A[2]:-}"
     st=$(pct status "${A[1]}" | awk '{print $2}')

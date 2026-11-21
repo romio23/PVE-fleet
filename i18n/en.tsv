@@ -1662,3 +1662,64 @@ vanzelf in zodra de root-prompt er staat. Zie je een inlogprompt, log dan eerst 
 2. Lees wat er verandert en bevestig met Y.|||2. Read what changes and confirm with Y.
 3. Gebeurt er niets? Klik op|||3. Nothing happens? Click
 2. Lees wat er verandert en bevestig met|||2. Read what changes and confirm with
+# 0.9.7 automatische rolling update
+automatisch via de app-sleutel (apt-get dist-upgrade), of stap voor stap zelf in de console. Eigen configuratiebestanden blijven staan.|||automatically via the app key (apt-get dist-upgrade), or step by step yourself in the console. Your own configuration files are kept.
+Steeds één node tegelijk.|||One node at a time.
+Automatisch|||Automatic
+PVE Fleet doet alle nodes na elkaar en stopt bij de eerste fout.|||PVE Fleet does all nodes one after another and stops at the first error.
+jij klikt elke stap zelf en werkt bij in de console. Nodes zonder werk worden overgeslagen. Je kunt deze pagina tussendoor sluiten.|||you click each step yourself and update in the console. Nodes with nothing to do are skipped. You can close this page in between.
+Alles automatisch bijwerken…|||Update everything automatically…
+Stap voor stap|||Step by step
+Automatisch verder…|||Continue automatically…
+Automatische rolling update loopt|||Automatic rolling update running
+Voorbereiden|||Preparing
+Stopt na deze stap…|||Stopping after this step…
+Stoppen|||Stop
+Je kunt deze pagina sluiten; PVE Fleet gaat door. Bij een fout stopt PVE Fleet bij die node en gaat niet verder.|||You can close this page; PVE Fleet carries on. On an error PVE Fleet stops at that node and does not continue.
+Herstarten…|||Rebooting…
+Weer starten…|||Starting again…
+Terugzetten…|||Moving back…
+al bijgewerkt, overgeslagen|||already up to date, skipped
+Logboek (|||Log (
+regels)|||lines)
+Automatische rolling update klaar|||Automatic rolling update done
+Automatische rolling update gestopt|||Automatic rolling update stopped
+Automatische rolling update onderbroken|||Automatic rolling update interrupted
+Automatische rolling update gestopt door een fout|||Automatic rolling update stopped by an error
+Alle nodes zijn na elkaar bijgewerkt.|||All nodes have been updated one after another.
+Gestopt op verzoek.|||Stopped on request.
+Hieronder kun je stap voor stap verder; wat er verplaatst is, staat erbij.|||Below you can continue step by step; what was moved is listed.
+Wat er gebeurd is|||What happened
+Melding sluiten|||Dismiss
+Eerst de app-sleutel instellen|||Set up the app key first
+PVE Fleet werkt de nodes bij via SSH met de app-sleutel. Die staat nog niet aan.|||PVE Fleet updates the nodes over SSH with the app key. It is not switched on yet.
+Ga naar|||Go to
+› Instellen, plak het commando op één node en druk op Inschakelen en testen. Daarna kun je hier starten.|||› Set up, paste the command on one node and press Enable and test. Then you can start here.
+Naar Apps|||Go to Apps
+Alle nodes automatisch bijwerken|||Update all nodes automatically
+PVE Fleet doet de nodes na elkaar, in deze volgorde:|||PVE Fleet does the nodes one after another, in this order:
+Per node: verplaatsen, bijwerken (apt-get dist-upgrade), herstarten als er een nieuwe kernel is, weer starten wat bleef staan, terugzetten. Nodes zonder werk worden overgeslagen.|||Per node: move, update (apt-get dist-upgrade), reboot if there is a new kernel, start again what stayed, move back. Nodes with nothing to do are skipped.
+Aangevinkt: gaat tijdelijk naar een andere node (VM's live, containers kort uit). Uitgevinkt: blijft staan, gaat bij de herstart even uit en wordt daarna weer gestart.|||Ticked: moves to another node for a while (VMs live, containers briefly off). Unticked: stays put, goes off briefly during the reboot and is started again afterwards.
+Niets actief.|||Nothing running.
+Bij een fout (verplaatsen mislukt, apt-fout, node komt niet terug) stopt PVE Fleet bij die node en gaat niet verder. Je kunt altijd op Stoppen drukken. Heb je PVE Fleet net bijgewerkt? Plak dan eerst het installatiecommando op de pagina Apps (Instellen) opnieuw; hiervoor is een nieuwere versie van het script op de nodes nodig.|||On an error (a move fails, an apt error, a node does not come back) PVE Fleet stops at that node and does not continue. You can always press Stop. Did you just update PVE Fleet? Then first paste the installation command on the Apps page (Set up) again; this needs a newer version of the script on the nodes.
+Automatische rolling update stoppen?|||Stop the automatic rolling update?
+PVE Fleet maakt de lopende stap af (een migratie of herstart breekt PVE Fleet niet halverwege af) en stopt dan. Daarna kun je stap voor stap verder.|||PVE Fleet finishes the current step (it does not break off a migration or reboot halfway) and then stops. After that you can continue step by step.
+De automatische rolling update loopt nog|||The automatic rolling update is still running
+De automatische rolling update loopt al|||The automatic rolling update is already running
+Hiervoor is de app-sleutel nodig. Stel die eerst in op de pagina Apps (Instellen).|||This needs the app key. Set it up first on the Apps page (Set up).
+Dit kan alleen bij een cluster|||This only works for a cluster
+Er loopt geen automatische rolling update|||No automatic rolling update is running
+App-sleutel werkt op alle nodes.|||App key works on all nodes.
+Alle nodes zijn bijgewerkt.|||All nodes have been updated.
+Overgeslagen.|||Skipped.
+Gestopt op verzoek. Ga stap voor stap verder op deze pagina als dat nodig is.|||Stopped on request. Continue step by step on this page if needed.
+Bijgewerkt. Er is een nieuwe kernel: herstarten.|||Updated. There is a new kernel: rebooting.
+Bijgewerkt. Geen herstart nodig.|||Updated. No reboot needed.
+PVE Fleet is herstart terwijl de rolling update liep. Kijk bij de node die bezig was en ga stap voor stap verder.|||PVE Fleet was restarted while the rolling update was running. Check the node that was busy and continue step by step.
+onderbroken|||interrupted
+het cluster heeft geen quorum|||the cluster has no quorum
+er is geen andere node online om naartoe te verplaatsen|||there is no other node online to move to
+de Proxmox-taak duurde te lang|||the Proxmox task took too long
+apt-get dist-upgrade mislukt|||apt-get dist-upgrade failed
+Gestopt door een fout:|||Stopped by an error:
+Onverwachte fout:|||Unexpected error:

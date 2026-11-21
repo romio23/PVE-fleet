@@ -88,7 +88,7 @@ def run(app, job):
                     try:
                         _, pong = appdeploy.ssh_run(store, host, "ping", port=port, user=user, timeout=30)
                         v = appdeploy.script_version(pong)
-                        checked[host] = None if v >= appdeploy.SCRIPT_VERSION else (
+                        checked[host] = None if v >= 2 else (   # 'upgrade' bestaat sinds versie 2
                             "het script op node {} is te oud (versie {}). Plak het installatiecommando van de pagina Apps (Instellen) "
                             "opnieuw op een node; dat is een ander commando dan dat van de controle op updates.".format(node, v or "?"))
                     except PveError as e:
