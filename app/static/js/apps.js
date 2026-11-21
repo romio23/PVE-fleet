@@ -44,11 +44,28 @@
   }
   function copyText(text, btn) {
     function done(ok) { btn.textContent = ok ? 'Gekopieerd ✓' : 'Selecteer en kopieer met Ctrl+C'; setTimeout(function () { btn.textContent = 'Kopiëren'; }, 2500); }
-    if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); }); return; }
-    var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta); ta.select();
-    var ok = false; try { ok = document.execCommand('copy'); } catch (x) { ok = false; }
-    document.body.removeChild(ta); done(ok);
+    function selectShown() {      // markeer het getoonde commando, zodat Ctrl+C meteen werkt
+      var pre = document.getElementById('ap-cmd');
+      if (!pre || !window.getSelection) return;
+      var r = document.createRange(); r.selectNodeContents(pre);
+      var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    }
+    function legacy() {
+      // het tekstvak staat in het venster zelf: buiten het venster haalt de focusval de selectie weg
+      var host = document.querySelector('.modal') || document.body;
+      var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0';
+      host.appendChild(ta); ta.focus(); ta.select(); ta.setSelectionRange(0, text.length);
+      var ok = false; try { ok = document.execCommand('copy'); } catch (x) { ok = false; }
+      host.removeChild(ta); btn.focus();
+      if (!ok) selectShown();
+      done(ok);
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, legacy);
+      return;
+    }
+    legacy();
   }
 
   // ------------------------------------------------------------ tekenen

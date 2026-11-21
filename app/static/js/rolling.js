@@ -14,6 +14,8 @@
   var auto = null;       // {run, enabled, demo}: automatische rolling update op de server
   var autoSkipped = {};  // stap voor stap: nodes zonder werk die al vanzelf zijn overgeslagen
   var logOpen = {};      // welke logboeken open staan (per node)
+  var bannerOpen = false; // staat "Wat er gebeurd is" open
+  var autoSig = '';       // laatste antwoord van de server: alleen opnieuw tekenen als er iets veranderd is
 
   function save(body) { return PF.postJSON(API, body); }
   function load() { return PF.getJSON(API).then(render, function (err) { $('nodes').innerHTML = '<div class="banner crit"><div class="txt">' + e(err.message) + '</div></div>'; }); }
@@ -225,6 +227,9 @@
   function loadAuto() {
     return PF.getJSON(AUTO).then(function (r) {
       var was = autoRunning();
+      var sig = JSON.stringify(r);
+      if (sig === autoSig) return;
+      autoSig = sig;
       auto = r;
       if (was && !autoRunning()) return load();     // net klaar: het plan opnieuw ophalen
       if (data) render(data);
@@ -284,7 +289,7 @@
     var desc = r.status === 'done' ? 'Alle nodes zijn na elkaar bijgewerkt.'
       : '<span>' + e(r.error || 'Gestopt op verzoek.') + '</span><br>' + (data && data.started ? 'Hieronder kun je stap voor stap verder; wat er verplaatst is, staat erbij.' : 'Er is niets verplaatst of bijgewerkt.');
     return '<div class="banner ' + cls + '" style="margin-bottom:12px"><div class="txt" style="flex:1"><div class="ttl">' + e(ttl) + '</div><div class="desc">' + desc + '</div>' +
-      '<details style="margin-top:8px"><summary class="small" style="cursor:pointer">Wat er gebeurd is</summary><div style="margin-top:8px">' + autoNodes(r, true) + '</div></details></div>' +
+      '<details data-banner="1" style="margin-top:8px"' + (bannerOpen ? ' open' : '') + '><summary class="small" style="cursor:pointer">Wat er gebeurd is</summary><div style="margin-top:8px">' + autoNodes(r, true) + '</div></details></div>' +
       '<button type="button" class="btn ghost" data-do="autoclear">Melding sluiten</button></div>';
   }
   function autoStart() {
@@ -472,6 +477,7 @@
   $('app').addEventListener('toggle', function (ev) {
     var d = ev.target;
     if (d && d.getAttribute && d.getAttribute('data-log')) logOpen[d.getAttribute('data-log')] = d.open;
+    if (d && d.getAttribute && d.getAttribute('data-banner')) bannerOpen = d.open;
   }, true);
   window.addEventListener('pf:refresh', load);
   loadAuto();
