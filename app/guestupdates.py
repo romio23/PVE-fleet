@@ -156,7 +156,7 @@ def setup_command(pubkey):
             "mkdir -p /root/.ssh && touch /root/.ssh/authorized_keys\n"
             "for f in /etc/pve/priv/authorized_keys /root/.ssh/authorized_keys; do\n"
             "  [ -e \"$f\" ] || continue\n"
-            "  grep -q '{tag}' \"$f\" || echo \"$KEY\" >> \"$f\"\n"
+            "  T=$(mktemp); grep -v '{tag}' \"$f\" > \"$T\"; echo \"$KEY\" >> \"$T\"; cat \"$T\" > \"$f\"; rm -f \"$T\"\n"
             "done\n"
             "echo \"PVE Fleet: klaar op $(hostname)\"\n").format(path=SCRIPT_PATH, script=CHECK_SH, line=line, tag=KEY_TAG)
 

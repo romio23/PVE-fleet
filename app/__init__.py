@@ -11,7 +11,7 @@ from .collector import Collector
 from .details import NotFound, guest_detail, node_detail
 from .settings import SettingsStore
 
-__version__ = "0.9.9"
+__version__ = "0.9.10"
 
 
 def create_app(start_collector=True):
