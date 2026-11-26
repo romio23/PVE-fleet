@@ -5,13 +5,13 @@ from datetime import timedelta
 
 from flask import Flask, abort, g, jsonify, render_template
 
-from . import actions, appdeploy, auth, autorolling, backups, bulkupdate, certs, console, guestupdates, notify, servers_api, updates
+from . import actions, appdeploy, auth, autorolling, backups, bulkupdate, certs, console, guestupdates, notify, security, servers_api, updates
 from . import config as config_mod
 from .collector import Collector
 from .details import NotFound, guest_detail, node_detail
 from .settings import SettingsStore
 
-__version__ = "0.10.0"
+__version__ = "0.10.1"
 
 
 def create_app(start_collector=True):
@@ -36,6 +36,7 @@ def create_app(start_collector=True):
     collector = Collector(cfg, data_dir=data_dir)
     app.extensions["collector"] = collector
     app.extensions["settings"] = store
+    security.install(app)
     auth.install(app)
     app.register_blueprint(actions.bp)
     app.register_blueprint(servers_api.bp)
@@ -56,13 +57,6 @@ def create_app(start_collector=True):
     def globals_():
         return {"version": __version__, "demo": cfg["demo"], "poll_ms": cfg["poll_interval"] * 1000,
                 "user": g.get("who") if g.get("scope") == "admin" else None}
-
-    @app.after_request
-    def _headers(resp):
-        resp.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
-        resp.headers.setdefault("X-Content-Type-Options", "nosniff")
-        resp.headers.setdefault("Referrer-Policy", "same-origin")
-        return resp
 
     # ---------- pagina's ----------
     @app.get("/")
