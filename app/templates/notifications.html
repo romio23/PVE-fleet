@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Meldingen · PVE Fleet{% endblock %}
+{% block crumbs %}<a href="/">Overzicht</a><span>/</span><span class="here">Meldingen</span>{% endblock %}
+{% block body %}
+<div class="layout">
+  {% include "_sidenav.html" %}
+  <main class="content" id="app">
+    <div class="pagehead"><div><h1>Meldingen</h1><p class="muted" style="margin:6px 0 0">Een bericht op je telefoon of in een chatkanaal als er updates zijn, een node uitvalt of een rolling update klaar is of stopt.</p></div></div>
+    <div id="notify"><div class="card pad muted">Laden…</div></div>
+  </main>
+</div>
+<script src="{{ url_for('static', filename='js/notifications.js') }}?v={{ version }}"></script>
+{% endblock %}

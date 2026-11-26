@@ -66,10 +66,11 @@ def nodes_needing_update(nodes):
     return out
 
 
-def _guest_work():
+def _guest_work(groups=None):
     from . import guestupdates
     try:
-        return guestupdates.work_stats()
+        valid = None if groups is None else {g["server"]: {x["vmid"] for x in g["guests"] if x["type"] == "lxc"} for g in groups}
+        return guestupdates.work_stats(valid)
     except Exception:  # pragma: no cover
         return {"containers": 0, "security": 0, "packages": 0, "apps": 0}
 
@@ -176,6 +177,11 @@ class Collector:
             snap = self._build_snapshot(groups)
             with self.lock:
                 self.snapshot = snap
+        try:
+            from . import notify
+            notify.observe(snap)
+        except Exception:  # noqa: BLE001  (a notification problem must never break a poll)
+            log.exception("notify")
 
     def refresh(self, server):
         """Eén server meteen opnieuw ophalen (na een actie of 'Opnieuw verbinden')."""
@@ -582,7 +588,7 @@ class Collector:
         running = [x for x in all_guests if x["status"] == "running"]
         tasks = sorted([t for g in groups for t in g["tasks"]], key=lambda t: -(t["start"] or 0))
         backups = [t for t in tasks if t["type"] == "vzdump" and t["start"] and now - t["start"] < 86400 and t["end"]]
-        gw = _guest_work()
+        gw = _guest_work(groups)
         kpis = {
             "nodes_online": len(online), "nodes_total": len(all_nodes),
             "guests_running": len(running), "guests_total": len(all_guests),

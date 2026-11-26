@@ -492,6 +492,11 @@ def run_all(app, run):
         except Exception:  # noqa: BLE001
             pass
         try:
+            from . import notify
+            notify.rolling_finished(run)
+        except Exception:  # noqa: BLE001
+            pass
+        try:
             col.refresh(server)
         except Exception:  # noqa: BLE001
             pass

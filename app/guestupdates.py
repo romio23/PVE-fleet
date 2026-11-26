@@ -525,15 +525,22 @@ def summary(server, vmid):
             "stale": bool(gres.get("stale")), "checked": gres.get("checked"), "error": gres.get("error")}
 
 
-def work_stats():
-    """Containers met updates (pakketten of app), en het aantal security-updates daarin."""
+def work_stats(valid=None):
+    """Containers met updates (pakketten of app), en het aantal security-updates daarin.
+
+    valid: {server: {vmid, ...}} met de containers die er nu echt zijn. Oude uitslagen van een server die niet meer in
+    de config staat, of van een container die weg of verhuisd is, tellen dan niet mee (de pagina Updates toont ze ook niet)."""
     out = {"containers": 0, "security": 0, "packages": 0, "apps": 0}
     if STORE is None:
         return out
     for server, res in list(STORE.data["results"].items()):
         if not STORE.settings(server).get("enabled"):
             continue
-        for gres in (res.get("guests") or {}).values():
+        if valid is not None and server not in valid:
+            continue
+        for vmid, gres in (res.get("guests") or {}).items():
+            if valid is not None and str(vmid) not in {str(v) for v in valid[server]}:
+                continue
             pk = gres.get("count") or 0
             app_upd = any(a.get("update") for a in gres.get("apps") or [])
             if pk > 0 or app_upd:

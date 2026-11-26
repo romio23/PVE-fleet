@@ -1,5 +1,20 @@
 [
 [
+"^✓ laatste bericht verstuurd (.+)$",
+"",
+"✓ last message sent $1"
+],
+[
+"^✗ laatste poging mislukt (.+?): (.*)$",
+"",
+"✗ last attempt failed $1: $2"
+],
+[
+"^✗ Mislukt: (.*)$",
+"",
+"✗ Failed: $1"
+],
+[
 "^Blijven hier \\(gaan bij de herstart even uit\\): (.+)$",
 "",
 "Staying here (briefly off during the reboot): $1"

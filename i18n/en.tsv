@@ -1740,3 +1740,62 @@ PVE Fleet opent de container met|||PVE Fleet opens the container with
 , dus je hoeft niet in te loggen. Het commando wordt vanzelf ingevoerd.|||, so you don't need to log in. The command is entered automatically.
 Tip: stel de app-sleutel in (pagina Apps › Instellen) of plak het installatiecommando daar opnieuw. Dan opent PVE Fleet updates via de node, zonder inloggen in de container.|||Tip: set up the app key (Apps page › Set up) or paste the installation command there again. PVE Fleet then opens updates via the node, without logging in to the container.
 Is de app-sleutel ingesteld (pagina Apps), dan opent PVE Fleet de container via de node en hoef je niet in te loggen. Anders: zie je een inlogprompt, log dan in als root in de container.|||If the app key is set up (Apps page), PVE Fleet opens the container via the node and you don't need to log in. Otherwise: if you see a login prompt, log in as root in the container.
+Meldingen|||Notifications
+Een bericht op je telefoon of in een chatkanaal als er updates zijn, een node uitvalt of een rolling update klaar is of stopt.|||A message on your phone or in a chat channel when there are updates, a node goes down, or a rolling update finishes or stops.
+Nieuwe updates|||New updates
+Voor een node of container komen updates beschikbaar (ook als er meer bij komen).|||Updates become available for a node or container (also when more arrive).
+Een node moet herstarten, bijvoorbeeld voor een nieuwe kernel.|||A node must restart, for example for a new kernel.
+Rolling update klaar, gestopt of mislukt|||Rolling update finished, stopped or failed
+Bij een automatische rolling update.|||For an automatic rolling update.
+Node of cluster onbereikbaar|||Node or cluster unreachable
+Een node valt weg, een cluster verliest quorum, en een bericht als het weer goed is.|||A node drops out, a cluster loses quorum, and a message when it is back to normal.
+Back-up mislukt|||Backup failed
+Een back-uptaak is niet gelukt.|||A backup job did not succeed.
+iPhone en iPad. API-sleutel aanmaken op prowlapp.com › API Keys.|||iPhone and iPad. Create an API key at prowlapp.com › API Keys.
+iPhone, Android en browser. Gratis via ntfy.sh, of je eigen server. Abonneer je in de ntfy-app op hetzelfde topic.|||iPhone, Android and browser. Free via ntfy.sh, or your own server. Subscribe to the same topic in the ntfy app.
+iPhone, Android en computer. De gebruikerssleutel staat op pushover.net; maak daar ook een applicatie aan voor het token.|||iPhone, Android and computer. Your user key is on pushover.net; create an application there too for the token.
+PVE Fleet doet een POST met JSON naar dit adres. Werkt met Home Assistant, Discord, Slack, Mattermost, Matrix-bruggen en eigen scripts.|||PVE Fleet sends a JSON POST to this address. Works with Home Assistant, Discord, Slack, Mattermost, Matrix bridges and your own scripts.
+Algemene webhook|||Generic webhook
+API-sleutel|||API key
+Server|||Server
+Topic|||Topic
+Toegangstoken (alleen als je server login vraagt)|||Access token (only if your server requires login)
+Een topic op ntfy.sh is voor iedereen te lezen die de naam weet. Kies dus een lange, onraadbare naam.|||Anyone who knows the name can read a topic on ntfy.sh. So choose a long name nobody can guess.
+bijv. pvefleet-mijn-geheime-naam|||e.g. pvefleet-my-secret-name
+Gebruikerssleutel|||User key
+Applicatietoken|||Application token
+Alleen naar dit apparaat (naam, optioneel)|||Only to this device (name, optional)
+Adres (URL)|||Address (URL)
+Geheim in de header X-PVEFleet-Secret (optioneel)|||Secret in the X-PVEFleet-Secret header (optional)
+Certificaat van het adres controleren (zet uit bij een eigen, zelfondertekend certificaat)|||Verify the certificate of the address (turn off for your own, self-signed certificate)
+Opgeslagen waarde wissen|||Clear the saved value
+Testmelding sturen|||Send test notification
+Versturen…|||Sending…
+Verstuurd. Kijk op je telefoon of in je kanaal.|||Sent. Check your phone or your channel.
+Waarover wil je een melding?|||What do you want to be notified about?
+Taal van de berichten|||Language of the messages
+Onbereikbaar pas melden na|||Report unreachable only after
+direct|||immediately
+1 minuut|||1 minute
+3 minuten|||3 minutes
+10 minuten|||10 minutes
+Nederlands|||Dutch
+Je krijgt een melding als iets verandert, niet bij elke controle. Na een herstart van PVE Fleet worden bestaande situaties niet opnieuw gemeld. Tijdens een automatische rolling update blijven de berichten over updates en herstarten stil; je krijgt dan één bericht als hij klaar is of stopt.|||You get a notification when something changes, not at every check. After PVE Fleet restarts, existing situations are not reported again. During an automatic rolling update the messages about updates and restarts stay silent; you then get one message when it finishes or stops.
+De sleutels staan in|||The keys are stored in
+, net als je andere geheimen. Bewaar een back-up van|||, just like your other secrets. So keep a backup of
+dus veilig.|||somewhere safe.
+Kan de instellingen niet laden:|||Cannot load the settings:
+geen verbinding:|||no connection:
+geen API-sleutel ingevuld|||no API key entered
+geen topic ingevuld|||no topic entered
+het serveradres moet met http:// of https:// beginnen|||the server address must start with http:// or https://
+gebruikerssleutel en applicatietoken zijn allebei nodig|||both the user key and the application token are required
+het adres moet met http:// of https:// beginnen|||the address must start with http:// or https://
+geweigerd (HTTP|||refused (HTTP
+): controleer de sleutel of het token|||): check the key or token
+niet gevonden (HTTP 404): controleer het adres of het topic|||not found (HTTP 404): check the address or the topic
+te veel berichten (HTTP 429): probeer het later opnieuw|||too many messages (HTTP 429): try again later
+geen verbinding: de server weigert de verbinding (staat hij aan, klopt de poort?)|||no connection: the server refuses the connection (is it running, is the port right?)
+geen verbinding: het adres is niet gevonden (controleer de naam en de DNS-instelling)|||no connection: the address was not found (check the name and the DNS setting)
+geen verbinding: geen antwoord binnen 10 seconden|||no connection: no answer within 10 seconds
+geen verbinding: het certificaat wordt niet vertrouwd (zet bij een webhook 'Certificaat controleren' uit voor een eigen certificaat)|||no connection: the certificate is not trusted (for a webhook, turn off 'Verify the certificate' for your own certificate)
