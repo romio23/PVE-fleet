@@ -71,7 +71,7 @@
     else if (n.mem_pct >= 80) { note = 'RAM hoog'; noteCls = 'c-warn'; }
     else if (n.updates && n.updates.count) { note = n.updates.count + ' updates'; noteCls = 'c-warn'; }
     else note = n.guests_running + ' van ' + n.guests_total + ' VM/CT actief';
-    return '<button type="button" class="k-tile' + (off ? ' off' : '') + '" data-open="' + e(g.server) + '|' + e(n.name) + '" aria-label="' + e(n.name) + ', acties">' +
+    return '<button type="button" class="k-tile' + (off ? ' off' : '') + '" data-open="' + e(g.server) + '|' + e(n.name) + '">' +
       '<span class="thead"><span class="tname">' + e(n.name) + '</span>' + PF.dotStatus(n.status) + '</span>' +
       (off ? '' : mini('CPU', n.cpu, 90, 95) + mini('RAM', n.mem_pct)) +
       '<span class="note ' + noteCls + '">' + e(note) + '</span></button>';
@@ -226,12 +226,12 @@
     return ks && ks.pin_enabled && ks.pin_set && ks.pin_actions.indexOf(action) >= 0 && !(ks.unlocked_for > 0);
   }
   function openSheet(key) { sheet = { key: key, stage: 'actions' }; pin = ''; pinErr = ''; drawSheet(); }
-  function closeSheet() { sheet = null; pin = ''; pinErr = ''; $('k-sheet').innerHTML = ''; }
+  function closeSheet() { sheet = null; pin = ''; pinErr = ''; $('k-sheet').replaceChildren(); }
   function svgX() { return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>'; }
 
   function drawSheet() {
     var el = $('k-sheet');
-    if (!sheet) { el.innerHTML = ''; return; }
+    if (!sheet) { el.replaceChildren(); return; }
     var inner = '';
     if (sheet.vm) {
       var v = findVm(sheet.vm);
@@ -405,7 +405,7 @@
 
   function reloadFleet() { return PF.getJSON('/api/fleet').then(render, function () {}); }
   // Gekoppeld via de QR-code: /kiosk?pair=<sleutel>
-  var pairToken = (location.search.match(/[?&]pair=([A-Za-z0-9_-]{10,64})/) || [])[1];
+  var pairToken = (/^[A-Za-z0-9_-]{10,64}$/.test(new URLSearchParams(location.search).get('pair') || '') ? new URLSearchParams(location.search).get('pair') : undefined);
   if (pairToken) {
     showMessage('Scherm koppelen…', 'Even geduld.');
     PF.postJSON('/kiosk/pair', { token: pairToken }).then(function () {

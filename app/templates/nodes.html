@@ -29,7 +29,7 @@
     </section>
   </main>
 </div>
-<script>window.PF_NAV_MANUAL = true;</script>
+<script nonce="{{ csp_nonce }}">window.PF_NAV_MANUAL = true;</script>
 <script src="{{ url_for('static', filename='js/listutil.js') }}?v={{ version }}"></script>
 <script src="{{ url_for('static', filename='js/nodes.js') }}?v={{ version }}"></script>
 {% endblock %}

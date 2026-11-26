@@ -18,7 +18,7 @@
         (conf.servers.length ? 'Je hebt al servers ingesteld; zet de demo uit om die te gebruiken.' : 'Voeg een server toe; de demo gaat dan vanzelf uit.') + '</div></div>' +
         (conf.servers.length ? '<button type="button" class="btn lg primary" data-demo="0">Demomodus uitzetten</button>' : '') + '</div>';
     } else {
-      $('demo').innerHTML = '';
+      $('demo').replaceChildren();
     }
     var rows = conf.servers.map(function (s) {
       var g = statusFor(s.name);

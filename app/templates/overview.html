@@ -8,6 +8,6 @@
     <div class="loading">Gegevens ophalen…</div>
   </main>
 </div>
-<script>window.PF_NAV_MANUAL = true;</script>
+<script nonce="{{ csp_nonce }}">window.PF_NAV_MANUAL = true;</script>
 <script src="{{ url_for('static', filename='js/overview.js') }}?v={{ version }}"></script>
 {% endblock %}

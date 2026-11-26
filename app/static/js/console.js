@@ -173,7 +173,7 @@
   // ---------------------------------------------------------------- VM-scherm
   function startVnc(r) {
     if (rfb) { try { rfb.disconnect(); } catch (x) { /* niets */ } rfb = null; }
-    $('vnc').innerHTML = '';
+    $('vnc').replaceChildren();
     rfb = new window.NoVNC.RFB($('vnc'), wsUrl(r.id), { credentials: { password: r.password }, wsProtocols: ['binary'] });
     rfb.scaleViewport = $('scale').getAttribute('aria-pressed') === 'true';
     rfb.resizeSession = false;

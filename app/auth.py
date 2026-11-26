@@ -15,6 +15,7 @@ from urllib.parse import urlparse
 
 from flask import Blueprint, current_app, g, jsonify, redirect, render_template, request, session
 
+from . import security
 from .settings import PIN_ACTION_KEYS, Limiter
 
 log = logging.getLogger(__name__)
@@ -192,7 +193,7 @@ def kiosk_pair():
     dev_id, cookie = store().add_device(entry[0], ip)
     log.info("scherm '%s' gekoppeld vanaf %s", entry[0], ip)
     resp = jsonify({"ok": True, "name": entry[0]})
-    resp.set_cookie(KIOSK_COOKIE, cookie, max_age=10 * 365 * 86400, httponly=True, samesite="Lax")
+    resp.set_cookie(KIOSK_COOKIE, cookie, max_age=10 * 365 * 86400, httponly=True, samesite="Lax", secure=security.is_https())
     return resp
 
 

@@ -2,11 +2,7 @@
 var PL = (function () {
   function params() {
     var out = {};
-    location.search.replace(/^\?/, '').split('&').forEach(function (kv) {
-      if (!kv) return;
-      var p = kv.split('=');
-      out[decodeURIComponent(p[0])] = decodeURIComponent((p[1] || '').replace(/\+/g, ' '));
-    });
+    new URLSearchParams(location.search).forEach(function (v, k) { out[k] = v; });
     return out;
   }
   function save(state, defaults) {

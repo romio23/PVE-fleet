@@ -46,7 +46,7 @@
       '<span class="muted" style="font-size:13px">' + meta + '</span>' +
       (g.web_url ? '<div class="end"><a class="btn ghost" href="' + e(g.web_url) + '" target="_blank" rel="noopener">Proxmox ↗</a></div>' : '') +
       '</div>' + err + (g.nodes.length ? '' : '<!--') +
-      '<div class="tablewrap"><table class="tbl" style="min-width:760px"><thead><tr><th>Node</th><th>Status</th><th>CPU</th><th>RAM</th><th>VM/CT</th><th>Uptime</th><th></th><th class="r"><span class="sr">Acties</span></th></tr></thead><tbody>' +
+      '<div class="tablewrap"><table class="tbl" style="min-width:760px"><thead><tr><th>Node</th><th>Status</th><th>CPU</th><th>RAM</th><th>VM/CT</th><th>Uptime</th><th><span class="sr-only">Acties</span></th><th class="r"><span class="sr">Acties</span></th></tr></thead><tbody>' +
       g.nodes.map(function (n) { return nodeRow(g, n); }).join('') + '</tbody></table></div>' + (g.nodes.length ? '' : '-->') + '</section>';
   }
 
