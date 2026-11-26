@@ -276,3 +276,17 @@ th.sortable .dir { font-size: 10px; margin-left: 4px; }
 .langsw { display: inline-flex; border: 1px solid var(--line, #2a3138); border-radius: 8px; overflow: hidden; }
 .langsw button { background: transparent; color: inherit; border: 0; padding: 5px 9px; font: inherit; font-size: 12px; cursor: pointer; opacity: .7; }
 .langsw button.on { background: rgba(232,161,58,.18); opacity: 1; font-weight: 600; }
+
+/* Updates in containers: voortgang van een controle */
+.ctp-meta { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; }
+.ctp-dot { color: var(--line3); }
+.ctp-pill { display: inline-flex; align-items: center; gap: 7px; padding: 2px 10px 2px 7px; border-radius: 999px; background: var(--info-bg); border: 1px solid var(--info-line); color: var(--info-text); font-weight: 600; }
+.ctp-pill .spinner { width: 11px; height: 11px; }
+.ctp-head { border-bottom: 0; }
+.ctp-bar { height: 3px; margin: 0 18px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.ctp-bar i { display: block; height: 100%; background: var(--info); border-radius: 2px; transition: width .4s ease; }
+.ctp-bar.indet i { animation: ctp-slide 1.4s ease-in-out infinite; }
+@keyframes ctp-slide { 0% { margin-left: -30%; } 100% { margin-left: 100%; } }
+@media (prefers-reduced-motion: reduce) { .ctp-bar.indet i { animation: none; } }
+.ctp-now { padding: 8px 18px 12px; border-bottom: 1px solid var(--line); }
+.ctp-now b { color: var(--text); font-weight: 600; }

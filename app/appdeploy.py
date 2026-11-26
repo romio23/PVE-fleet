@@ -31,7 +31,8 @@ log = logging.getLogger(__name__)
 bp = Blueprint("appdeploy", __name__)
 
 KEY_TAG = "pve-fleet-deploy"
-SCRIPT_VERSION = 3      # deploy.sh: 2 = 'upgrade' (alle containers bijwerken), 3 = 'nodeupgrade' (automatische rolling update)
+SCRIPT_VERSION = 4      # deploy.sh: 2 = 'upgrade' (alle containers bijwerken), 3 = 'nodeupgrade' (automatische rolling update),
+                        # 4 = 'ctshell' (console in een container zonder inloggen, voor updates)
 
 
 def script_version(out):
@@ -124,7 +125,13 @@ okdir() { [[ "$1" =~ ^/(opt|srv|var/www|home)(/[A-Za-z0-9._-]+)+$ && "$1" != *..
 okrel() { [ "$1" = "-" ] || { [[ "$1" =~ ^[A-Za-z0-9._/-]+$ && "$1" != *..* && "$1" != /* ]] || fail "ongeldig pad: $1"; }; }
 case "${A[0]:-}" in
   ping)
-    echo "PVEFLEET-DEPLOY 3 $(hostname)" ;;
+    echo "PVEFLEET-DEPLOY 4 $(hostname)" ;;
+  ctshell)
+    # interactieve root-shell in een container via de node (pct enter): geen inlogprompt nodig
+    okid "${A[1]:-}"
+    [ "$(pct status "${A[1]}" | awk '{print $2}')" = running ] || fail "container ${A[1]} draait niet"
+    [ -t 0 ] || fail "geen terminal; plak het installatiecommando van de pagina Apps opnieuw"
+    exec pct enter "${A[1]}" ;;
   upgrade)
     # pakketten in een container onbeheerd bijwerken; eigen configuratiebestanden blijven staan
     okid "${A[1]:-}"
@@ -195,7 +202,8 @@ esac
 
 
 def setup_command(pubkey):
-    line = 'command="bash {}",restrict {}'.format(SCRIPT_PATH, pubkey)
+    # 'pty': nodig voor 'ctshell' (interactieve console); verder blijft alles dicht door 'restrict'
+    line = 'command="bash {}",restrict,pty {}'.format(SCRIPT_PATH, pubkey)
     return ("mkdir -p /etc/pve/pvefleet && cat > {path} <<'PVEFLEETDEPLOY'\n{script}PVEFLEETDEPLOY\n"
             "KEY='{line}'\n"
             "mkdir -p /root/.ssh && touch /root/.ssh/authorized_keys\n"
@@ -462,6 +470,19 @@ def _connect(store, host, port, user):
         cl.close()
         raise PveError("SSH naar {}:{} mislukt: {}".format(host, port, e))
     return cl
+
+
+def ssh_shell(store, host, cmd, cols=120, rows=32, port=22, user="root"):
+    """Interactieve sessie met een terminal (pty). Geeft (client, kanaal); de aanroeper sluit de client."""
+    cl = _connect(store, host, port, user)
+    try:
+        chan = cl.get_transport().open_session()
+        chan.get_pty(term="xterm-256color", width=cols, height=rows)
+        chan.exec_command(cmd)
+        return cl, chan
+    except Exception:
+        cl.close()
+        raise
 
 
 def ssh_run(store, host, cmd, stdin_path=None, on_line=None, port=22, user="root", timeout=1800, on_start=None):

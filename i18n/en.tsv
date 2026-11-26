@@ -1726,3 +1726,17 @@ Onverwachte fout:|||Unexpected error:
 Alles aanvinken|||Tick all
 Alles uitvinken|||Untick all
 Er is niets verplaatst of bijgewerkt.|||Nothing was moved or updated.
+# 0.9.11: voortgang van de controle in containers
+Controleren…|||Checking…
+Nu bezig:|||Now checking:
+— pakketlijst ophalen|||— fetching package list
+App-versies vergelijken met GitHub…|||Comparing app versions with GitHub…
+Volgende container…|||Next container…
+Verbinden met de node…|||Connecting to the node…
+Voorbereiden…|||Preparing…
+nog ± minder dan een minuut|||less than a minute left
+Via de node:|||Via the node:
+PVE Fleet opent de container met|||PVE Fleet opens the container with
+, dus je hoeft niet in te loggen. Het commando wordt vanzelf ingevoerd.|||, so you don't need to log in. The command is entered automatically.
+Tip: stel de app-sleutel in (pagina Apps › Instellen) of plak het installatiecommando daar opnieuw. Dan opent PVE Fleet updates via de node, zonder inloggen in de container.|||Tip: set up the app key (Apps page › Set up) or paste the installation command there again. PVE Fleet then opens updates via the node, without logging in to the container.
+Is de app-sleutel ingesteld (pagina Apps), dan opent PVE Fleet de container via de node en hoef je niet in te loggen. Anders: zie je een inlogprompt, log dan in als root in de container.|||If the app key is set up (Apps page), PVE Fleet opens the container via the node and you don't need to log in. Otherwise: if you see a login prompt, log in as root in the container.

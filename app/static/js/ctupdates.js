@@ -24,6 +24,29 @@
     return '<span class="mono small">' + e(a.name) + ' ' + e(a.installed || '') + '</span> <span class="c-ok small">✓</span>' + more;
   }
 
+  // Tijdstip van de laatste controle: vandaag "om 18:12", anders met datum
+  function checkedText(t) {
+    var d = new Date(t * 1000), now = new Date(), hm = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+    if (d.toDateString() === now.toDateString()) return 'om ' + hm;
+    var y = new Date(now); y.setDate(now.getDate() - 1);
+    if (d.toDateString() === y.toDateString()) return 'gisteren om ' + hm;
+    return d.getDate() + ' ' + ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'][d.getMonth()] + ' om ' + hm;
+  }
+  function etaText(p) {
+    if (!p.done || !p.total || p.done >= p.total || p.phase !== 'containers') return '';
+    var per = ((p.now || Date.now() / 1000) - p.started) / p.done, left = Math.round(per * (p.total - p.done));
+    return ' <span class="ctp-dot">·</span> nog ± ' + (left < 60 ? 'minder dan een minuut' : Math.round(left / 60) + ' min');
+  }
+  function progressBlock(p) {
+    var pct = p && p.total ? Math.round(100 * p.done / p.total) : 0;
+    var now = !p ? 'Voorbereiden…'
+      : p.phase === 'apps' ? 'App-versies vergelijken met GitHub…'
+      : p.current ? 'Nu bezig: <b>' + e(p.current.name) + '</b> <span class="mono">' + p.current.vmid + '</span> op <span class="mono">' + e(p.current.node) + '</span> — pakketlijst ophalen'
+      : (p.done ? 'Volgende container…' : 'Verbinden met de node…');
+    return '<div class="ctp-bar' + (p && p.total ? '' : ' indet') + '"><i style="width:' + (p && p.total ? pct : 30) + '%"></i></div>' +
+      '<div class="ctp-now small muted">' + now + '</div>';
+  }
+
   function serverBlock(name, s) {
     var guests = Object.keys(data.guests).map(function (k) { return data.guests[k]; }).filter(function (x) { return x.server === name; });
     var nodeErr = Object.keys(s.nodes || {}).filter(function (n) { return !s.nodes[n].ok; }).map(function (n) {
@@ -31,11 +54,19 @@
     }).join('');
     var list = guests.filter(function (x) { return !onlyUpd || hasUpd(x); }).sort(function (a, b) { return (hasUpd(b) ? 1 : 0) - (hasUpd(a) ? 1 : 0) || a.vmid - b.vmid; });
     var n = guests.filter(hasUpd).length;
-    var head = '<div class="card-head"><h2>' + e(s.group) + '</h2><span class="small muted">' +
-      (s.checking ? '<span class="spinner" aria-hidden="true"></span> bezig met controleren…' : (s.checked ? 'gecontroleerd ' + PF.when(s.checked) : 'nog niet gecontroleerd')) +
-      ' · ' + guests.length + ' containers' + (n ? ' · <span class="c-warn">' + n + ' met updates</span>' : '') + '</span>' +
-      '<div class="end"><button type="button" class="btn ghost" data-ct="check" data-s="' + e(name) + '"' + (s.checking ? ' disabled' : '') + '>Nu controleren</button>' +
-      '<button type="button" class="btn ghost" data-ct="setup" data-s="' + e(name) + '">Instellingen</button></div></div>';
+    var p = s.checking ? s.progress : null;
+    var bad = (s.errors || 0) + Object.keys(s.nodes || {}).filter(function (k) { return !s.nodes[k].ok; }).length;
+    var dot = ' <span class="ctp-dot">·</span> ';
+    var status = s.checking
+      ? '<span class="ctp-pill"><span class="spinner" aria-hidden="true"></span>Controleren' + (p && p.total ? ' · ' + Math.min(p.done + (p.current ? 1 : 0), p.total) + ' van ' + p.total : '…') + '</span>'
+      : (s.checked ? '<span class="c-ok">✓ Gecontroleerd ' + e(checkedText(s.checked)) + '</span>' : '<span class="muted">Nog niet gecontroleerd</span>');
+    var head = '<div class="card-head' + (s.checking ? ' ctp-head' : '') + '"><h2>' + e(s.group) + '</h2><span class="small muted ctp-meta">' + status + dot +
+      guests.length + ' containers' + (n ? dot + '<span class="c-warn">' + n + ' met updates</span>' : '') +
+      (!s.checking && bad ? dot + '<span class="c-crit">' + bad + ' niet bereikbaar</span>' : '') +
+      (p ? etaText(p) : '') + '</span>' +
+      '<div class="end"><button type="button" class="btn ghost" data-ct="check" data-s="' + e(name) + '"' + (s.checking ? ' disabled' : '') + '>' + (s.checking ? 'Bezig…' : 'Nu controleren') + '</button>' +
+      '<button type="button" class="btn ghost" data-ct="setup" data-s="' + e(name) + '">Instellingen</button></div></div>' +
+      (s.checking ? progressBlock(p) : '');
     var rows = list.map(function (x) {
       var a = mainApp(x);
       return '<tr><td><a href="' + PF.guestUrl(x.server, x.node, 'lxc', x.vmid) + '" style="font-weight:500">' + e(x.name) + '</a> <span class="mono muted small">' + x.vmid + '</span>' +
@@ -262,5 +293,11 @@
     document.body.removeChild(ta); done(ok);
   });
   load();
-  setInterval(function () { if (!window.PFA_MODAL_OPEN) load(); }, 10000);
+  // Tijdens een controle elke 2 seconden verversen (voortgang), anders elke 10 seconden
+  var lastSlow = 0;
+  setInterval(function () {
+    if (window.PFA_MODAL_OPEN) return;
+    var busy = data && Object.keys(data.servers).some(function (k) { return data.servers[k].checking; });
+    if (busy || Date.now() - lastSlow > 10000) { lastSlow = Date.now(); load(); }
+  }, 2000);
 })();

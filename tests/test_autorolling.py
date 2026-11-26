@@ -10,7 +10,7 @@ def t(n, ok):
     print(("OK  " if ok else "FOUT"), n, flush=True); bad += 0 if ok else 1
 
 from app import appdeploy
-t("script version 3", appdeploy.SCRIPT_VERSION == 3 and "PVEFLEET-DEPLOY 3" in appdeploy.DEPLOY_SH)
+t("script version 4", appdeploy.SCRIPT_VERSION == 4 and "PVEFLEET-DEPLOY 4" in appdeploy.DEPLOY_SH and "ctshell)" in appdeploy.DEPLOY_SH)
 t("deploy.sh knows nodeupgrade", "  nodeupgrade)" in appdeploy.DEPLOY_SH and "--force-confold dist-upgrade" in appdeploy.DEPLOY_SH)
 t("deploy.sh has valid bash syntax", subprocess.run(["bash", "-n"], input=appdeploy.DEPLOY_SH, text=True).returncode == 0)
 

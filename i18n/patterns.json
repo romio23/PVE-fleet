@@ -883,5 +883,35 @@
 "^Gegevens van (.+), toen de node nog online was$",
 "",
 "Data from $1, when the node was still online"
+],
+[
+"^Controleren · (\\d+) van (\\d+)$",
+"",
+"Checking · $1 of $2"
+],
+[
+"^✓ Gecontroleerd om (\\d{1,2}:\\d{2})$",
+"",
+"✓ Checked at $1"
+],
+[
+"^✓ Gecontroleerd gisteren om (\\d{1,2}:\\d{2})$",
+"",
+"✓ Checked yesterday at $1"
+],
+[
+"^✓ Gecontroleerd (\\d{1,2}) (\\w+) om (\\d{1,2}:\\d{2})$",
+"",
+"✓ Checked $1 $2 at $3"
+],
+[
+"^(\\d+) niet bereikbaar$",
+"",
+"$1 unreachable"
+],
+[
+"^nog ± (\\d+) min$",
+"",
+"about $1 min left"
 ]
 ]

@@ -74,9 +74,12 @@
     hideOverlay();
     closedByUs = false;
     status('muted', 'Console aanvragen…');
-    PF.postJSON('/api/console/start', { server: server, node: node, type: kind, vmid: vmid }).then(function (r) {
+    PF.postJSON('/api/console/start', { server: server, node: node, type: kind, vmid: vmid, update: !!$('upgrade') && kind === 'lxc' }).then(function (r) {
       $('ttl').textContent = r.title;
       lastRoot = !!r.root;
+      var help = $('uphelp');
+      if (help && r.via === 'ssh') help.innerHTML = '<strong>Via de node:</strong> <span>PVE Fleet opent de container met <span class="mono">pct enter</span>, dus je hoeft niet in te loggen. Het commando wordt vanzelf ingevoerd.</span>';
+      else if (help && r.hint) help.innerHTML += ' <span class="small muted">' + PF.esc(r.hint) + '</span>';
       if (kind === 'shell') PF.getJSON(rootApi).then(function (x) { rootStat(x.session); }, function () {});
       document.title = r.title + ' · Console · PVE Fleet';
       if (r.proto === 'vnc') startVnc(r); else startTerm(r);

@@ -33,6 +33,34 @@ SESSIONS = {}
 _lock = threading.Lock()
 root_limiter = Limiter(5)   # 5 foute root-wachtwoorden -> even pauze
 TTL = 60   # seconden om de websocket te openen na het starten
+_PING_CACHE = {}   # host -> (tijd, versie van deploy.sh)
+
+
+def _ctshell_host(server, node):
+    """Kan deze container-console via de app-sleutel (pct enter op de node, zonder inloggen)?
+    Geeft (host, poort, gebruiker) of None. Vereist deploy.sh versie 4 of nieuwer."""
+    from . import appdeploy
+    app = current_app._get_current_object()
+    store = app.extensions.get("appdeploy")
+    if not store or not appdeploy._enabled(store):
+        return None
+    col = _col()
+    grp = col.group(server)
+    try:
+        host = appdeploy._node_host(app, grp, server, node)
+    except PveError:
+        return None
+    port, user = appdeploy._ssh_opts(app, server)
+    hit = _PING_CACHE.get(host)
+    if not hit or time.time() - hit[0] > 300:
+        try:
+            _, out = appdeploy.ssh_run(store, host, "ping", port=port, user=user, timeout=10)
+            hit = (time.time(), appdeploy.script_version(out))
+        except PveError as e:
+            log.info("console: app-sleutel werkt niet op %s: %s", host, e)
+            hit = (time.time(), 0)
+        _PING_CACHE[host] = hit
+    return (host, port, user) if hit[1] >= 4 else None
 
 
 def _col():
@@ -86,7 +114,14 @@ def api_console_start():
             "who": g.who, "demo": bool(col.cfg.get("demo"))}
     rs = rootsession.get(server, c) if kind == "shell" else None
     sess["root"] = bool(rs)
-    if sess["demo"]:
+    via = None
+    if kind == "lxc" and body.get("update") and not sess["demo"]:
+        via = _ctshell_host(server, node)
+    if via:
+        # Bijwerken via de node: 'pct enter' met de app-sleutel, dus meteen root in de container (geen inlogprompt)
+        sess.update({"proto": "term", "via": "ssh", "host": via[0], "ssh_port": via[1], "ssh_user": via[2]})
+        sess["root"] = True
+    elif sess["demo"]:
         if kind == "qemu":
             return jsonify({"error": "In de demomodus is het scherm van een VM niet beschikbaar. "
                                      "Probeer de console van een container of de shell van een node."}), 409
@@ -135,7 +170,10 @@ def api_console_start():
         SESSIONS[sid] = sess
     _audit({"who": g.who, "action": "console", "server": server, "node": node, "vmid": vmid,
             "label": "Console geopend: " + title + (" (als root)" if sess["root"] else ""), "ok": True})
-    out = {"id": sid, "proto": sess["proto"], "title": title, "root": sess["root"]}
+    out = {"id": sid, "proto": sess["proto"], "title": title, "root": sess["root"], "via": sess.get("via")}
+    if kind == "lxc" and body.get("update") and not via and not sess["demo"]:
+        out["hint"] = ("Tip: stel de app-sleutel in (pagina Apps › Instellen) of plak het installatiecommando daar opnieuw. "
+                       "Dan opent PVE Fleet updates via de node, zonder inloggen in de container.")
     if sess["proto"] == "vnc":
         out["password"] = sess["ticket"]   # noVNC gebruikt het ticket als wachtwoord
     return jsonify(out)
@@ -249,6 +287,8 @@ def ws_console(ws, sid):
         return
     if sess["demo"]:
         return demo_terminal(ws, sess)
+    if sess.get("via") == "ssh":
+        return ssh_terminal(ws, sess)
     try:
         up = _upstream(sess)
     except Exception as e:
@@ -283,6 +323,69 @@ def ws_console(ws, sid):
     finally:
         try:
             up.close()
+        except Exception:
+            pass
+
+
+# ------------------------------------------------------------------ via de node (app-sleutel)
+TERM_MSG = re.compile(r"^0:(\d+):", re.S)
+
+
+def ssh_terminal(ws, sess):
+    """Console in een container via SSH naar de node: deploy.sh 'ctshell' doet 'pct enter'.
+    De browser spreekt het termproxy-protocol (0:len:data, 1:cols:rows:, 2); dat vertalen we hier."""
+    from . import appdeploy
+    store = current_app.extensions["appdeploy"]
+    try:
+        cl, chan = appdeploy.ssh_shell(store, sess["host"], "ctshell {}".format(int(sess["vmid"])),
+                                       port=sess["ssh_port"], user=sess["ssh_user"])
+    except Exception as e:
+        log.warning("console via node %s mislukt: %s", sess["host"], e)
+        ws.close(reason=1011, message="Console via de node mislukt: {}".format(str(e)[:80]))
+        return
+    stop = threading.Event()
+
+    def pump():
+        try:
+            while not stop.is_set():
+                data = chan.recv(4096)
+                if not data:
+                    break
+                ws.send(bytes(data))
+        except Exception as e:  # verbinding dicht
+            log.debug("console via node gestopt: %s", e)
+        finally:
+            stop.set()
+            try:
+                ws.close(reason=1000, message="Console gesloten")
+            except Exception:
+                pass
+
+    threading.Thread(target=pump, daemon=True).start()
+    try:
+        while not stop.is_set():
+            msg = ws.receive(timeout=1)
+            if msg is None:
+                continue
+            if isinstance(msg, (bytes, bytearray)):
+                msg = bytes(msg).decode("utf-8", "replace")
+            if msg.startswith("0:"):
+                m = TERM_MSG.match(msg)
+                if m:
+                    chan.sendall(msg[m.end():].encode("utf-8"))
+            elif msg.startswith("1:"):
+                parts = msg.split(":")
+                try:
+                    chan.resize_pty(width=max(20, int(parts[1])), height=max(5, int(parts[2])))
+                except (IndexError, ValueError):
+                    pass
+            # "2" = ping van de browser: niets mee doen
+    except Exception as e:
+        log.debug("console browser gestopt: %s", e)
+    finally:
+        stop.set()
+        try:
+            cl.close()
         except Exception:
             pass
 

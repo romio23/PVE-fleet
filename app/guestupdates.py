@@ -89,6 +89,7 @@ class Store:
         except (OSError, ValueError):
             pass
         self.running = set()      # servers die nu gecontroleerd worden
+        self.progress = {}        # server -> {"total", "done", "current", "phase", "started"} tijdens een controle
 
     def save(self):
         with self.lock:
@@ -180,7 +181,7 @@ class _TofuPolicy:
             pass
 
 
-def _ssh_run(store, host, port, user, timeout=900):
+def _ssh_run(store, host, port, user, timeout=900, on_line=None):
     import paramiko
     priv, _ = ensure_key(store)
     kh = os.path.join(store.ssh_dir, "known_hosts")
@@ -194,8 +195,18 @@ def _ssh_run(store, host, port, user, timeout=900):
         cl.connect(host, port=port, username=user, pkey=paramiko.Ed25519Key.from_private_key_file(priv),
                    timeout=8, banner_timeout=10, auth_timeout=10, allow_agent=False, look_for_keys=False)
         _, out, err = cl.exec_command("pvefleet-check", timeout=timeout)
-        text = out.read().decode("utf-8", "replace")
-        return text
+        if on_line is None:
+            return out.read().decode("utf-8", "replace")
+        # Regel voor regel lezen, zodat de voortgang ("CT 105" … "END") live te volgen is
+        lines = []
+        for raw in out:
+            line = raw if isinstance(raw, str) else raw.decode("utf-8", "replace")
+            lines.append(line.rstrip("\n"))
+            try:
+                on_line(line.rstrip())
+            except Exception:  # noqa: BLE001  voortgang mag de controle nooit breken
+                pass
+        return "\n".join(lines) + "\n"
     except paramiko.BadHostKeyException:
         raise PveError("de SSH-hostsleutel van {} is veranderd. Is de node opnieuw geïnstalleerd? Verwijder dan de regel "
                        "voor {} uit data/ssh/known_hosts.".format(host, host))
@@ -335,16 +346,40 @@ def check_server(app, server):
     token = col.cfg.get("github_token")
     res = {"checked": time.time(), "nodes": {}, "guests": {}}
     prev = store.result(server).get("guests") or {}
+    online = {n["name"] for n in grp["nodes"] if n["status"] == "online"}
+    names = {x["vmid"]: x for x in grp["guests"] if x["type"] == "lxc"}
+    total = sum(1 for x in names.values() if x["status"] == "running" and x["node"] in online)
+    prog = {"total": total, "done": 0, "current": None, "phase": "containers", "started": time.time()}
+    store.progress[server] = prog
+
+    def on_line(line, node):
+        if line.startswith("CT "):
+            try:
+                vmid = int(line[3:])
+            except ValueError:
+                return
+            x = names.get(vmid) or {}
+            prog["current"] = {"vmid": vmid, "name": x.get("name") or str(vmid), "node": node}
+        elif line == "END":
+            prog["done"] += 1
+            prog["total"] = max(prog["total"], prog["done"])
+            prog["current"] = None
+
     for n in grp["nodes"]:
         if n["status"] != "online":
             res["nodes"][n["name"]] = {"ok": False, "error": "node is offline", "checked": time.time()}
             continue
         host = n.get("ip") or c.active_host
+        cb = (lambda line, _n=n["name"]: on_line(line, _n))
         try:
             if demo:
                 text = c.guest_check(n["name"])
+                for line in text.splitlines():
+                    cb(line.rstrip())
+                    if line.startswith("CT "):
+                        time.sleep(0.4)   # demo: voortgang zichtbaar maken
             else:
-                text = _ssh_run(store, host, int(st.get("port") or 22), st.get("user") or "root")
+                text = _ssh_run(store, host, int(st.get("port") or 22), st.get("user") or "root", on_line=cb)
             guests = parse_output(text)
             res["nodes"][n["name"]] = {"ok": True, "error": None, "checked": time.time(), "count": len(guests)}
         except PveError as e:
@@ -354,6 +389,8 @@ def check_server(app, server):
             log.exception("controle %s/%s", server, n["name"])
             res["nodes"][n["name"]] = {"ok": False, "error": str(e)[:200], "checked": time.time()}
             continue
+        prog["phase"] = "apps"
+        prog["current"] = None
         for vmid, gres in guests.items():
             slug = None
             try:
@@ -368,6 +405,7 @@ def check_server(app, server):
             gres["checked"] = time.time()
             gres["apps"] = describe_apps(gres["apps"], slug, override, token, demo)
             res["guests"][str(vmid)] = gres
+        prog["phase"] = "containers"
     # gestopte containers: laatste bekende uitslag bewaren (gemarkeerd als oud)
     for vmid, old in prev.items():
         if vmid not in res["guests"] and any(x["vmid"] == int(vmid) and x["type"] == "lxc" for x in grp["guests"]):
@@ -392,6 +430,7 @@ def _run_bg(app, server):
             log.exception("controle %s", server)
         finally:
             store.running.discard(server)
+            store.progress.pop(server, None)
     threading.Thread(target=work, daemon=True).start()
     return True
 
@@ -529,8 +568,11 @@ def api_list():
         name = s["name"]
         st, res = store.settings(name), store.result(name)
         grp = col.group(name) or {}
-        servers[name] = {"enabled": bool(st.get("enabled")), "checking": name in store.running,
-                         "checked": res.get("checked"), "nodes": res.get("nodes") or {},
+        checking = name in store.running
+        errors = sum(1 for x in (res.get("guests") or {}).values() if x.get("error") and not x.get("stale"))
+        servers[name] = {"enabled": bool(st.get("enabled")), "checking": checking,
+                         "progress": dict(store.progress[name], now=time.time()) if checking and name in store.progress else None,
+                         "checked": res.get("checked"), "nodes": res.get("nodes") or {}, "errors": errors,
                          "group": grp.get("name", name), "kind": grp.get("kind")}
     guests = {}
     for name, res in store.data["results"].items():
