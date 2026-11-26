@@ -88,3 +88,5 @@ body { font-size: 15px; }
 .k-vm .mini .n { width: 34px; text-align: right; font-family: var(--mono); color: var(--text); }
 .k-vm .note { font-size: 13px; }
 .k-back { height: 40px; border-radius: 10px; white-space: nowrap; }
+
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }

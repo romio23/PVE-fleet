@@ -60,7 +60,7 @@
   function selected() { return data.vms.filter(function (v) { return sel[k(v)]; }); }
   function renderBar() {
     var list = selected();
-    if (!list.length) { $('bar').innerHTML = ''; return; }
+    if (!list.length) { $('bar').replaceChildren(); return; }
     var nodes = {}, servers = {};
     list.forEach(function (v) { nodes[v.server + '|' + v.node] = 1; servers[v.server] = 1; });
     var oneNode = Object.keys(nodes).length === 1, cluster = list[0].kind === 'cluster';

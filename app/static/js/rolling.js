@@ -152,7 +152,7 @@
 
     if (!d.started) {
       var todo = nodes.filter(needsWork);
-      $('headacts').innerHTML = '';
+      $('headacts').replaceChildren();
       $('nodes').innerHTML = autoBanner() + '<section class="card pad"><h2 class="small-title">Zo gaat het</h2>' +
         '<ol style="margin:0 0 14px;padding-left:20px;line-height:1.8;color:var(--text2)">' +
         '<li><strong>Verplaatsen:</strong> de draaiende VM\'s &amp; containers gaan naar een andere node (VM\'s live, containers worden kort herstart).</li>' +
@@ -272,7 +272,7 @@
   function renderAuto() {
     var r = auto.run;
     var cur = r.nodes.filter(function (n) { return n.state === 'busy'; })[0];
-    $('headacts').innerHTML = '';
+    $('headacts').replaceChildren();
     keepScroll(function () {
       $('nodes').innerHTML = '<section class="card" style="border-color:var(--info-line)"><div class="card-head"><span class="spinner" aria-hidden="true"></span><h2>Automatische rolling update loopt</h2>' +
         '<span class="small muted">' + (cur ? '<span class="mono">' + e(cur.name) + '</span> · <span>' + e(STEP[cur.step] || 'Voorbereiden') + '</span>' : 'Voorbereiden') + '</span>' +
@@ -400,10 +400,10 @@
       targets.forEach(function (t) { load_[t.name] = t.mem_pct || 0; });
       var mem = {};
       targets.forEach(function (t) { mem[t.name] = 0; });
-      var items = run.slice().sort(function (a, b) { return (b.maxmem || 0) - (a.maxmem || 0); }).map(function (g) {
+      var items = run.toSorted(function (a, b) { return (b.maxmem || 0) - (a.maxmem || 0); }).map(function (g) {
         var to = v.target;
         if (to === '*') {
-          to = targets.slice().sort(function (a, b) { return (load_[a.name] + mem[a.name]) - (load_[b.name] + mem[b.name]); })[0].name;
+          to = targets.toSorted(function (a, b) { return (load_[a.name] + mem[a.name]) - (load_[b.name] + mem[b.name]); })[0].name;
           var t = targets.filter(function (x) { return x.name === to; })[0];
           mem[to] += 100 * (g.maxmem || 0) / Math.max(1, (t && t.mem_total) || 64 * 1073741824);
         }

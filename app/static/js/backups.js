@@ -219,7 +219,7 @@
           if (inJob) hit.push(x.vmid + ' ' + x.name);
         });
       }
-      if (!hit.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+      if (!hit.length) { box.style.display = 'none'; box.replaceChildren(); return; }
       box.style.display = '';
       box.innerHTML = '<div class="small" style="line-height:1.5"><strong>Let op:</strong> <span>' + e(st.value) + '</span> <span>is netwerkopslag (' + e(s.type.toUpperCase()) + '), en deze unprivileged containers zitten in de job:</span> <span class="mono">' + e(hit.join(', ')) + '</span>. ' +
         '<span>Hun back-up mislukt dan vaak met "Permission denied", tenzij Proxmox de tijdelijke map lokaal maakt. Heb je dit nog niet gedaan, voer dan één keer uit in de shell van een node:</span></div>' + cmdBox(g.tmpdir_cmd || '');
@@ -316,7 +316,7 @@
         var body = { id: isNew ? '' : j.id, enabled: v.enabled, schedule: v.schedule, storage: v.storage, node: v.node, selection: v.selection,
           vmids: pickedIds(), mode: v.mode, compress: v.compress, comment: v.comment, notes_template: v.notes_template,
           prune: { 'keep-last': v.keep_last, 'keep-daily': v.keep_daily, 'keep-weekly': v.keep_weekly, 'keep-monthly': v.keep_monthly } };
-        var pc = document.getElementById('bj-perm'); if (pc) pc.innerHTML = '';
+        var pc = document.getElementById('bj-perm'); if (pc) pc.replaceChildren();
         return PF.postJSON('/api/backups/' + encodeURIComponent(g.server) + '/job', body).then(function (r) { PFA.toast(r.message); }, function (ex) {
           if (ex.body && ex.body.commands) permCommands(ex.body.commands);
           throw ex;
