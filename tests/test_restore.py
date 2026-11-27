@@ -141,6 +141,15 @@ r = c.post("/api/restore/start", json={"src": "cluster-home", "volid": b["volid"
 j = r.get_json()
 t("permission error: names the right and gives commands", r.status_code == 403 and "VM.Allocate" in j["error"] and "pveum" in (j.get("commands") or ""))
 
+# a refusal without a parsable path (generic 403) still gives the FleetRestore commands
+from app.pve import PvePermissionError
+def perm2(path, data=None): raise PvePermissionError("Permission check failed")
+other.post = perm2
+r = c.post("/api/restore/start", json={"src": "cluster-home", "volid": b["volid"], "type": "lxc", "src_vmid": b["vmid"], "target": "other", "node": "o1", "vmid": 303, "storage": "local-lvm"}, headers=H)
+j = r.get_json()
+cm = j.get("commands") or ""
+t("generic permission error: gives the FleetRestore commands", r.status_code == 403 and "FleetRestore" in cm and "VM.Allocate" in cm and "--tokens" in cm and "root@pam" in j["error"])
+
 
 # ---- connection test: optional restore line with a ready-made role
 from app import servers_api

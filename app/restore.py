@@ -413,15 +413,31 @@ def _public(job):
                                 "upid", "volid", "storage", "start", "nets", "who")}
 
 
+def _restore_cmds(server):
+    """pveum-commando's voor de rol FleetRestore, passend bij het token van deze server."""
+    from .servers_api import RESTORE_PRIVS
+    token = None
+    for sv in col().cfg.get("servers") or []:
+        if sv.get("name") == server:
+            token = sv.get("token_id")
+    user = token.split("!", 1)[0] if token and "!" in token else "dashboard@pve"
+    token = token or "dashboard@pve!fleet"
+    return ('pveum role add FleetRestore --privs "{0}" 2>/dev/null || pveum role modify FleetRestore --privs "{0}"\n'
+            "pveum acl modify / --users {1} --roles FleetRestore\n"
+            "pveum acl modify / --tokens '{2}' --roles FleetRestore").format(RESTORE_PRIVS, user, token)
+
+
 def _perm_or_error(e, server):
     from .backups import PERM_RE, _perm_error
     if PERM_RE.search(str(e)):      # "Permission check failed (/pad, Recht)": noem het recht en geef de pveum-commando's
         return jsonify(_perm_error(e, "terugzetten", server)), 403
     if isinstance(e, PvePermissionError):
-        return jsonify({"error": "Proxmox weigert het terugzetten: {}. Controleer de rechten van het API-token "
-                                 "(VM.Allocate, Datastore.AllocateSpace op de doelopslag). Sommige containers (bijvoorbeeld "
-                                 "zonder 'unprivileged' of met bind mounts) mag Proxmox alleen root@pam terugzetten; doe dat dan "
-                                 "in de Proxmox-interface.".format(e)}), 403
+        return jsonify({"error": "Proxmox weigert het terugzetten: {}. Waarschijnlijk mist het API-token rechten voor het terugzetten. "
+                                 "Plak de commando's hieronder één keer in de shell van een node en probeer het opnieuw. "
+                                 "Lukt het daarna nog niet, dan is de back-up misschien van een container die Proxmox alleen "
+                                 "root@pam laat terugzetten (zonder 'unprivileged' of met bind mounts); zet die dan terug in de "
+                                 "Proxmox-interface.".format(e),
+                        "commands": _restore_cmds(server)}), 403
     return jsonify({"error": "Proxmox: {}".format(e)}), 502
 
 

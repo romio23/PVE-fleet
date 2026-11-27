@@ -105,9 +105,9 @@
 "The API token may not restore: Proxmox is missing the privilege $1 on $2. Paste the commands below once into the shell of a node and try again."
 ],
 [
-"^Proxmox weigert het terugzetten: (.*)\\. Controleer de rechten van het API-token \\(VM\\.Allocate, Datastore\\.AllocateSpace op de doelopslag\\)\\. Sommige containers \\(bijvoorbeeld zonder 'unprivileged' of met bind mounts\\) mag Proxmox alleen root@pam terugzetten; doe dat dan in de Proxmox-interface\\.$",
+"^Proxmox weigert het terugzetten: (.*)\\. Waarschijnlijk mist het API-token rechten voor het terugzetten\\. Plak de commando's hieronder één keer in de shell van een node en probeer het opnieuw\\. Lukt het daarna nog niet, dan is de back-up misschien van een container die Proxmox alleen root@pam laat terugzetten \\(zonder 'unprivileged' of met bind mounts\\); zet die dan terug in de Proxmox-interface\\.$",
 "",
-"Proxmox refuses the restore: $1. Check the privileges of the API token (VM.Allocate, Datastore.AllocateSpace on the target storage). Proxmox only lets root@pam restore some containers (for example without 'unprivileged' or with bind mounts); do that in the Proxmox interface."
+"Proxmox refuses the restore: $1. The API token probably lacks the privileges for restoring. Paste the commands below once in the shell of a node and try again. If it still fails, the backup may be of a container that Proxmox only lets root@pam restore (not 'unprivileged' or with bind mounts); restore it in the Proxmox interface."
 ],
 [
 "^Proxmox: (.*)$",
