@@ -500,7 +500,7 @@ def demo_terminal(ws, sess):
                     confirm = None
                     out(prompt)
                     continue
-                if re.match(r"^(apt(-get)? update)?( *(?:&&|;) *)?(apt(-get)? (dist-upgrade|full-upgrade|upgrade))?$", cmd) and cmd:
+                if re.match(r"^(apt(-get)?( -o \S+)? update)?( *(?:&&|;) *)?(apt(-get)?( -o \S+)? (dist-upgrade|full-upgrade|upgrade))?$", cmd) and cmd:
                     text, ask = _demo_apt(sess, cmd)
                     out(text)
                     if ask:

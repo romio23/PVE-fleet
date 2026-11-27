@@ -141,7 +141,11 @@ PERM_CHECKS = [
 # Optioneel: zonder deze rechten werkt alles, behalve dit ene onderdeel.
 OPTIONAL_CHECKS = [
     ("jobs", "Openstaande updates lezen, back-upjobs aanpassen, certificaten op nodes zetten (optioneel)", ["Sys.Modify"]),
+    ("restore", "Back-ups terugzetten als nieuwe VM of container (optioneel)", ["VM.Allocate", "VM.Config.Disk", "VM.Config.Network", "VM.Config.Options"]),
 ]
+# Rol voor het terugzetten van back-ups (SDN.Use is voor een andere bridge; Proxmox 8 en nieuwer vragen erom)
+RESTORE_PRIVS = ("VM.Allocate VM.Config.Disk VM.Config.Network VM.Config.Options VM.Config.CPU VM.Config.Memory VM.Config.HWType "
+                 "Datastore.AllocateSpace Datastore.Audit SDN.Use")
 ACTION_PRIVS = "VM.PowerMgmt VM.Snapshot VM.Snapshot.Rollback VM.Backup VM.Migrate Datastore.AllocateSpace Sys.PowerMgmt VM.Console Sys.Console VM.GuestAgent.Audit"
 
 
@@ -196,11 +200,17 @@ def check_permissions(c, token_id, version=None):
                 lines.append("# alleen nodig als het token 'Privilege Separation' aan heeft:")
             lines.append("pveum acl modify / --tokens '{}' --roles {}".format(token_id, roles))
     opt_lines = []
-    if any(not o["ok"] for o in optional):
+    missing_opt = {o["key"] for o in optional if not o["ok"]}
+    if "jobs" in missing_opt:
         opt_lines.append('pveum role add FleetJobs --privs "Sys.Modify" 2>/dev/null || pveum role modify FleetJobs --privs "Sys.Modify"')
         opt_lines.append("pveum acl modify / --users {} --roles FleetJobs".format(user))
         if privsep is not False:
             opt_lines.append("pveum acl modify / --tokens '{}' --roles FleetJobs".format(token_id))
+    if "restore" in missing_opt:
+        opt_lines.append('pveum role add FleetRestore --privs "{0}" 2>/dev/null || pveum role modify FleetRestore --privs "{0}"'.format(RESTORE_PRIVS))
+        opt_lines.append("pveum acl modify / --users {} --roles FleetRestore".format(user))
+        if privsep is not False:
+            opt_lines.append("pveum acl modify / --tokens '{}' --roles FleetRestore".format(token_id))
     return {"perms": result + optional, "privsep": privsep, "commands": "\n".join(lines),
             "optional_commands": "\n".join(opt_lines)}
 

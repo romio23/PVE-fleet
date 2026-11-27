@@ -57,7 +57,7 @@
     var note = off ? '<p class="c-crit" style="margin:0;font-size:13px">Onbereikbaar sinds ' + PF.clock(g.since || Date.now() / 1000) + ' (' + PF.since(g.since || Date.now() / 1000) + ')</p>' +
         (g.error ? '<p class="mono small" style="margin:6px 0 0;color:var(--crit-text);overflow-wrap:anywhere">' + e(g.error) + '</p>' : '') +
         (hint ? '<p class="small" style="margin:6px 0 0">' + e(hint) + '</p>' : '')
-      : (n.updates && n.updates.count ? '<p class="muted" style="margin:0;font-size:13px">' + n.updates.count + ' updates beschikbaar</p>' : (n.updates && n.updates.count === 0 ? '<p class="muted" style="margin:0;font-size:13px">Up-to-date</p>' : ''));
+      : (n.updates && n.updates.count ? '<p class="muted" style="margin:0;font-size:13px">' + n.updates.count + ' updates beschikbaar</p>' : (n.updates && n.updates.count === 0 ? (n.updates.apt_error ? '<p class="c-warn" style="margin:0;font-size:13px" title="' + e(n.updates.apt_error) + '">Pakketlijst verversen mislukt</p>' : '<p class="muted" style="margin:0;font-size:13px">Up-to-date</p>') : ''));
     var url = PF.nodeUrl(g.server, n.name);
     return '<article class="card pad standalone" style="' + (off ? 'border-color:var(--crit-line)' : '') + '">' +
       '<div class="head"><div><a class="mono" style="font-weight:600;font-size:15px" href="' + url + '">' + e(n.name) + '</a>' +

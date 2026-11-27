@@ -79,7 +79,7 @@ def _node_row(grp, n):
     return {"name": n["name"], "status": n["status"], "ip": n.get("ip"), "version": n.get("version"),
             "kernel": n.get("kernel"), "uptime": n.get("uptime"), "mem_pct": n.get("mem_pct"), "cpu": n.get("cpu"),
             "mem_total": n.get("mem_total"),
-            "count": u.get("count"), "security": u.get("security"), "checked": u.get("checked"), "error": u.get("error"),
+            "count": u.get("count"), "security": u.get("security"), "checked": u.get("checked"), "error": u.get("error"), "apt_error": u.get("apt_error"),
             "kernel_latest": u.get("kernel_latest"), "reboot_needed": bool(u.get("reboot_needed")),
             "kernel_pending": bool(u.get("kernel_pending")),
             "guests_running": running,

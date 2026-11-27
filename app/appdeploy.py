@@ -31,8 +31,9 @@ log = logging.getLogger(__name__)
 bp = Blueprint("appdeploy", __name__)
 
 KEY_TAG = "pve-fleet-deploy"
-SCRIPT_VERSION = 4      # deploy.sh: 2 = 'upgrade' (alle containers bijwerken), 3 = 'nodeupgrade' (automatische rolling update),
-                        # 4 = 'ctshell' (console in een container zonder inloggen, voor updates)
+SCRIPT_VERSION = 5      # deploy.sh: 2 = 'upgrade' (alle containers bijwerken), 3 = 'nodeupgrade' (automatische rolling update),
+                        # 4 = 'ctshell' (console in een container zonder inloggen, voor updates),
+                        # 5 = apt altijd via IPv4 en een duidelijke melding als de pakketbronnen niet te bereiken zijn
 
 
 def script_version(out):
@@ -125,7 +126,7 @@ okdir() { [[ "$1" =~ ^/(opt|srv|var/www|home)(/[A-Za-z0-9._-]+)+$ && "$1" != *..
 okrel() { [ "$1" = "-" ] || { [[ "$1" =~ ^[A-Za-z0-9._/-]+$ && "$1" != *..* && "$1" != /* ]] || fail "ongeldig pad: $1"; }; }
 case "${A[0]:-}" in
   ping)
-    echo "PVEFLEET-DEPLOY 4 $(hostname)" ;;
+    echo "PVEFLEET-DEPLOY 5 $(hostname)" ;;
   ctshell)
     # interactieve root-shell in een container via de node (pct enter): geen inlogprompt nodig
     okid "${A[1]:-}"
@@ -139,9 +140,9 @@ case "${A[0]:-}" in
     pct exec "${A[1]}" -- sh -c '
       export LC_ALL=C DEBIAN_FRONTEND=noninteractive
       if command -v apt-get >/dev/null 2>&1; then
-        echo "apt-get update"; apt-get update -q || exit 4
+        echo "apt-get update"; apt-get -o Acquire::ForceIPv4=true update -q || exit 4
         echo "apt-get dist-upgrade"
-        apt-get -y -q -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold dist-upgrade || exit 5
+        apt-get -o Acquire::ForceIPv4=true -y -q -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold dist-upgrade || exit 5
         apt-get -y -q autoremove >/dev/null 2>&1 || true
       elif command -v apk >/dev/null 2>&1; then
         echo "apk upgrade"; apk update && apk upgrade || exit 5
@@ -157,10 +158,17 @@ case "${A[0]:-}" in
   nodeupgrade)
     # deze node zelf bijwerken (automatische rolling update); eigen configuratiebestanden blijven staan
     export DEBIAN_FRONTEND=noninteractive APT_LISTCHANGES_FRONTEND=none
+    # altijd via IPv4: veel nodes hebben geen IPv6-route, en dan mislukt het ophalen van de pakketlijst ("Network is unreachable")
     echo "apt-get update"
-    apt-get update -q 2>&1 || echo "apt-get update gaf fouten (bijvoorbeeld de enterprise-repository zonder abonnement); toch doorgaan"
+    tmp=$(mktemp)
+    apt-get -o Acquire::ForceIPv4=true update -q 2>&1 | tee "$tmp"; rc=${PIPESTATUS[0]}
+    if grep -qiE "network is unreachable|could not resolve|temporary failure resolving|cannot initiate the connection|connection timed out|could not connect|connection failed" "$tmp"; then
+      rm -f "$tmp"; fail "pakketlijst verversen mislukt: de node kan zijn pakketbronnen niet bereiken (netwerk of DNS); er is niets bijgewerkt"
+    fi
+    rm -f "$tmp"
+    [ "$rc" -eq 0 ] || echo "apt-get update gaf fouten (bijvoorbeeld de enterprise-repository zonder abonnement); toch doorgaan"
     echo "apt-get dist-upgrade"
-    apt-get -y -q -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold dist-upgrade 2>&1 || fail "apt-get dist-upgrade mislukt"
+    apt-get -o Acquire::ForceIPv4=true -y -q -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold dist-upgrade 2>&1 || fail "apt-get dist-upgrade mislukt"
     newest=$(ls /boot/vmlinuz-* 2>/dev/null | sed 's|^/boot/vmlinuz-||' | sort -V | tail -n 1)
     if [ -e /var/run/reboot-required ] || { [ -n "$newest" ] && [ "$newest" != "$(uname -r)" ]; }; then
       echo "PVEFLEET-REBOOT"

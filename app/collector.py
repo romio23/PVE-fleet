@@ -80,6 +80,28 @@ def _kernel(kversion):
     return m.group(1) if m else None
 
 
+APT_NET_RE = re.compile(r"network is unreachable|could not resolve|temporary failure resolving|cannot initiate the connection|"
+                        r"connection timed out|could not connect|connection failed", re.I)
+APT_NET_MSG = ("De node kan zijn pakketbronnen niet bereiken (netwerk, DNS of IPv6). De lijst met updates kan daardoor verouderd zijn, "
+               "ook als er 'Up-to-date' staat.")
+
+
+def apt_net_failure(c, node, upid=None):
+    """Is de laatste pakketlijst-verversing (apt update) van deze node mislukt omdat de pakketbronnen niet te bereiken waren?
+    Geeft een korte melding of None. Fouten van de repository zelf (zoals 401 van de enterprise-repository) tellen niet mee."""
+    try:
+        if not upid:
+            tasks = c.get("/nodes/{}/tasks".format(quote(node, safe="")), {"typefilter": "aptupdate", "limit": 5}) or []
+            tasks = sorted((t for t in tasks if t.get("upid")), key=lambda t: t.get("starttime") or 0, reverse=True)
+            if not tasks or tasks[0].get("status") in (None, "OK") or str(tasks[0].get("status", "")).startswith("WARNINGS"):
+                return None
+            upid = tasks[0]["upid"]
+        rows = c.get("/nodes/{}/tasks/{}/log".format(quote(node, safe=""), quote(upid, safe="")), {"start": 0, "limit": 500}) or []
+    except PveError:
+        return None
+    return APT_NET_MSG if any(APT_NET_RE.search(r.get("t") or "") for r in rows) else None
+
+
 class Collector:
     def __init__(self, cfg, data_dir="data"):
         self.cfg = cfg
@@ -325,7 +347,7 @@ class Collector:
             pk = c.get("/nodes/{}/apt/update".format(node)) or []
             cur = {"kernel_pending": any(re.match(r"^(proxmox|pve)-kernel-", p.get("Package") or "") for p in pk),
                    "count": len(pk), "security": sum(1 for p in pk if "security" in (p.get("Origin") or "").lower()),
-                   "checked": time.time(), "error": None}
+                   "checked": time.time(), "error": None, "apt_error": apt_net_failure(c, node)}
         except PvePermissionError:
             cur = {"count": None, "security": None, "checked": time.time(),
                    "error": "geen rechten om de lijst met updates te lezen (Proxmox vraagt hiervoor Sys.Modify)"}
@@ -349,11 +371,16 @@ class Collector:
             try:
                 upid = c.post("/nodes/{}/apt/update".format(node))
                 if isinstance(upid, str) and upid.startswith("UPID"):
+                    st = {}
                     for _ in range(60):   # wacht tot apt update klaar is (max ~60 s)
                         st = c.get("/nodes/{}/tasks/{}/status".format(node, quote(upid, safe=""))) or {}
                         if st.get("status") == "stopped":
                             break
                         time.sleep(1)
+                    if st.get("status") == "stopped" and st.get("exitstatus") != "OK":
+                        bad = apt_net_failure(c, node, upid)
+                        if bad:
+                            note = "Pakketlijst verversen mislukt. " + bad
             except PvePermissionError:
                 note = ("De pakketlijst is opnieuw gelezen. Proxmox vernieuwt die lijst zelf elke dag; om dat meteen te doen "
                         "heeft het token het recht Sys.Modify nodig.")

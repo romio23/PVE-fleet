@@ -42,7 +42,7 @@ pm=none; n=-1; sec=0
 if command -v apt-get >/dev/null 2>&1; then
   pm=apt
   now=$(date +%s); st=$(stat -c %Y /var/cache/apt/pkgcache.bin 2>/dev/null || echo 0)
-  if [ $((now - st)) -gt 21600 ]; then apt-get update -qq >/dev/null 2>&1; fi
+  if [ $((now - st)) -gt 21600 ]; then apt-get -o Acquire::ForceIPv4=true update -qq >/dev/null 2>&1; fi
   list=$(apt-get -s -o Debug::NoLocking=1 dist-upgrade 2>/dev/null | grep '^Inst ')
   if [ -n "$list" ]; then n=$(printf '%s\n' "$list" | wc -l); sec=$(printf '%s\n' "$list" | grep -ci 'security'); else n=0; fi
 elif command -v apk >/dev/null 2>&1; then

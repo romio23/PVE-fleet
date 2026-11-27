@@ -25,6 +25,7 @@
     if (n.count) parts.push('<span class="pill c-warn" style="border-color:currentColor">' + n.count + ' update' + (n.count === 1 ? '' : 's') + '</span>');
     if (!n.reboot_needed && n.kernel_after_upgrade && n.status === 'online') parts.push('<span class="pill" style="color:var(--info-text);border-color:var(--info-line)" title="Er zit een nieuwe kernel bij de updates. Na het bijwerken moet deze node herstarten.">↻ Herstart na bijwerken</span>');
     if (n.reboot_needed) parts.push('<span class="pill c-info" style="border-color:currentColor" title="Nieuwe kernel ' + e(n.kernel_latest || '') + ' is geïnstalleerd">↻ Herstart nodig</span>');
+    if (n.apt_error) parts.push('<span class="pill c-warn" style="border-color:currentColor" title="' + e(n.apt_error) + '">Pakketlijst verversen mislukt</span>');
     if (!parts.length) parts.push('<span class="pill c-ok" style="border-color:currentColor">✓ Up-to-date</span>');
     if (n.behind && n.behind.length) parts.push('<div class="small c-warn" style="margin-top:4px">' + n.behind.map(e).join('<br>') + '</div>');
     return parts.join(' ');

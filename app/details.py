@@ -111,6 +111,8 @@ def node_detail(collector, server, node):
         result["errors"]["packages"] = err
     result["packages"] = [{"name": p.get("Package"), "old": p.get("OldVersion"), "new": p.get("Version"),
                            "origin": p.get("Origin")} for p in (pk or [])] if pk is not None else None
+    from .collector import apt_net_failure
+    result["apt_error"], _e = _cached(("aptfail", server, node), 300, lambda: (apt_net_failure(c, node), None))
     return result
 
 

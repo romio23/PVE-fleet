@@ -1799,3 +1799,67 @@ geen verbinding: de server weigert de verbinding (staat hij aan, klopt de poort?
 geen verbinding: het adres is niet gevonden (controleer de naam en de DNS-instelling)|||no connection: the address was not found (check the name and the DNS setting)
 geen verbinding: geen antwoord binnen 10 seconden|||no connection: no answer within 10 seconds
 geen verbinding: het certificaat wordt niet vertrouwd (zet bij een webhook 'Certificaat controleren' uit voor een eigen certificaat)|||no connection: the certificate is not trusted (for a webhook, turn off 'Verify the certificate' for your own certificate)
+Terugzetten · PVE Fleet|||Restore · PVE Fleet
+Zet een back-up terug als nieuwe VM of container, op dezelfde of op een andere server of cluster. Je kiest zelf het ID en de netwerkbridge. Een bestaande VM of container wordt nooit overschreven.|||Restore a backup as a new VM or container, on the same or on another server or cluster. You choose the ID and the network bridge yourself. An existing VM or container is never overwritten.
+Recent terugzetten|||Recent restores
+Back-ups van|||Backups from
+Zoek op ID of naam|||Search by ID or name
+Geen back-ups gevonden op de back-upopslag van deze server.|||No backups found on the backup storage of this server.
+Geen back-ups die bij je zoekopdracht passen.|||No backups match your search.
+Gemaakt|||Created
+Grootte|||Size
+bestaat nog|||still exists
+beveiligd|||protected
+Zet terug…|||Restore…
+Geen server met een online node om naar terug te zetten|||No server with an online node to restore to
+Terugzetten op|||Restore to
+Dit ID is al in gebruik door|||This ID is already in use by
+moet vrij zijn|||must be free
+Opslag voor de schijven|||Storage for the disks
+Nieuw MAC-adres geven|||Give a new MAC address
+Starten na het terugzetten|||Start after restoring
+Back-up terugzetten|||Restore backup
+Back-up:|||Backup:
+Back-up controleren op|||Checking the backup on
+Gevonden in de back-up:|||Found in the backup:
+De instellingen in de back-up konden niet gelezen worden.|||The settings in the backup could not be read.
+Het netwerk blijft zoals in de back-up.|||The network stays as in the backup.
+— geen opslag voor schijven op deze node —|||— no storage for disks on this node —
+— kies een bridge —|||— choose a bridge —
+De bridge|||The bridge
+uit de back-up bestaat niet op deze node|||from the backup does not exist on this node
+De originele|||The original
+bestaat nog op|||still exists on
+De kopie krijgt hetzelfde vaste IP-adres. Start hem pas nadat je dat hebt aangepast of het origineel is uitgezet.|||The copy gets the same fixed IP address. Only start it after you have changed that or switched the original off.
+Zet de kopie pas aan als dat geen botsing geeft.|||Only switch the copy on when that causes no conflict.
+Deze VM heeft bind mounts:|||This VM has bind mounts:
+Deze CT heeft bind mounts:|||This CT has bind mounts:
+Proxmox laat die mogelijk alleen root@pam terugzetten.|||Proxmox may only let root@pam restore those.
+Dit is een privileged container.|||This is a privileged container.
+Wacht tot de back-up gecontroleerd is, of kies een node die de back-up kan zien|||Wait until the backup has been checked, or choose a node that can see the backup
+Kies een geldig ID (een getal vanaf 100)|||Choose a valid ID (a number from 100)
+Kies een opslag voor de schijven|||Choose a storage for the disks
+Bezig met terugzetten…|||Restoring…
+Netwerk instellen…|||Setting up the network…
+Teruggezet, maar let op|||Restored, but note
+netwerk aangepast|||network changed
+gestart|||started
+Openen|||Open
+Terugzetten kan alleen als admin|||Restoring is for admins only
+Proxmox gaf geen taak terug|||Proxmox returned no task
+onbekend type back-up|||unknown backup type
+Zet terug|||Restore
+ID van de nieuwe CT|||ID of the new CT
+ID van de nieuwe VM|||ID of the new VM
+geen|||none
+Back-ups terugzetten als nieuwe VM of container (optioneel)|||Restore backups as a new VM or container (optional)
+Optioneel: updates lezen, back-upjobs aanpassen en back-ups terugzetten|||Optional: read updates, change backup jobs and restore backups
+Optioneel: back-ups terugzetten|||Optional: restore backups
+Terugzetten als nieuwe VM of container vraagt onder meer|||Restoring as a new VM or container needs, among others,
+en, voor een andere bridge,|||and, for a different bridge,
+Zonder deze rechten kun je back-ups wel bekijken en maken, maar niet terugzetten.|||Without these privileges you can view and make backups, but not restore them.
+Pakketlijst verversen mislukt|||Package list refresh failed
+Pakketlijst verversen mislukt.|||Package list refresh failed.
+De node kan zijn pakketbronnen niet bereiken (netwerk, DNS of IPv6). De lijst met updates kan daardoor verouderd zijn, ook als er 'Up-to-date' staat.|||The node cannot reach its package sources (network, DNS or IPv6). The list of updates may therefore be out of date, even when it says 'Up-to-date'.
+Oplossing op de node:|||Fix on the node:
+pakketlijst verversen mislukt: de node kan zijn pakketbronnen niet bereiken (netwerk of DNS); er is niets bijgewerkt|||package list refresh failed: the node cannot reach its package sources (network or DNS); nothing was upgraded

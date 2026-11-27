@@ -80,7 +80,8 @@
         return '<tr><td class="mono muted">' + x.vmid + '</td><td><a href="' + PF.guestUrl(g.server, x.node, x.type, x.vmid) + '" style="font-weight:500">' + e(x.name) + '</a> <span class="typebadge">' + (x.type === 'qemu' ? 'VM' : 'CT') + '</span></td>' +
           '<td class="mono small">' + e(x.node) + '</td><td>' + last + '</td><td class="mono">' + (x.count || 0) + '</td>' +
           '<td class="mono small">' + e(x.storage || '—') + (x.size ? ' <span class="muted">' + PF.bytes(x.size) + '</span>' : '') + '</td><td>' + jobTxt + '</td>' +
-          '<td><div class="rowacts"><button type="button" class="btn ghost" data-act="now" data-s="' + e(g.server) + '" data-v="' + x.vmid + '">Back-up nu</button></div></td></tr>';
+          '<td><div class="rowacts"><button type="button" class="btn ghost" data-act="now" data-s="' + e(g.server) + '" data-v="' + x.vmid + '">Back-up nu</button>' +
+            (x.count ? '<a class="btn ghost" href="/restore?server=' + encodeURIComponent(g.server) + '&amp;vmid=' + x.vmid + '">Zet terug…</a>' : '') + '</div></td></tr>';
       }).join('') + '</tbody></table></div>';
   }
 

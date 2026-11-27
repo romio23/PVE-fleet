@@ -1,5 +1,120 @@
 [
 [
+"^(.+) \\((.+) vrij\\)$",
+"",
+"$1 ($2 free)"
+],
+[
+"^Bridge voor (.+)$",
+"",
+"Bridge for $1"
+],
+[
+"^VLAN-tag voor (.+)$",
+"",
+"VLAN tag for $1"
+],
+[
+"^Kies een bridge voor (.+)$",
+"",
+"Choose a bridge for $1"
+],
+[
+"^Dit ID is al in gebruik door (.+)$",
+"",
+"This ID is already in use by $1"
+],
+[
+"^De node (.+) is niet online$",
+"",
+"The node $1 is not online"
+],
+[
+"^ID (\\d+) is al in gebruik op (.+) \\((.+)\\)\\. PVE Fleet overschrijft nooit een bestaande VM of container; kies een ander ID\\.$",
+"",
+"ID $1 is already in use on $2 ($3). PVE Fleet never overwrites an existing VM or container; choose another ID."
+],
+[
+"^Kies een opslag op (.+) voor de schijven$",
+"",
+"Choose a storage for the disks on $1"
+],
+[
+"^De bridge '(.+)' bestaat niet op (.+)$",
+"",
+"The bridge '$1' does not exist on $2"
+],
+[
+"^ongeldige VLAN-tag '(.*)' \\(1 tot 4094, of leeg\\)$",
+"",
+"invalid VLAN tag '$1' (1 to 4094, or empty)"
+],
+[
+"^(.+) kan deze back-up niet zien; voeg dezelfde back-upopslag daar toe$",
+"",
+"$1 cannot see this backup; add the same backup storage there"
+],
+[
+"^(.+) kan deze back-up niet zien\\. Voeg in Proxmox dezelfde back-upopslag toe op dat cluster \\(Datacenter › Opslag › Toevoegen, met inhoud 'VZDump back-upbestand'\\), of kies een node die de opslag wel heeft\\.$",
+"",
+"$1 cannot see this backup. In Proxmox, add the same backup storage on that cluster (Datacenter › Storage › Add, with content 'VZDump backup file'), or choose a node that does have the storage."
+],
+[
+"^Terugzetten mislukt: (.*)$",
+"",
+"Restore failed: $1"
+],
+[
+"^Onverwachte fout: (.*)$",
+"",
+"Unexpected error: $1"
+],
+[
+"^(CT|VM) (\\d+) is teruggezet(.*)$",
+"",
+"$1 $2 restored$3"
+],
+[
+"^Teruggezet als (CT|VM) (\\d+), maar het netwerk is NIET aangepast \\((.*)\\)\\. De (CT|VM) is niet gestart\\. Controleer de rechten VM\\.Config\\.Network en SDN\\.Use, of pas de bridge zelf aan in Proxmox\\.$",
+"",
+"Restored as $1 $2, but the network was NOT changed ($3). The $4 was not started. Check the privileges VM.Config.Network and SDN.Use, or change the bridge yourself in Proxmox."
+],
+[
+"^Teruggezet als (CT|VM) (\\d+), maar starten lukte niet: (.*)$",
+"",
+"Restored as $1 $2, but starting failed: $3"
+],
+[
+"^Terugzetten als (CT|VM) (\\d+)(.*) gestart$",
+"",
+"Restore as $1 $2$3 started"
+],
+[
+"^Terugzetten als (CT|VM) (\\d+)(.*)$",
+"",
+"Restore as $1 $2$3"
+],
+[
+"^Het API-token mag geen terugzetten: Proxmox mist het recht (\\S+) op de opslag (.+)\\. Plak de commando's hieronder één keer in de shell van een node en probeer het opnieuw\\.$",
+"",
+"The API token may not restore: Proxmox is missing the privilege $1 on the storage $2. Paste the commands below once into the shell of a node and try again."
+],
+[
+"^Het API-token mag geen terugzetten: Proxmox mist het recht (\\S+) op (\\S+)\\. Plak de commando's hieronder één keer in de shell van een node en probeer het opnieuw\\.$",
+"",
+"The API token may not restore: Proxmox is missing the privilege $1 on $2. Paste the commands below once into the shell of a node and try again."
+],
+[
+"^Proxmox weigert het terugzetten: (.*)\\. Controleer de rechten van het API-token \\(VM\\.Allocate, Datastore\\.AllocateSpace op de doelopslag\\)\\. Sommige containers \\(bijvoorbeeld zonder 'unprivileged' of met bind mounts\\) mag Proxmox alleen root@pam terugzetten; doe dat dan in de Proxmox-interface\\.$",
+"",
+"Proxmox refuses the restore: $1. Check the privileges of the API token (VM.Allocate, Datastore.AllocateSpace on the target storage). Proxmox only lets root@pam restore some containers (for example without 'unprivileged' or with bind mounts); do that in the Proxmox interface."
+],
+[
+"^Proxmox: (.*)$",
+"",
+"Proxmox: $1"
+],
+[
 "^✓ laatste bericht verstuurd (.+)$",
 "",
 "✓ last message sent $1"

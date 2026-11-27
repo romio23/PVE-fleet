@@ -102,7 +102,7 @@
     if (d.packages === null && !d.errors.packages) return '';
     var body;
     if (d.packages === null) body = '<div class="muted" style="font-size:13px">Kan updates niet ophalen: ' + e(d.errors.packages) + '</div>';
-    else if (!d.packages.length) body = '<div class="c-ok" style="font-size:13px">Up-to-date</div>';
+    else if (!d.packages.length) body = d.apt_error ? '<div class="c-warn" style="font-size:13px"><strong>Pakketlijst verversen mislukt.</strong> <span>' + e(d.apt_error) + '</span></div><div class="small muted" style="margin-top:6px">Oplossing op de node: <span class="mono">echo \'Acquire::ForceIPv4 "true";\' &gt; /etc/apt/apt.conf.d/99force-ipv4; apt update</span></div>' : '<div class="c-ok" style="font-size:13px">Up-to-date</div>';
     else body = '<div class="list">' + d.packages.map(function (p) {
       var sec = /security/i.test(p.origin || '');
       return '<div class="row"><div style="min-width:0"><div class="mono">' + e(p.name) + '</div><div class="small muted mono" style="margin-top:2px">' + e(p.old || '') + ' → ' + e(p.new) + '</div></div>' +

@@ -88,8 +88,12 @@
         h += '<div class="small c-ok" style="margin-top:6px">Alles in orde: het dashboard kan alle acties uitvoeren.</div>';
       }
       if (r.optional_commands) {
-        h += '<details style="margin-top:10px"><summary class="small" style="cursor:pointer;color:var(--text2)">Optioneel: openstaande updates lezen en back-upjobs aanpassen</summary>' +
-          '<div class="small muted" style="margin:8px 0 6px;line-height:1.5">Proxmox vraagt hiervoor het recht <span class="mono">Sys.Modify</span> op het hele datacenter. Dat recht mag ook andere instellingen wijzigen (bijv. netwerk). Zonder dit recht ziet PVE Fleet niet welke updates er klaarstaan (wel of een node achterloopt op de andere nodes), en kun je back-upjobs alleen bekijken en nu uitvoeren.</div>' +
+        var om = r.perms.filter(function (x) { return x.optional && !x.ok; }).map(function (x) { return x.key; });
+        var jobsM = om.indexOf('jobs') >= 0, restM = om.indexOf('restore') >= 0;
+        var sum = jobsM && restM ? 'Optioneel: updates lezen, back-upjobs aanpassen en back-ups terugzetten' : (restM ? 'Optioneel: back-ups terugzetten' : 'Optioneel: openstaande updates lezen en back-upjobs aanpassen');
+        h += '<details style="margin-top:10px"><summary class="small" style="cursor:pointer;color:var(--text2)">' + e(sum) + '</summary>' +
+          (jobsM ? '<div class="small muted" style="margin:8px 0 6px;line-height:1.5">Proxmox vraagt hiervoor het recht <span class="mono">Sys.Modify</span> op het hele datacenter. Dat recht mag ook andere instellingen wijzigen (bijv. netwerk). Zonder dit recht ziet PVE Fleet niet welke updates er klaarstaan (wel of een node achterloopt op de andere nodes), en kun je back-upjobs alleen bekijken en nu uitvoeren.</div>' : '') +
+          (restM ? '<div class="small muted" style="margin:8px 0 6px;line-height:1.5">Terugzetten als nieuwe VM of container vraagt onder meer <span class="mono">VM.Allocate</span> en, voor een andere bridge, <span class="mono">SDN.Use</span>. Zonder deze rechten kun je back-ups wel bekijken en maken, maar niet terugzetten.</div>' : '') +
           '<pre class="log" style="max-height:none;user-select:all" id="perm-opt">' + e(r.optional_commands) + '</pre>' +
           '<button type="button" class="btn ghost" data-copy="perm-opt" style="margin-top:6px">Kopiëren</button></details>';
       }

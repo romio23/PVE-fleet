@@ -304,10 +304,13 @@ class FakeClient:
                 return self._resources()
             if path == "/cluster/tasks":
                 return self._tasks()
+            if path == "/cluster/nextid":
+                return str(next(i for i in range(100, 100000) if i not in STATE["guests"]))
             if path == "/access/permissions":
                 all_privs = ["Sys.Audit", "VM.Audit", "Datastore.Audit", "VM.PowerMgmt", "VM.Snapshot",
                              "VM.Snapshot.Rollback", "VM.Backup", "VM.Migrate", "Datastore.AllocateSpace", "Sys.PowerMgmt",
-                             "VM.Console", "Sys.Console", "VM.GuestAgent.Audit", "Sys.Modify"]
+                             "VM.Console", "Sys.Console", "VM.GuestAgent.Audit", "Sys.Modify", "VM.Allocate", "VM.Config.Disk",
+                             "VM.Config.Network", "VM.Config.Options"]
                 return {"/": {p: 1 for p in all_privs}}
             if path.startswith("/access/users/"):
                 return {"privsep": 0}
@@ -490,6 +493,16 @@ class FakeClient:
         if rest == "/disks/list":
             return [{"devpath": "/dev/nvme0n1", "model": "Samsung SSD 980 1TB", "size": 1000 * GB, "health": "PASSED", "wearout": 7, "type": "nvme"},
                     {"devpath": "/dev/sda", "model": "Crucial MX500 2TB", "size": 2000 * GB, "health": "PASSED", "wearout": 4, "type": "ssd"}]
+        if rest == "/network":
+            return [{"iface": "eno1", "type": "eth", "active": 1}, {"iface": "vmbr0", "type": "bridge", "active": 1, "cidr": "192.168.1.2/24"},
+                    {"iface": "vmbr1", "type": "bridge", "active": 1}]
+        if rest == "/vzdump/extractconfig":
+            vm = re.search(r"vzdump-(lxc|qemu)-(\d+)-", params.get("volume", ""))
+            if not vm or int(vm.group(2)) not in STATE["guests"]:
+                raise PveError("500 unable to extract configuration from '{}'".format(params.get("volume")))
+            src = int(vm.group(2))
+            conf = self._guest(STATE["guests"][src]["node"], vm.group(1), src, "/config")
+            return "\n".join("{}: {}".format(k, v) for k, v in conf.items() if k not in ("description", "tags", "onboot", "protection"))
         m = re.match(r"^/(qemu|lxc)/(\d+)(/.*)?$", rest)
         if m:
             return self._guest(node, m.group(1), int(m.group(2)), m.group(3) or "")
@@ -499,6 +512,9 @@ class FakeClient:
             if not params.get("vmid"):
                 return self._all_backups(m.group(1), now)
             vmid = int(params.get("vmid", 0))
+            same = [i for i in self._all_backups(m.group(1), now) if i["vmid"] == vmid]
+            if same:      # dezelfde namen als in de volledige lijst (nodig om een back-up terug te vinden)
+                return same
             items = [{"volid": "{}:backup/vzdump-{}-{}.tar.zst".format(m.group(1), vmid, d), "vmid": vmid,
                       "ctime": now - d * 86400 - 13 * 3600, "size": int(2.1 * GB), "format": "tar.zst", "content": "backup"}
                      for d in (0, 1, 2)]
@@ -517,6 +533,12 @@ class FakeClient:
         return st, INFO[vmid]
 
     def _guest(self, node, kind, vmid, rest):
+        res = self._guest_base(node, kind, vmid, rest)
+        if rest == "/config" and STATE.get("cfg_over", {}).get(vmid):
+            res = dict(res, **STATE["cfg_over"][vmid])
+        return res
+
+    def _guest_base(self, node, kind, vmid, rest):
         st, i = self._guest_or_fail(node, kind, vmid)
         name, running, cpu, mem, maxmem, tags = i["name"], st["running"], i["cpu"], i["mem"], i["maxmem"], i["tags"]
         if rest == "/config":
@@ -576,6 +598,9 @@ class FakeClient:
                 if _node_down(node):
                     raise PveError("595 node {} niet bereikbaar".format(node))
                 return self._guest_post(node, kind, vmid, rest, data)
+            m = re.match(r"^/nodes/([^/]+)/(qemu|lxc)$", path)
+            if m:
+                return self._restore(m.group(1), m.group(2), data)
             m = re.match(r"^/nodes/([^/]+)/status$", path)
             if m:
                 return self._node_power(m.group(1), data.get("command"))
@@ -645,6 +670,11 @@ class FakeClient:
         with _lock:
             _tick()
             self._check_reachable()
+            m = re.match(r"^/nodes/([^/]+)/(qemu|lxc)/(\d+)/config$", path)
+            if m:
+                self._guest_or_fail(m.group(1), m.group(2), int(m.group(3)))
+                STATE.setdefault("cfg_over", {}).setdefault(int(m.group(3)), {}).update(data)
+                return None
             m = re.match(r"^/cluster/backup/([^/]+)$", path)
             if m:
                 j = next((x for x in STATE["jobs"].get(self.server, []) if x["id"] == m.group(1)), None)
@@ -748,6 +778,7 @@ class FakeClient:
     def _all_backups(self, storage, now):
         """Alle back-ups op een opslag (demo): per job een back-up per nacht, de laatste 3 dagen."""
         mine = {v: s for v, s in STATE["guests"].items() if s["node"] in self.nodes}
+        now = now - now % 21600     # vaste namen: een back-up heet bij elke vraag hetzelfde (anders is hij niet terug te vinden)
         items = []
         for j in STATE["jobs"].get(self.server, []):
             if j.get("storage") != storage:
@@ -765,6 +796,26 @@ class FakeClient:
                         items.append({"volid": "{}:backup/vzdump-{}-now-{}.tar.zst".format(storage, v, b["ctime"]), "vmid": v,
                                       "ctime": b["ctime"], "size": b["size"], "format": "tar.zst", "content": "backup"})
         return items
+
+    def _restore(self, node, kind, data):
+        """Een back-up terugzetten als nieuw ID (demo): na een paar seconden bestaat de VM/CT."""
+        vmid = int(data.get("vmid", 0))
+        volid = data.get("ostemplate") if kind == "lxc" else data.get("archive")
+        vm = re.search(r"vzdump-(lxc|qemu)-(\d+)-", volid or "")
+        if not vm or vm.group(1) != kind or int(vm.group(2)) not in INFO:
+            raise PveError("500 unable to restore: unknown backup '{}'".format(volid))
+        if vmid in STATE["guests"]:
+            raise PveError("500 CT {} already exists on node '{}'".format(vmid, STATE["guests"][vmid]["node"]))
+        if _node_down(node):
+            raise PveError("595 node {} niet bereikbaar".format(node))
+        src = int(vm.group(2))
+
+        def done():
+            STATE["guests"][vmid] = {"running": False, "node": node, "since": time.time()}
+            INFO[vmid] = dict(INFO[src])
+        lines = ["restoring '{}' to {} {}".format(volid, "CT" if kind == "lxc" else "VM", vmid), "extracting archive", "100% done",
+                 "TASK OK"]
+        return _task(node, "vzrestore" if kind == "lxc" else "qmrestore", vmid, 4, lines, done)
 
     def _vzdump(self, node, data):
         if str(data.get("all", 0)) == "1" or "," in str(data.get("vmid", "")):

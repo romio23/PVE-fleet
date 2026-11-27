@@ -5,13 +5,13 @@ from datetime import timedelta
 
 from flask import Flask, abort, g, jsonify, render_template
 
-from . import actions, appdeploy, auth, autorolling, backups, bulkupdate, certs, console, guestupdates, notify, security, servers_api, updates
+from . import actions, appdeploy, auth, autorolling, backups, bulkupdate, certs, console, guestupdates, notify, restore, security, servers_api, updates
 from . import config as config_mod
 from .collector import Collector
 from .details import NotFound, guest_detail, node_detail
 from .settings import SettingsStore
 
-__version__ = "0.10.1"
+__version__ = "1.0.0"
 
 
 def create_app(start_collector=True):
@@ -43,6 +43,7 @@ def create_app(start_collector=True):
     app.register_blueprint(console.bp)
     app.register_blueprint(updates.bp)
     app.register_blueprint(backups.bp)
+    app.register_blueprint(restore.bp)
     guestupdates.init_app(app)
     certs.init_app(app)
     appdeploy.init_app(app)
@@ -102,7 +103,7 @@ def create_app(start_collector=True):
         vmid = _rq.args.get("vmid", "")
         if kind not in ("qemu", "lxc", "shell"):
             abort(404)
-        cmds = {"apt": "apt update; apt dist-upgrade", "apk": "apk update && apk upgrade", "dnf": "dnf upgrade", "app": "update"}
+        cmds = {"apt": "apt -o Acquire::ForceIPv4=true update; apt -o Acquire::ForceIPv4=true dist-upgrade", "apk": "apk update && apk upgrade", "dnf": "dnf upgrade", "app": "update"}
         cmd = _rq.args.get("cmd", "")
         upcmd = None
         if kind == "shell" and _rq.args.get("upgrade") == "1":

@@ -427,7 +427,7 @@ var PFA = (function () {
       ? '<p style="margin:0 0 8px"><strong>' + e(info.app || 'De app') + '</strong> ' + (info.installed ? e(info.installed) + ' → ' : '') + e(info.latest || 'nieuwste versie') + '.</p>' +
         '<p style="margin:0 0 8px">Er opent een console van ' + e(gname(g)) + '. PVE Fleet typt <span class="mono">update</span>: het update-script van community-scripts. Volg daarna de vragen van het script.</p>'
       : '<p style="margin:0 0 8px">' + (info.count ? info.count + ' pakketupdates' + (info.security ? ', waarvan ' + info.security + ' security' : '') : 'Pakketten bijwerken') + ' in ' + e(gname(g)) + '.</p>' +
-        '<p style="margin:0 0 8px">Er opent een console. PVE Fleet typt <span class="mono">' + (cmd === 'apk' ? 'apk update &amp;&amp; apk upgrade' : (cmd === 'dnf' ? 'dnf upgrade' : 'apt update; apt dist-upgrade')) + '</span>; jij bevestigt.</p>';
+        '<p style="margin:0 0 8px">Er opent een console. PVE Fleet typt <span class="mono">' + (cmd === 'apk' ? 'apk update &amp;&amp; apk upgrade' : (cmd === 'dnf' ? 'dnf upgrade' : 'apt -o Acquire::ForceIPv4=true update; apt -o Acquire::ForceIPv4=true dist-upgrade')) + '</span>; jij bevestigt.</p>';
     body += '<p class="small muted" style="margin:0">Is de app-sleutel ingesteld (pagina Apps), dan opent PVE Fleet de container via de node en hoef je niet in te loggen. Anders: zie je een inlogprompt, log dan in als root in de container.</p>';
     return modal({ title: (app ? 'App bijwerken: ' : 'Bijwerken: ') + gname(g), body: body,
       fields: [{ name: 'snap', label: 'Eerst een snapshot maken (aanbevolen)', type: 'checkbox', value: true,

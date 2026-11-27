@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Terugzetten · PVE Fleet{% endblock %}
+{% block crumbs %}<a href="/">Overzicht</a><span>/</span><a href="/backups">Back-ups</a><span>/</span><span class="here">Terugzetten</span>{% endblock %}
+{% block body %}
+<div class="layout">
+  {% include "_sidenav.html" %}
+  <main class="content" id="app">
+    <div class="pagehead"><div><h1>Terugzetten</h1><p class="muted" style="margin:6px 0 0">Zet een back-up terug als nieuwe VM of container, op dezelfde of op een andere server of cluster. Je kiest zelf het ID en de netwerkbridge. Een bestaande VM of container wordt nooit overschreven.</p></div></div>
+    <div class="card pad" id="jobs-card" style="display:none"><h2 style="font-size:15px;margin:0 0 10px">Recent terugzetten</h2><div id="jobs" role="status" aria-live="polite"></div></div>
+    <div class="filters">
+      <label class="small muted" for="r-src">Back-ups van</label>
+      <select class="input" id="r-src"></select>
+      <input class="input" type="search" id="r-q" placeholder="Zoek op ID of naam" aria-label="Zoek op ID of naam" autocomplete="off">
+      <button type="button" class="btn ghost" id="r-reload">Vernieuwen</button>
+    </div>
+    <div id="r-list"><div class="card pad muted">Laden… (de inhoud van de back-upopslag ophalen kan even duren)</div></div>
+  </main>
+</div>
+<script src="{{ url_for('static', filename='js/restore.js') }}?v={{ version }}"></script>
+{% endblock %}
